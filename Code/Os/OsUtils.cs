@@ -1,17 +1,19 @@
-﻿using System.Collections.Generic;
-using System.Text;
-using System.Security.Principal;
+﻿using DiskDetector;
+using DiskDetector.Models;
+using Flowframes.Extensions;
+using Flowframes.IO;
+using Flowframes.MiscUtils;
+using Microsoft.VisualBasic.Devices;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Management;
+using System.Security.Principal;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Flowframes.IO;
-using DiskDetector;
-using DiskDetector.Models;
-using Microsoft.VisualBasic.Devices;
-using Flowframes.MiscUtils;
-using System.Linq;
 using Tulpep.NotificationWindow;
 
 namespace Flowframes.Os
@@ -129,11 +131,12 @@ namespace Flowframes.Os
         public static string GetCmdArg()
         {
             bool stayOpen = Config.GetInt(Config.Key.cmdDebugMode) == 2;
+            string path = $"set path={Path.Combine(Paths.GetPkgPath(), Paths.audioVideoDir)};%path% &";
 
             if (stayOpen)
-                return "/K";
+                return "/K " + path;
             else
-                return "/C";
+                return "/C " + path;
         }
 
         public static bool ShowHiddenCmd()
@@ -236,7 +239,7 @@ namespace Flowframes.Os
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
-            while (!process.HasExited) await Task.Delay(50);
+            await process.WaitForExitAsync();
             while (timeSinceLastOutput.ElapsedMilliseconds < 100) await Task.Delay(50);
             output = output.Trim('\r', '\n');
 

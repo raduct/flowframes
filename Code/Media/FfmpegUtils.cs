@@ -2,12 +2,8 @@
 using Flowframes.Data.Streams;
 using Flowframes.IO;
 using Flowframes.MiscUtils;
-using Flowframes.Os;
-using Flowframes.Properties;
-using ImageMagick;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -105,7 +101,7 @@ namespace Flowframes.Media
                             string title = await GetFfprobeInfoAsync(path, showStreams, "TAG:title", idx);
                             string codec = await GetFfprobeInfoAsync(path, showStreams, "codec_name", idx);
                             string codecLong = await GetFfprobeInfoAsync(path, showStreams, "codec_long_name", idx);
-                            bool bitmap = await IsSubtitleBitmapBased(path, idx, codec);
+                            bool bitmap = IsSubtitleBitmapBased(path, idx, codec);
                             SubtitleStream sStream = new SubtitleStream(lang, title, codec, codecLong, bitmap);
                             sStream.Index = idx;
                             sStream.IsDefault = def;
@@ -170,7 +166,7 @@ namespace Flowframes.Media
             if (path.IsConcatFile())
                 return new FpsInfo(defaultFps);
 
-            if (streamStr.Contains("fps, ") && streamStr.Contains(" tbr"))
+            /*if (streamStr.Contains("fps, ") && streamStr.Contains(" tbr"))
             {
                 string fps = streamStr.Split(", ").Where(s => s.Contains(" fps")).First().Trim().Split(' ')[0];
                 string tbr = streamStr.Split("fps, ")[1].Split(" tbr")[0].Trim();
@@ -196,7 +192,7 @@ namespace Flowframes.Media
                 }
 
                 return info;
-            }
+            }*/
 
             return new FpsInfo(await IoUtils.GetVideoFramerate(path));
         }
@@ -213,7 +209,7 @@ namespace Flowframes.Media
             return 0.1f;
         }
 
-        public static async Task<bool> IsSubtitleBitmapBased(string path, int streamIndex, string codec = "")
+        public static bool IsSubtitleBitmapBased(string path, int streamIndex, string codec = "")
         {
             if (codec == "ssa" || codec == "ass" || codec == "mov_text" || codec == "srt" || codec == "subrip" || codec == "text" || codec == "webvtt")
                 return false;
@@ -418,15 +414,15 @@ namespace Flowframes.Media
         static string GetSvtAv1Speed()
         {
             string preset = Config.Get(Config.Key.ffEncPreset).ToLowerInvariant().Remove(" ");
-            string arg = "8";
+            string arg = "9";
 
-            if (preset == "veryslow") arg = "3";
-            if (preset == "slower") arg = "4";
-            if (preset == "slow") arg = "5";
-            if (preset == "medium") arg = "6";
-            if (preset == "fast") arg = "7";
-            if (preset == "faster") arg = "8";
-            if (preset == "veryfast") arg = "9";
+            if (preset == "veryslow") arg = "4";
+            if (preset == "slower") arg = "6";
+            if (preset == "slow") arg = "8";
+            if (preset == "medium") arg = "9";
+            if (preset == "fast") arg = "10";
+            if (preset == "faster") arg = "11";
+            if (preset == "veryfast") arg = "12";
 
             return $"-preset {arg}";
         }

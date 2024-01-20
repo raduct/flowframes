@@ -1,6 +1,5 @@
 ﻿using Flowframes.Data;
 using Flowframes.IO;
-using Flowframes.Media;
 using Flowframes.MiscUtils;
 using Flowframes.Ui;
 using Microsoft.WindowsAPICodePack.Dialogs;
@@ -220,13 +219,13 @@ namespace Flowframes.Forms
         {
             ModelDownloader.DeleteAllModels();
             clearModelCacheBtn.Text = "Clear Model Cache";
-            CheckModelCacheSize();
+            _ = CheckModelCacheSize();
         }
 
         private void modelDownloaderBtn_Click(object sender, EventArgs e)
         {
             new ModelDownloadForm().ShowDialog();
-            CheckModelCacheSize();
+            _ = CheckModelCacheSize();
         }
 
         private void autoEncMode_SelectedIndexChanged(object sender, EventArgs e)

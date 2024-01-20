@@ -83,7 +83,7 @@ namespace Flowframes.Data
         {
             get
             {
-                bool pytorchAvailable = Python.IsPytorchReady();
+                bool pytorchAvailable = Python.IsPytorchReadyAsync().Result;
 
                 if (pytorchAvailable)
                     return NetworksAll;

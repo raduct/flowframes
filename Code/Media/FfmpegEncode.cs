@@ -31,19 +31,22 @@ namespace Flowframes.Media
             }
 
             string args = "";
+            string tile = "";
+            if (Interpolate.currentSettings.is3D)
+                tile = "-filter_complex tile=2x1";
 
             for (int i = 0; i < encArgs.Length; i++)
             {
                 string pre = i == 0 ? "" : $" && ffmpeg {AvProcess.GetFfmpegDefaultArgs()}";
                 string post = (i == 0 && encArgs.Length > 1) ? $"-f null -" : outPath.Wrap();
-                args += $"{pre} {await GetFfmpegExportArgsIn(fps, itsScale)} {inArg} {encArgs[i]} {await GetFfmpegExportArgsOut(resampleFps, extraData, settings, isChunk)} {post} ";
+                args += $"{pre} {GetFfmpegExportArgsIn(fps, itsScale)} {inArg} {tile} {encArgs[i]} {await GetFfmpegExportArgsOut(resampleFps, extraData, settings, isChunk)} {post} ";
             }
 
             await RunFfmpeg(args, framesFile.GetParentDir(), logMode, !isChunk);
             IoUtils.TryDeleteIfExists(linksDir);
         }
 
-        public static async Task<string> GetFfmpegExportArgsIn(Fraction fps, float itsScale)
+        public static string GetFfmpegExportArgsIn(Fraction fps, float itsScale)
         {
             var args = new List<string>();
 

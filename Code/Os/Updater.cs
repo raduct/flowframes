@@ -129,7 +129,7 @@ namespace Flowframes.Os
             Application.Exit();
         }
 
-        public static async Task AsyncUpdateCheck()
+        public static void AsyncUpdateCheck()
         {
             Version installed = GetInstalledVer();
             Version latestPat = GetLatestVer(true);
@@ -148,7 +148,7 @@ namespace Flowframes.Os
                 Program.mainForm.Text = $"{Program.mainForm.Text} [{gpus}]";
         }
 
-        public static async Task UpdateModelList()
+        public static void UpdateModelList()
         {
             if (!Config.GetBool("fetchModelsFromRepo", false))
                 return;

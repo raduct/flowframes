@@ -1,9 +1,8 @@
-﻿using Flowframes.Media;
-using Flowframes.Data;
+﻿using Flowframes.Data;
 using Flowframes.IO;
 using Flowframes.Main;
+using Flowframes.Media;
 using Flowframes.MiscUtils;
-using Flowframes.Ui;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -27,6 +26,7 @@ namespace Flowframes
         public float interpFactor;
         public OutputSettings outSettings;
         public ModelCollection.ModelInfo model;
+        public bool is3D;
 
         public string tempFolder;
         public string framesFolder;
@@ -34,7 +34,7 @@ namespace Flowframes
         public bool inputIsFrames;
 
         private Size _inputResolution;
-        public Size InputResolution { get { RefreshInputRes(); return _inputResolution; } }
+        public Size InputResolution { get { _ = RefreshInputRes(); return _inputResolution; } }
         public Size ScaledResolution { get { return InterpolateUtils.GetOutputResolution(InputResolution, false); } }
         public Size ScaledPaddedResolution { get { return InterpolateUtils.GetOutputResolution(InputResolution, true); } }
 
@@ -182,10 +182,11 @@ namespace Flowframes
                 bool alphaModel = model.SupportsAlpha;
                 bool pngOutput = outSettings.Encoder == Enums.Encoding.Encoder.Png;
                 bool gifOutput = outSettings.Encoder == Enums.Encoding.Encoder.Gif;
+                bool webpOutput = outSettings.Encoder == Enums.Encoding.Encoder.Webp;
                 bool proResAlpha = outSettings.Encoder == Enums.Encoding.Encoder.ProResKs && OutputUtils.AlphaFormats.Contains(outSettings.PixelFormat);
-                bool outputSupportsAlpha = pngOutput || gifOutput || proResAlpha;
+                bool outputSupportsAlpha = pngOutput || webpOutput || gifOutput || proResAlpha;
                 string ext = inputIsFrames ? Path.GetExtension(IoUtils.GetFilesSorted(inPath).First()).ToLowerInvariant() : Path.GetExtension(inPath).ToLowerInvariant();
-                alpha = (alphaModel && outputSupportsAlpha && (ext == ".gif" || ext == ".png" || ext == ".apng" || ext == ".mov"));
+                alpha = (alphaModel && outputSupportsAlpha && (ext == ".gif" || ext == ".png" || ext == ".apng" || ext == ".webp" || ext == ".mov"));
                 Logger.Log($"RefreshAlpha: model.supportsAlpha = {alphaModel} - outputSupportsAlpha = {outputSupportsAlpha} - input ext: {ext} => alpha = {alpha}", true);
             }
             catch (Exception e)
@@ -209,7 +210,7 @@ namespace Flowframes
 
             if (alpha || forceHqChroma)     // Force PNG if alpha is enabled, or output is not 4:2:0 subsampled
             {
-                if(type == FrameType.Both || type == FrameType.Import)
+                if (type == FrameType.Both || type == FrameType.Import)
                     framesExt = ".tiff";
 
                 if (type == FrameType.Both || type == FrameType.Interp)
@@ -218,10 +219,10 @@ namespace Flowframes
             else
             {
                 if (type == FrameType.Both || type == FrameType.Import)
-                    framesExt = (Config.GetBool(Config.Key.jpegFrames) ? ".jpg" : ".tiff");
+                    framesExt = $".{Config.Get(Config.Key.framesFormat)}";
 
                 if (type == FrameType.Both || type == FrameType.Interp)
-                    interpExt = (Config.GetBool(Config.Key.jpegInterp) ? ".jpg" : ".png");
+                    interpExt = $".{Config.Get(Config.Key.interpFormat)}";
             }
 
             Logger.Log($"RefreshExtensions - Using '{framesExt}' for imported frames, using '{interpExt}' for interpolated frames", true);

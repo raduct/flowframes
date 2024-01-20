@@ -1,5 +1,8 @@
-﻿using Flowframes.IO;
+﻿using Flowframes.Forms;
+using Flowframes.IO;
+using Flowframes.Main;
 using Flowframes.MiscUtils;
+using Flowframes.Os;
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -8,10 +11,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Flowframes.Forms;
-using Flowframes.Main;
 using I = Flowframes.Interpolate;
-using Flowframes.Os;
 
 namespace Flowframes.Ui
 {
@@ -58,7 +58,8 @@ namespace Flowframes.Ui
                     if (lastFrame > 1)
                         UpdateInterpProgress(lastFrame, targetFrames, lastFramePath);
 
-                    await Task.Delay((target < 1000) ? 100 : 200);  // Update 10x/sec if interpolating <1k frames, otherwise 5x/sec
+                    //await Task.Delay((target < 1000) ? 100 : 200);  // Update 10x/sec if interpolating <1k frames, otherwise 5x/sec
+                    await Task.Delay((target < 1000) ? 200 : 1000);
 
                     if (lastFrame >= targetFrames)
                         break;
@@ -158,7 +159,6 @@ namespace Flowframes.Ui
             logStr += $"Time: {FormatUtils.Time(AiProcess.processTime.Elapsed)} - ETA: {etaStr}";
             if (AutoEncode.busy) logStr += " - Encoding...";
             Logger.Log(logStr, false, replaceLine);
-
             try
             {
                 if (!string.IsNullOrWhiteSpace(latestFramePath) && frames > currentFactor)
@@ -169,7 +169,7 @@ namespace Flowframes.Ui
                     SetPreviewImg(img);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 //Logger.Log("Error updating preview: " + e.Message, true);
             }

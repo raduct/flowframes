@@ -1,15 +1,13 @@
-﻿using System;
+﻿using Flowframes.IO;
+using Flowframes.Os;
+using ImageMagick;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Threading;
-using Flowframes.IO;
-using ImageMagick;
-using Newtonsoft.Json;
-using Flowframes.Os;
-using System.Windows.Controls;
+using System.Threading.Tasks;
 
 namespace Flowframes.Magick
 {
@@ -226,7 +224,7 @@ namespace Flowframes.Magick
             return GetDifference(GetImage(img1Path), GetImage(img2Path));
         }
 
-        public static async Task CreateDupesFile(string framesPath, string ext)
+        public static void CreateDupesFile(string framesPath, string ext)
         {
             bool debug = Config.GetBool("dupeScanDebug", false);
 

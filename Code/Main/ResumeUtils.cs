@@ -1,14 +1,12 @@
 ﻿using Flowframes.Data;
 using Flowframes.IO;
+using Flowframes.MiscUtils;
+using Flowframes.Ui;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Flowframes.MiscUtils;
-using Flowframes.Ui;
 using I = Flowframes.Interpolate;
 
 namespace Flowframes.Main
@@ -36,7 +34,7 @@ namespace Flowframes.Main
             Directory.CreateDirectory(Path.Combine(I.currentSettings.tempFolder, Paths.resumeDir));
             SaveState(frames);
             SaveInterpSettings();
-            SaveFilenameMap();
+            _ = SaveFilenameMap();
         }
 
         static void SaveState (int frames)
@@ -103,19 +101,19 @@ namespace Flowframes.Main
         //     LoadFilenameMap();
         // }
 
-        static void LoadFilenameMap()
-        {
-            List<string> files = new List<string>();
-            string filePath = Path.Combine(I.currentSettings.tempFolder, Paths.resumeDir, filenameMapFilename);
-            string[] fileLines = File.ReadAllLines(filePath);
-
-            foreach (string line in fileLines)
-            {
-                if (line.Trim().Length < 3) continue;
-                files.Add(line.Trim());
-            }
-
-            FrameRename.importFilenames = files.ToArray();
-        }
+        //static void LoadFilenameMap()
+        //{
+        //    List<string> files = new List<string>();
+        //    string filePath = Path.Combine(I.currentSettings.tempFolder, Paths.resumeDir, filenameMapFilename);
+        //    string[] fileLines = File.ReadAllLines(filePath);
+        //
+        //    foreach (string line in fileLines)
+        //    {
+        //        if (line.Trim().Length < 3) continue;
+        //        files.Add(line.Trim());
+        //    }
+        //
+        //    FrameRename.importFilenames = files.ToArray();
+        //}
     }
 }

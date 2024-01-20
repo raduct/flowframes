@@ -1,4 +1,5 @@
-﻿using Flowframes.IO;
+﻿using Flowframes.Extensions;
+using Flowframes.IO;
 using Flowframes.MiscUtils;
 using Flowframes.Ui;
 using System;
@@ -109,7 +110,7 @@ namespace Flowframes.Os
 
         private static bool? pytorchReadyCached = null;
         
-        public static bool IsPytorchReady (bool clearCachedValue = false)
+        public static async Task<bool> IsPytorchReadyAsync (bool clearCachedValue = false)
         {
             if (clearCachedValue)
                 pytorchReadyCached = null;
@@ -120,14 +121,14 @@ namespace Flowframes.Os
             bool pytorchReady = false;
 
             bool hasPyFolder = HasEmbeddedPyFolder();
-            string torchVer = GetPytorchVer();
+            string torchVer = await GetPytorchVerAsync();
 
             pytorchReady = hasPyFolder || (!string.IsNullOrWhiteSpace(torchVer) && torchVer.Length <= 35 && !torchVer.Contains("ModuleNotFoundError"));
             pytorchReadyCached = pytorchReady;
             return pytorchReady;
         }
 
-        static string GetPytorchVer()
+        static async Task<string> GetPytorchVerAsync()
         {
             try
             {
@@ -135,7 +136,7 @@ namespace Flowframes.Os
                 py.StartInfo.Arguments = "\"/C\" " + GetPyCmd(true, true) + " -c \"import torch; print(torch.__version__)\"";
                 Logger.Log($"[DepCheck] CMD: {py.StartInfo.Arguments}", true);
                 py.Start();
-                py.WaitForExit();
+                await py.WaitForExitAsync();
                 string output = py.StandardOutput.ReadToEnd();
                 string err = py.StandardError.ReadToEnd();
                 if (!string.IsNullOrWhiteSpace(err)) output += "\n" + err;

@@ -151,7 +151,7 @@ namespace Flowframes.IO
         public static async Task<bool> DeleteContentsOfDirAsync(string path)
         {
             ulong taskId = BackgroundTaskManager.Add($"DeleteContentsOfDirAsync {path}");
-            bool returnVal = await Task.Run(async () => { return DeleteContentsOfDir(path); });
+            bool returnVal = await Task.Run(() => DeleteContentsOfDir(path));
             BackgroundTaskManager.Remove(taskId);
             return returnVal;
         }
@@ -263,21 +263,23 @@ namespace Flowframes.IO
             return true;
         }
 
-        public static async Task RenameCounterDir(string path, int startAt = 0, int zPad = 8, bool inverse = false)
+        public static async Task RenameCounterDir(string path, int startAt = 0, int zPad = 8, bool is3D = false)
         {
             Stopwatch sw = new Stopwatch();
             sw.Restart();
             int counter = startAt;
             DirectoryInfo d = new DirectoryInfo(path);
             FileInfo[] files = d.GetFiles();
-            var filesSorted = files.OrderBy(n => n);
-
-            if (inverse)
-                filesSorted.Reverse();
+            files.OrderBy(n => n);
+            string dirA = d.FullName;
+            string dirB = Paths.GetOtherDir(dirA);
+            if (is3D)
+                CreateDir(dirB);
 
             foreach (FileInfo file in files)
             {
-                string dir = new DirectoryInfo(file.FullName).Parent.FullName;
+                //dir = new DirectoryInfo(file.FullName).Parent.FullName;
+                string dir = !is3D || counter % 2 == 0 ? dirA : dirB;
                 File.Move(file.FullName, Path.Combine(dir, counter.ToString().PadLeft(zPad, '0') + Path.GetExtension(file.FullName)));
                 counter++;
 
@@ -436,7 +438,7 @@ namespace Flowframes.IO
                 path = renamedPath;
 
                 ulong taskId = BackgroundTaskManager.Add($"TryDeleteIfExistsAsync {path}");
-                bool returnVal = await Task.Run(async () => { return TryDeleteIfExists(path); });
+                bool returnVal = await Task.Run(() => { return TryDeleteIfExists(path); });
                 BackgroundTaskManager.Remove(taskId);
                 return returnVal;
             }

@@ -1,18 +1,15 @@
 ﻿using Flowframes.IO;
 using ImageMagick;
-using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Flowframes.Magick
 {
     class SceneDetect
     {
-        public static async Task RunSceneDetection (string path)
+        public static void RunSceneDetection(string path)
         {
             string outFolder = path + "-analyzed";
             Directory.CreateDirectory(outFolder);
@@ -23,7 +20,7 @@ namespace Flowframes.Magick
             {
                 FileInfo frame = frames[i];
                 FileInfo lastFrame = frames[i - 1];
-                Task.Run(() => ProcessFrame(frame, lastFrame, outFolder));
+                _ = Task.Run(() => ProcessFrame(frame, lastFrame, outFolder));
             }
         }
 

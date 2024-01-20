@@ -40,19 +40,31 @@ namespace Flowframes.Os
 
         public static void SuspendResumeAi(bool freeze, bool excludeCmd = true)
         {
-            if (AiProcess.lastAiProcess == null || AiProcess.lastAiProcess.HasExited)
-                return;
-
-            Process currProcess = AiProcess.lastAiProcess;
-            Logger.Log($"{(freeze ? "Suspending" : "Resuming")} main process ({currProcess.StartInfo.FileName} {currProcess.StartInfo.Arguments})", true);
+            Logger.Log($"{(freeze ? "Suspending" : "Resuming")} main process ({AiProcess.lastAiProcess.StartInfo.FileName} {AiProcess.lastAiProcess.StartInfo.Arguments})", true);
+            if (Interpolate.currentSettings.is3D && AiProcess.lastAiProcessOther != null)
+                Logger.Log($"{(freeze ? "Suspending" : "Resuming")} main process ({AiProcess.lastAiProcessOther.StartInfo.FileName} {AiProcess.lastAiProcessOther.StartInfo.Arguments})", true);
 
             if (freeze)
             {
                 List<Process> procs = new List<Process>();
-                procs.Add(currProcess);
+                Process currProcess = AiProcess.lastAiProcess;
 
-                foreach (var subProc in OsUtils.GetChildProcesses(currProcess))
-                    procs.Add(subProc);
+                if (AiProcess.lastAiProcess != null && !AiProcess.lastAiProcess.HasExited)
+                {
+                    procs.Add(currProcess);
+
+                    foreach (var subProc in OsUtils.GetChildProcesses(currProcess))
+                        procs.Add(subProc);
+                }
+
+                if (Interpolate.currentSettings.is3D && AiProcess.lastAiProcessOther != null && !AiProcess.lastAiProcessOther.HasExited)
+                {
+                    currProcess = AiProcess.lastAiProcessOther;
+                    procs.Add(currProcess);
+
+                    foreach (var subProc in OsUtils.GetChildProcesses(currProcess))
+                        procs.Add(subProc);
+                }
 
                 aiProcFrozen = true;
                 SetPauseButtonStyle(true);

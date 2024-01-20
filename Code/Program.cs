@@ -1,8 +1,5 @@
-﻿using Flowframes.Data;
-using Flowframes.Forms;
-using Flowframes.Forms.Main;
+﻿using Flowframes.Forms.Main;
 using Flowframes.IO;
-using Flowframes.MiscUtils;
 using Flowframes.Os;
 using Flowframes.Ui;
 using System;
@@ -157,7 +154,7 @@ namespace Flowframes
                         bool tooLowDiskSpace = mb < (Config.GetInt(Config.Key.lowDiskSpaceCancelGb, 2) * 1024);
                         string spaceGb = (mb / 1024f).ToString("0.0");
 
-                        if (!Interpolate.canceled && (AiProcess.lastAiProcess != null && !AiProcess.lastAiProcess.HasExited) && lowDiskSpace)
+                        if (!Interpolate.canceled && (AiProcess.lastAiProcess != null && !AiProcess.lastAiProcess.HasExited || AiProcess.lastAiProcessOther != null && !AiProcess.lastAiProcessOther.HasExited) && lowDiskSpace)
                         {
                             if (tooLowDiskSpace)
                             {

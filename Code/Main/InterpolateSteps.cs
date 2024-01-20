@@ -1,11 +1,9 @@
-﻿using Flowframes.Media;
-using Flowframes.IO;
-using System;
+﻿using Flowframes.IO;
+using Flowframes.MiscUtils;
+using Flowframes.Ui;
 using System.IO;
 using System.Threading.Tasks;
-using Flowframes.MiscUtils;
 using System.Windows.Forms;
-using Flowframes.Ui;
 
 namespace Flowframes.Main
 {
@@ -71,6 +69,8 @@ namespace Flowframes.Main
             if (!InterpolateUtils.CheckAiAvailable(currentSettings.ai, currentSettings.model)) return;
 
             currentSettings.framesFolder = Path.Combine(currentSettings.tempFolder, Paths.framesDir);
+
+            currentSettings.RefreshExtensions();
 
             if (IoUtils.GetAmountOfFiles(currentSettings.framesFolder, false, "*") < 2)
             {

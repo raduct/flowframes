@@ -85,7 +85,7 @@ namespace Flowframes.Main
 
             bool gifInput = I.currentMediaFile.Format.Upper() == "GIF"; // If input is GIF, we don't need to check the color space etc
             VidExtraData extraData = gifInput ? new VidExtraData() : await FfmpegCommands.GetVidExtraInfo(s.inPath);
-            string extraArgsIn = await FfmpegEncode.GetFfmpegExportArgsIn(s.outFps, s.outItsScale);
+            string extraArgsIn = FfmpegEncode.GetFfmpegExportArgsIn(s.outFps, s.outItsScale);
             string extraArgsOut = await FfmpegEncode.GetFfmpegExportArgsOut(fpsLimit ? maxFps : new Fraction(), extraData, s.outSettings);
 
             if(s.outSettings.Encoder == Enums.Encoding.Encoder.Exr)
@@ -206,14 +206,14 @@ namespace Flowframes.Main
                 VidExtraData extraData = await FfmpegCommands.GetVidExtraInfo(I.currentSettings.inPath);
                 await FfmpegEncode.FramesToVideo(framesFile, outPath, settings, fps, resampleFps, I.currentSettings.outItsScale, extraData);
                 await MuxOutputVideo(I.currentSettings.inPath, outPath);
-                await Loop(outPath, await GetLoopTimes());
+                await Loop(outPath, GetLoopTimes());
             }
         }
 
         public static async Task MuxPipedVideo(string inputVideo, string outputPath)
         {
             await MuxOutputVideo(inputVideo, Path.Combine(outputPath, outputPath));
-            await Loop(outputPath, await GetLoopTimes());
+            await Loop(outputPath, GetLoopTimes());
         }
 
         public static async Task ChunksToVideo(string tempFolder, string chunksFolder, string baseOutPath, bool isBackup = false)
@@ -248,7 +248,7 @@ namespace Flowframes.Main
                     await MergeChunks(tempConcatFile, outPath, isBackup);
 
                     if (!isBackup)
-                        Task.Run(async () => { await IoUtils.TryDeleteIfExistsAsync(IoUtils.FilenameSuffix(outPath, Paths.backupSuffix)); });
+                        _ = Task.Run(() => _ = IoUtils.TryDeleteIfExistsAsync(IoUtils.FilenameSuffix(outPath, Paths.backupSuffix)));
                 }
             }
             catch (Exception e)
@@ -276,14 +276,15 @@ namespace Flowframes.Main
                 await MuxOutputVideo(I.currentSettings.inPath, outPath, isBackup, !isBackup);
 
             if (!isBackup)
-                await Loop(outPath, await GetLoopTimes());
+                await Loop(outPath, GetLoopTimes());
         }
 
         public static async Task EncodeChunk(string outPath, string interpDir, int chunkNo, OutputSettings settings, int firstFrameNum, int framesAmount)
         {
             string framesFileFull = Path.Combine(I.currentSettings.tempFolder, Paths.GetFrameOrderFilename(I.currentSettings.interpFactor));
             string concatFile = Path.Combine(I.currentSettings.tempFolder, Paths.GetFrameOrderFilenameChunk(firstFrameNum, firstFrameNum + framesAmount));
-            File.WriteAllLines(concatFile, IoUtils.ReadLines(framesFileFull).Skip(firstFrameNum*2).Take(framesAmount*2));
+            int multiplier = Interpolate.currentSettings.is3D ? 4 : 2;
+            File.WriteAllLines(concatFile, IoUtils.ReadLines(framesFileFull).Skip(firstFrameNum * multiplier).Take(framesAmount * multiplier));
 
             List<string> inputFrames = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(framesFileFull + ".inputframes.json")).Skip(firstFrameNum).Take(framesAmount).ToList();
 
@@ -349,7 +350,7 @@ namespace Flowframes.Main
             await FfmpegCommands.LoopVideo(outPath, looptimes, Config.GetInt(Config.Key.loopMode) == 0);
         }
 
-        static async Task<int> GetLoopTimes()
+        static int GetLoopTimes()
         {
             int times = -1;
             int minLength = Config.GetInt(Config.Key.minOutVidLength);

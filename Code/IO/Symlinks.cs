@@ -1,13 +1,11 @@
-﻿using System;
+﻿using Flowframes.MiscUtils;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
-using Flowframes.MiscUtils;
 
 namespace Flowframes.IO
 {
@@ -38,7 +36,7 @@ namespace Flowframes.IO
             sw.Restart();
             ParallelOptions opts = new ParallelOptions() {MaxDegreeOfParallelism = maxThreads};
 
-            Task forEach = Task.Run(async () => Parallel.ForEach(pathsLinkTarget, opts, pair =>
+            Task forEach = Task.Run(() => Parallel.ForEach(pathsLinkTarget, opts, pair =>
             {
                 bool success = CreateSymbolicLink(pair.Key, pair.Value, Flag.Unprivileged);
 

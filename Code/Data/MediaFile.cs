@@ -1,5 +1,4 @@
 ﻿using Flowframes.Data.Streams;
-using Flowframes.Forms;
 using Flowframes.IO;
 using Flowframes.Main;
 using Flowframes.Media;
@@ -8,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Stream = Flowframes.Data.Streams.Stream;
 
@@ -72,7 +70,7 @@ namespace Flowframes.Data
             Size = GetSize();
         }
 
-        public async Task InitializeSequence()
+        public void InitializeSequence()
         {
             try
             {
@@ -99,7 +97,7 @@ namespace Flowframes.Data
             try
             {
                 if (IsDirectory && !SequenceInitialized)
-                    await InitializeSequence();
+                    InitializeSequence();
 
                 await LoadFormatInfo(ImportPath);
                 AllStreams = await FfmpegUtils.GetStreams(ImportPath, progressBar, StreamCount, InputRate, countFrames);

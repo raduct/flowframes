@@ -77,6 +77,7 @@
             this.debugBtn = new HTAlt.WinForms.HTButton();
             this.panel2 = new System.Windows.Forms.Panel();
             this.pictureBox5 = new System.Windows.Forms.PictureBox();
+            this.is3D = new System.Windows.Forms.CheckBox();
             this.longProgBar = new HTAlt.WinForms.HTProgressBar();
             this.mainTabControl = new HTAlt.WinForms.HTTabControl();
             this.welcomeTab = new System.Windows.Forms.TabPage();
@@ -749,6 +750,18 @@
             this.toolTip1.SetToolTip(this.pictureBox5, "Set the AI interpolation network to use for this video.\r\nDifferent AIs have diffe" +
         "rent quality, VRAM requirements and speeds.");
             // 
+            // is3D
+            // 
+            this.is3D.AutoSize = true;
+            this.is3D.ForeColor = System.Drawing.Color.White;
+            this.is3D.Location = new System.Drawing.Point(230, 38);
+            this.is3D.Name = "is3D";
+            this.is3D.Size = new System.Drawing.Size(61, 29);
+            this.is3D.TabIndex = 48;
+            this.is3D.Text = "3D";
+            this.toolTip1.SetToolTip(this.is3D, "Check if video is 3D interlaced");
+            this.is3D.UseVisualStyleBackColor = true;
+            // 
             // longProgBar
             // 
             this.longProgBar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -903,6 +916,7 @@
             // 
             this.interpOptsTab.AllowDrop = true;
             this.interpOptsTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(48)))), ((int)(((byte)(48)))));
+            this.interpOptsTab.Controls.Add(this.is3D);
             this.interpOptsTab.Controls.Add(this.labelOutput);
             this.interpOptsTab.Controls.Add(this.flowLayoutPanel1);
             this.interpOptsTab.Controls.Add(this.aiInfoBtn);
@@ -1917,6 +1931,7 @@
         public System.Windows.Forms.TabPage abtTab;
         public System.Windows.Forms.TabPage previewTab;
         public System.Windows.Forms.TabPage welcomeTab;
+        private System.Windows.Forms.CheckBox is3D;
     }
 }
 

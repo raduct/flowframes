@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace Flowframes.IO
@@ -7,8 +6,8 @@ namespace Flowframes.IO
     class Paths
     {
 		public const string framesDir = "frames";
-		public const string interpDir = "interp";
-		public const string chunksDir = "vchunks";
+        public const string interpDir = "interp";
+        public const string chunksDir = "vchunks";
 		public const string resumeDir = "resumedata";
 		public const string scenesDir = "scenes";
 
@@ -99,5 +98,10 @@ namespace Flowframes.IO
 			Directory.CreateDirectory(path);
 			return path;
 		}
-	}
+
+        public static string GetOtherDir(string path)
+        {
+			return path + "B";
+        }
+    }
 }

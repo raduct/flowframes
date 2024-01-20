@@ -1,6 +1,6 @@
-﻿using Flowframes.Media;
-using Flowframes.Data;
+﻿using Flowframes.Data;
 using Flowframes.IO;
+using Flowframes.Media;
 using Flowframes.MiscUtils;
 using System;
 using System.Collections.Generic;
@@ -14,7 +14,7 @@ namespace Flowframes
 {
     class FfmpegCommands
     {
-        public static string hdrFilter = @"-vf zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p";
+        //public static string hdrFilter = @"-vf zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p";
         public static string pngCompr = "-compression_level 3";
 
         public enum MpDecSensitivity { Normal = 4, High = 20, VeryHigh = 32, Extreme = 40 }
@@ -48,7 +48,7 @@ namespace Flowframes
             if (mod < 2)
                 return "";
 
-            return $"pad=width=ceil(iw/{mod})*{mod}:height=ceil(ih/{mod})*{mod}:color=black@0";
+            return "";//$"pad=width=ceil(iw/{mod})*{mod}:height=ceil(ih/{mod})*{mod}:color=black@0";
         }
 
         public static async Task ConcatVideos(string concatFile, string outPath, int looptimes = -1, bool showLog = true)
@@ -176,19 +176,17 @@ namespace Flowframes
 
         public static async Task<int> GetFrameCountAsync(string inputFile)
         {
+            Logger.Log($"GetFrameCountAsync - Trying ffprobe demuxing.", true, false, "ffmpeg");
+            int frames = await ReadFrameCountFfprobe(inputFile);      // Try reading frame count with ffprobe decoding
+            if (frames > 0) return frames;
+
             Logger.Log($"GetFrameCountAsync - Trying ffprobe packet counting first (fastest).", true, false, "ffmpeg");
-            int frames = await ReadFrameCountFfprobePacketCount(inputFile);      // Try reading frame count with ffprobe packet counting
+            frames = await ReadFrameCountFfprobePacketCount(inputFile);      // Try reading frame count with ffprobe packet counting
             if (frames > 0) return frames;
 
             Logger.Log($"GetFrameCountAsync - Trying ffmpeg demuxing.", true, false, "ffmpeg");
             frames = await ReadFrameCountFfmpegAsync(inputFile);       // Try reading frame count with ffmpeg
             if (frames > 0) return frames;
-
-            Logger.Log($"GetFrameCountAsync - Trying ffprobe demuxing.", true, false, "ffmpeg");
-            frames = await ReadFrameCountFfprobe(inputFile);      // Try reading frame count with ffprobe decoding
-            if (frames > 0) return frames;
-
-
 
             Logger.Log("Failed to get total frame count of video.", true);
             return 0;

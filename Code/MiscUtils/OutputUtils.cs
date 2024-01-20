@@ -348,7 +348,7 @@ namespace Flowframes.MiscUtils
             {
                 { Encoder.X265, 1.0f },
                 { Encoder.VpxVp9, 1.3f },
-                { Encoder.SvtAv1, 1.3f },
+                { Encoder.SvtAv1, 1.2f },
                 { Encoder.Nvenc264, 1.1f },
                 { Encoder.Nvenc265, 1.15f },
                 { Encoder.NvencAv1, 1.3f },

@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -256,7 +255,8 @@ namespace Flowframes.IO
             if (key == Key.scnDetectValue)        return WriteDefault(key, "0.2");
             if (key == Key.sceneChangeFillMode)   return WriteDefault(key, "1");
             if (key == Key.autoEncMode)           return WriteDefault(key, "2");
-            if (key == Key.jpegFrames)            return WriteDefault(key, "True");
+            if (key == Key.framesFormat)          return WriteDefault(key, "jpg");
+            if (key == Key.interpFormat)          return WriteDefault(key, "png");
             // Video Export
             if (key == Key.minOutVidLength)   return WriteDefault(key, "5");
             if (key == Key.gifDitherType)     return WriteDefault(key, "bayer");
@@ -268,7 +268,7 @@ namespace Flowframes.IO
             if (key == Key.ncnnThreads)       return WriteDefault(key, "4");
             if (key == Key.dainNcnnTilesize)  return WriteDefault(key, "768");
             // Debug / Other / Experimental
-            if (key == Key.ffEncPreset)   return WriteDefault(key, "fast");
+            if (key == Key.ffEncPreset)   return WriteDefault(key, "slow");
             if (key == Key.sbsRunPreviousStepIfNeeded) return WriteDefault(key, "True");
             if (type == Type.Int || type == Type.Float) return WriteDefault(key, "0");     // Write default int/float (0)
             if (type == Type.Bool)                      return WriteDefault(key, "False");     // Write default bool (False)
@@ -324,8 +324,8 @@ namespace Flowframes.IO
             frameOrderDebug,
             gifDitherType,
             imgSeqSampleCount,
-            jpegFrames,
-            jpegInterp,
+            framesFormat,
+            interpFormat,
             keepAspectRatio,
             keepAudio,
             keepColorSpace,

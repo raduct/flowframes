@@ -1,9 +1,8 @@
-﻿using Flowframes;
-using Flowframes.Media;
-using Flowframes.Data;
+﻿using Flowframes.Data;
 using Flowframes.IO;
 using Flowframes.Magick;
 using Flowframes.Main;
+using Flowframes.Media;
 using Flowframes.MiscUtils;
 using Flowframes.Os;
 using Flowframes.Ui;
@@ -202,16 +201,16 @@ namespace Flowframes
 
             if (!ai.Piped || (ai.Piped && currentSettings.inputIsFrames))
             {
-                await Task.Run(async () => { await Dedupe.CreateDupesFile(currentSettings.framesFolder, currentSettings.framesExt); });
-                await Task.Run(async () => { await FrameRename.Rename(); });
+                await Task.Run(() => Dedupe.CreateDupesFile(currentSettings.framesFolder, currentSettings.framesExt));
+                await Task.Run(() => { return FrameRename.Rename(); });
             }
             else if (ai.Piped && dedupe)
             {
-                await Task.Run(async () => { await Dedupe.CreateFramesFileVideo(currentSettings.inPath, Config.GetBool(Config.Key.enableLoop)); });
+                await Task.Run(() => Dedupe.CreateFramesFileVideo(currentSettings.inPath, Config.GetBool(Config.Key.enableLoop)));
             }
 
             if (!ai.Piped || (ai.Piped && dedupe))
-                await Task.Run(async () => { await FrameOrder.CreateFrameOrderFile(currentSettings.tempFolder, Config.GetBool(Config.Key.enableLoop), currentSettings.interpFactor); });
+                await Task.Run(() => FrameOrder.CreateFrameOrderFile(currentSettings.tempFolder, Config.GetBool(Config.Key.enableLoop), currentSettings.interpFactor));
 
             if (currentSettings.model.FixedFactors.Count() > 0 && (currentSettings.interpFactor != (int)currentSettings.interpFactor || !currentSettings.model.FixedFactors.Contains(currentSettings.interpFactor.RoundToInt())))
                 Cancel($"The selected model does not support {currentSettings.interpFactor}x interpolation.\n\nSupported Factors: {currentSettings.model.GetFactorsString()}");
@@ -224,15 +223,22 @@ namespace Flowframes
             if (canceled) return;
 
             currentlyUsingAutoEnc = Utils.CanUseAutoEnc(stepByStep, currentSettings);
-            IoUtils.CreateDir(outpath);
+//            IoUtils.CreateDir(outpath);
+//            if (Interpolate.currentSettings.is3D)
+//                IoUtils.CreateDir(Paths.GetOtherDir(outpath));
 
             List<Task> tasks = new List<Task>();
+            AiProcess.lastAiProcess = AiProcess.lastAiProcessOther = null;
 
             if (ai.NameInternal == Implementations.rifeCuda.NameInternal)
                 tasks.Add(AiProcess.RunRifeCuda(currentSettings.framesFolder, currentSettings.interpFactor, currentSettings.model.Dir));
 
             if (ai.NameInternal == Implementations.rifeNcnn.NameInternal)
+            {
+                if (Interpolate.currentSettings.is3D)
+                    tasks.Add(AiProcess.RunRifeNcnn(Paths.GetOtherDir(currentSettings.framesFolder), Paths.GetOtherDir(outpath), currentSettings.interpFactor, currentSettings.model.Dir));
                 tasks.Add(AiProcess.RunRifeNcnn(currentSettings.framesFolder, outpath, currentSettings.interpFactor, currentSettings.model.Dir));
+            }
 
             if (ai.NameInternal == Implementations.rifeNcnnVs.NameInternal)
                 tasks.Add(AiProcess.RunRifeNcnnVs(currentSettings.framesFolder, outpath, currentSettings.interpFactor, currentSettings.model.Dir));
@@ -303,7 +309,7 @@ namespace Flowframes
 
             try
             {
-                await Task.Run(async () => { Directory.Delete(currentSettings.tempFolder, true); });
+                await Task.Run(() => Directory.Delete(currentSettings.tempFolder, true));
             }
             catch (Exception e)
             {

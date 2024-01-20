@@ -39,7 +39,7 @@ namespace Flowframes.Data
                 try
                 {
                     Ping p = new Ping();
-                    PingReply replyEur = p.Send(server.host, 2000);
+                    PingReply replyEur = await p.SendPingAsync(server.host, 2000);
                     serversPings[new string[] { server.name, server.host, server.pattern }] = replyEur.RoundtripTime;
                     Logger.Log($"[Servers] Ping to {server.host}: {replyEur.RoundtripTime} ms", true);
                 }

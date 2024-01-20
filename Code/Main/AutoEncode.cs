@@ -15,8 +15,8 @@ namespace Flowframes.Main
 {
     class AutoEncode
     {
-        static string interpFramesFolder;
-        static string videoChunksFolder;
+        //static string interpFramesFolder;
+        //static string videoChunksFolder;
         public static int chunkSize;    // Encode every n frames
         public static int safetyBufferFrames;      // Ignore latest n frames to avoid using images that haven't been fully encoded yet
         public static string[] interpFramesLines;
@@ -54,8 +54,8 @@ namespace Flowframes.Main
                 UpdateChunkAndBufferSizes();
 
                 bool imgSeq = Interpolate.currentSettings.outSettings.Encoder.GetInfo().IsImageSequence;
-                interpFramesFolder = interpFramesPath;
-                videoChunksFolder = Path.Combine(interpFramesPath.GetParentDir(), Paths.chunksDir);
+                //interpFramesFolder = interpFramesPath;
+                string videoChunksFolder = Path.Combine(interpFramesPath.GetParentDir(), Paths.chunksDir);
 
                 if (Interpolate.currentlyUsingAutoEnc)
                     Directory.CreateDirectory(videoChunksFolder);
@@ -67,9 +67,16 @@ namespace Flowframes.Main
                 int chunkNo = AutoEncodeResume.encodedChunks + 1;
                 string encFile = Path.Combine(interpFramesPath.GetParentDir(), Paths.GetFrameOrderFilename(Interpolate.currentSettings.interpFactor));
                 interpFramesLines = IoUtils.ReadLines(encFile).Where(x => x.StartsWith("file ")).Select(x => x.Split('/').Last().Remove("'").Split('#').First()).ToArray();     // Array with frame filenames
+                if (Interpolate.currentSettings.is3D)
+                {
+                    string[] singleInterpFramesLines = new string[interpFramesLines.Length/2];
+                    for (int i = 0; i < interpFramesLines.Length/2; i++)
+                        singleInterpFramesLines[i] = interpFramesLines[i*2];
+                    interpFramesLines = singleInterpFramesLines;
+                }
 
-                while (!Interpolate.canceled && GetInterpFramesAmount() < 2)
-                    await Task.Delay(1000);
+                //while (!Interpolate.canceled && GetInterpFramesAmount() < 2)
+                //    await Task.Delay(1000);
 
                 int lastEncodedFrameNum = 0;
 
@@ -85,7 +92,7 @@ namespace Flowframes.Main
 
                     unencodedFrameLines.Clear();
 
-                    bool aiRunning = !AiProcess.lastAiProcess.HasExited;
+                    bool aiRunning = !AiProcess.lastAiProcess.HasExited || (AiProcess.lastAiProcessOther != null && !AiProcess.lastAiProcessOther.HasExited);
 
                     for (int frameLineNum = lastEncodedFrameNum; frameLineNum < interpFramesLines.Length; frameLineNum++)
                     {
@@ -102,7 +109,7 @@ namespace Flowframes.Main
                         
                         if(overwhelmed && !AiProcessSuspend.aiProcFrozen && OsUtils.IsProcessHidden(AiProcess.lastAiProcess))
                         {
-                            string dirSize = FormatUtils.Bytes(IoUtils.GetDirSize(Interpolate.currentSettings.interpFolder, true));
+                            //string dirSize = FormatUtils.Bytes(IoUtils.GetDirSize(Interpolate.currentSettings.interpFolder, true));
                             Logger.Log($"AutoEnc is overwhelmed! ({unencodedFrameLines.Count} unencoded frames > {maxFrames}) - Pausing.", true);
                             AiProcessSuspend.SuspendResumeAi(true);
                         }
@@ -118,11 +125,12 @@ namespace Flowframes.Main
                         {
                             List<int> frameLinesToEncode = aiRunning ? unencodedFrameLines.Take(chunkSize).ToList() : unencodedFrameLines;     // Take all remaining frames if process is done
                             string lastOfChunk = Path.Combine(interpFramesPath, interpFramesLines[frameLinesToEncode.Last()]);
+                            string lastOfChunkOther = Path.Combine(Paths.GetOtherDir(interpFramesPath), interpFramesLines[frameLinesToEncode.Last()]);
 
-                            if (!File.Exists(lastOfChunk))
+                            if (!File.Exists(lastOfChunk) || (Interpolate.currentSettings.is3D && !File.Exists(lastOfChunkOther)))
                             {
                                 if(debug)
-                                    Logger.Log($"[AE] Last frame of chunk doesn't exist; skipping loop iteration ({lastOfChunk})", true);
+                                    Logger.Log($"[AE] Last frame of chunk doesn't exist; skipping loop iteration ({frameLinesToEncode.Last()})", true);
 
                                 await Task.Delay(500);
                                 continue;
@@ -139,7 +147,7 @@ namespace Flowframes.Main
                             if (Interpolate.canceled) return;
 
                             if (aiRunning && Config.GetInt(Config.Key.autoEncMode) == 2)
-                                Task.Run(() => DeleteOldFramesAsync(interpFramesPath, frameLinesToEncode));
+                                _ = Task.Run(() => DeleteOldFrames(interpFramesPath, frameLinesToEncode));
 
                             if (Interpolate.canceled) return;
 
@@ -186,9 +194,9 @@ namespace Flowframes.Main
             }
         }
 
-        static async Task DeleteOldFramesAsync (string interpFramesPath, List<int> frameLinesToEncode)
+        static void DeleteOldFrames(string interpFramesPath, List<int> frameLinesToEncode)
         {
-            if(debug)
+            if (debug)
                 Logger.Log("[AE] Starting DeleteOldFramesAsync.", true, false, "ffmpeg");
 
             Stopwatch sw = new Stopwatch();
@@ -201,6 +209,8 @@ namespace Flowframes.Main
                     string framePath = Path.Combine(interpFramesPath, interpFramesLines[frame]);
                     //IOUtils.OverwriteFileWithText(framePath);    // Overwrite to save space without breaking progress counter
                     IoUtils.TryDeleteIfExists(framePath);
+                    if (Interpolate.currentSettings.is3D)
+                        IoUtils.TryDeleteIfExists(Path.Combine(Paths.GetOtherDir(interpFramesPath), interpFramesLines[frame]));
                     InterpolationProgress.deletedFramesCount++;
                 }
             }
@@ -218,12 +228,13 @@ namespace Flowframes.Main
 
         public static bool HasWorkToDo ()
         {
-            if (Interpolate.canceled || interpFramesFolder == null) return false;
+            //if (Interpolate.canceled || interpFramesFolder == null) return false;
+            if (Interpolate.canceled) return false;
 
-            if(debug)
-                Logger.Log($"[AE] HasWorkToDo - Process Running: {(AiProcess.lastAiProcess != null && !AiProcess.lastAiProcess.HasExited)} - encodedFrameLines.Count: {encodedFrameLines.Count} - interpFramesLines.Length: {interpFramesLines.Length}", true);
+            if (debug)
+                Logger.Log($"[AE] HasWorkToDo - Process Running: {(AiProcess.lastAiProcess != null && !AiProcess.lastAiProcess.HasExited) || (AiProcess.lastAiProcessOther != null && !AiProcess.lastAiProcessOther.HasExited)} - encodedFrameLines.Count: {encodedFrameLines.Count} - interpFramesLines.Length: {interpFramesLines.Length}", true);
             
-            return ((AiProcess.lastAiProcess != null && !AiProcess.lastAiProcess.HasExited) || encodedFrameLines.Count < interpFramesLines.Length);
+            return ((AiProcess.lastAiProcess != null && !AiProcess.lastAiProcess.HasExited) || (AiProcess.lastAiProcessOther != null && !AiProcess.lastAiProcessOther.HasExited) || encodedFrameLines.Count < interpFramesLines.Length);
         }
 
         static int GetChunkSize(int targetFramesAmount)
@@ -240,9 +251,9 @@ namespace Flowframes.Main
             return Math.Min(round * 600, 6000);
         }
 
-        static int GetInterpFramesAmount()
-        {
-            return IoUtils.GetAmountOfFiles(interpFramesFolder, false, "*" + Interpolate.currentSettings.interpExt);
-        }
+        //static int GetInterpFramesAmount()
+        //{
+        //    return IoUtils.GetAmountOfFiles(interpFramesFolder, false, "*" + Interpolate.currentSettings.interpExt);
+        //}
     }
 }

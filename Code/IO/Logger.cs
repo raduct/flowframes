@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using DT = System.DateTime;
 
@@ -18,7 +17,7 @@ namespace Flowframes
         public const string defaultLogName = "sessionlog";
         public static long id;
 
-        private static Dictionary<string, List<string>> sessionLogs = new Dictionary<string, List<string>>();
+        private static ConcurrentDictionary<string, ConcurrentQueue<string>> sessionLogs = new ConcurrentDictionary<string, ConcurrentQueue<string>>();
         private static string _lastUi = "";
         public static string LastUiLine { get { return _lastUi; } }
         private static string _lastLog = "";
@@ -48,7 +47,7 @@ namespace Flowframes
             ShowNext();
         }
 
-        public static void ShowNext()
+        private static void ShowNext()
         {
             LogEntry entry;
 
@@ -56,7 +55,7 @@ namespace Flowframes
                 Show(entry);
         }
 
-        public static void Show(LogEntry entry)
+        private static void Show(LogEntry entry)
         {
             if (string.IsNullOrWhiteSpace(entry.logMessage))
                 return;
@@ -101,7 +100,7 @@ namespace Flowframes
             LogToFile(msg, false, entry.filename);
         }
 
-        public static void LogToFile(string logStr, bool noLineBreak, string filename)
+        private static void LogToFile(string logStr, bool noLineBreak, string filename)
         {
             if (string.IsNullOrWhiteSpace(filename))
                 filename = defaultLogName;
@@ -116,12 +115,21 @@ namespace Flowframes
             try
             {
                 string appendStr = noLineBreak ? $" {logStr}" : $"{Environment.NewLine}[{id.ToString().PadLeft(8, '0')}] [{time}]: {logStr}";
-                //sessionLogs[filename] = (sessionLogs.ContainsKey(filename) ? sessionLogs[filename] : "") + appendStr;
-                List<string> sessionLog = (sessionLogs.ContainsKey(filename) ? sessionLogs[filename] : new List<string>());
-                sessionLog.Add(appendStr);
-                if (sessionLog.Count > 10)
-                    sessionLog.RemoveAt(0);
-                sessionLogs[filename] = sessionLog;
+
+                if (sessionLogs.ContainsKey(filename))
+                {
+                    ConcurrentQueue<string> sessionLog = sessionLogs[filename];
+                    sessionLog.Enqueue(appendStr);
+                    if (sessionLog.Count > 10)
+                        sessionLog.TryDequeue(out _);
+                }
+                else
+                {
+                    ConcurrentQueue<string> sessionLog = new ConcurrentQueue<string>();
+                    sessionLogs[filename] = sessionLog;
+                    sessionLog.Enqueue(appendStr);
+                }
+
                 File.AppendAllText(file, appendStr);
                 id++;
             }
@@ -131,7 +139,7 @@ namespace Flowframes
             }
         }
 
-        public static List<string> GetSessionLog(string filename)
+        private static ConcurrentQueue<string> GetSessionLog(string filename)
         {
             if (!filename.Contains(".txt"))
                 filename = Path.ChangeExtension(filename, "txt");
@@ -139,14 +147,13 @@ namespace Flowframes
             if (sessionLogs.ContainsKey(filename))
                 return sessionLogs[filename];
             else
-                return new List<string>();
+                return null;
         }
 
         public static List<string> GetSessionLogLastLines(string filename, int linesCount = 5)
         {
-            List<string> log = GetSessionLog(filename);
-            //string[] lines = log.SplitIntoLines();
-            //return lines.Reverse().Take(linesCount).Reverse().ToList();
+            ConcurrentQueue<string> logQ = GetSessionLog(filename);
+            List<string> log = logQ != null ? logQ.ToList() : new List<string>();
             return log.Count > linesCount ? log.GetRange(0, linesCount) : log;
         }
 

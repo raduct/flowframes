@@ -1,6 +1,5 @@
 ﻿using Flowframes.Data;
 using Flowframes.IO;
-using Flowframes.Main;
 using Flowframes.MiscUtils;
 using Flowframes.Ui;
 using System;
@@ -29,8 +28,10 @@ namespace Flowframes.Media
                 inArg = $"-f concat -safe 0 -i {concatFile.Wrap()}";
             }
 
-            string scnDetect = $"-vf \"select='gt(scene,{Config.GetFloatString(Config.Key.scnDetectValue)})'\"";
-            string rateArg = (rate.GetFloat() > 0) ? $"-fps_mode cfr -r {rate}" : "-fps_mode passthrough";
+            string rateFilter = rate.GetFloat() > 0 ? $"fps={rate}," : "";
+            string scnDetect = $"-vf \"{rateFilter}select='gt(scene,{Config.GetFloatString(Config.Key.scnDetectValue)})'\"";
+            //string rateArg = (rate.GetFloat() > 0) ? $"-fps_mode cfr -r {rate}" : "-fps_mode passthrough";
+            string rateArg = "-fps_mode passthrough";
             string args = $"{GetTrimArg(true)} {inArg} {GetImgArgs(format)} {rateArg} {scnDetect} -frame_pts 1 -s 256x144 {GetTrimArg(false)} \"{outDir}/%{Padding.inputFrames}d{format}\"";
 
             LogMode logMode = Interpolate.currentMediaFile.FrameCount > 50 ? LogMode.OnlyLastLine : LogMode.Hidden;
@@ -70,8 +71,10 @@ namespace Flowframes.Media
                 {
                     pixFmt = "yuv420p";
                 }
+                if (pixFmt == "yuv420p")
+                    pixFmt = "yuvj420p";
 
-                args = $"-q:v 1";
+                args = $"-q:v 2";// for maximum quality use $"-qmin 1 -q:v 1" (overkill);
             }
             else if (extension == "tiff")
             {
@@ -89,11 +92,17 @@ namespace Flowframes.Media
                     pixFmt = "yuv420p";
                 }
 
-                args = $"-q:v 100";
+                args = $"-c:v libwebp -quality 97";
+            }
+            else if (extension == "jxl")
+            {
+                pixFmt = alpha ? "rgba" : "rgb24";
+
+                args = $"-c:v jpegxl -distance 1 -effort 4";
             }
 
             if (includePixFmt)
-                args += $" -pix_fmt {pixFmt}";
+                 args += $" -pix_fmt {pixFmt}";
 
             return args;
         }
@@ -113,10 +122,13 @@ namespace Flowframes.Media
             string sizeStr = (size.Width > 1 && size.Height > 1) ? $"-s {size.Width}x{size.Height}" : "";
             IoUtils.CreateDir(framesDir);
             string mpStr = deDupe ? GetMpdecimate(true) : "";
-            string filters = FormatUtils.ConcatStrings(new[] { GetPadFilter(), mpStr });
+            string rateFilter = rate.GetFloat() > 0 && !deDupe ? $"fps={rate}" : "";
+            string filters = FormatUtils.ConcatStrings(new[] { GetPadFilter(), mpStr, rateFilter});
             string vf = filters.Length > 2 ? $"-vf {filters}" : "";
-            string rateArg = (rate.GetFloat() > 0 && !deDupe) ? $" -fps_mode cfr -r {rate}" : "-fps_mode passthrough";
-            string args = $"{GetTrimArg(true)} -itsscale {Interpolate.currentMediaFile.VideoStreams.First().FpsInfo.VfrRatio} -i {inputFile.Wrap()} {GetImgArgs(format, true, alpha)} {rateArg} -frame_pts 1 {vf} {sizeStr} {GetTrimArg(false)} \"{framesDir}/%{Padding.inputFrames}d{format}\""; LogMode logMode = Interpolate.currentMediaFile.FrameCount > 50 ? LogMode.OnlyLastLine : LogMode.Hidden;
+            //string rateArg = (rate.GetFloat() > 0 && !deDupe) ? $" -fps_mode cfr -r {rate}" : "-fps_mode passthrough";
+            //string args = $"{GetTrimArg(true)} -itsscale {Interpolate.currentMediaFile.VideoStreams.First().FpsInfo.VfrRatio} -i {inputFile.Wrap()} {GetImgArgs(format, true, alpha)} {rateArg} -frame_pts 1 {vf} {sizeStr} {GetTrimArg(false)} \"{framesDir}/%{Padding.inputFrames}d{format}\""; LogMode logMode = Interpolate.currentMediaFile.FrameCount > 50 ? LogMode.OnlyLastLine : LogMode.Hidden;
+            string args = $"{GetTrimArg(true)} -i {inputFile.Wrap()} {GetImgArgs(format, true, alpha)} -frame_pts 1 {vf} {sizeStr} {GetTrimArg(false)} \"{framesDir}/%{Padding.inputFrames}d{format}\"";
+            LogMode logMode = Interpolate.currentMediaFile.FrameCount > 50 ? LogMode.OnlyLastLine : LogMode.Hidden;
             await RunFfmpeg(args, logMode, true);
             int amount = IoUtils.GetAmountOfFiles(framesDir, false, "*" + format);
             Logger.Log($"Extracted {amount} {(amount == 1 ? "frame" : "frames")} from input.", false, true);
@@ -127,7 +139,7 @@ namespace Flowframes.Media
 
         public static async Task ImportImagesCheckCompat(string inPath, string outPath, bool alpha, Size size, bool showLog, string format)
         {
-            bool compatible = await Task.Run(async () => { return AreImagesCompatible(inPath, Config.GetInt(Config.Key.maxVidHeight)); });
+            bool compatible = await Task.Run(() => AreImagesCompatible(inPath, Config.GetInt(Config.Key.maxVidHeight)));
 
             if (!alpha && compatible)
             {
@@ -163,7 +175,7 @@ namespace Flowframes.Media
             else
             {
                 Logger.Log($"Symlink Import disabled, copying input frames...", true);
-                await Task.Run(async () =>
+                await Task.Run( () =>
                 {
                     foreach (KeyValuePair<string, string> moveFromToPair in moveFromTo)
                         File.Copy(moveFromToPair.Key, moveFromToPair.Value);

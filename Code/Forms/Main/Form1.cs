@@ -1,22 +1,21 @@
-﻿using Flowframes.Forms;
+﻿using Flowframes.Data;
 using Flowframes.IO;
 using Flowframes.Main;
+using Flowframes.MiscUtils;
 using Flowframes.Os;
 using Flowframes.Ui;
+using HTAlt.WinForms;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using Microsoft.WindowsAPICodePack.Taskbar;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Windows.Forms;
-using HTAlt.WinForms;
-using Flowframes.Data;
-using Microsoft.WindowsAPICodePack.Taskbar;
-using Flowframes.MiscUtils;
-using System.Threading.Tasks;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 #pragma warning disable IDE1006
 
@@ -38,7 +37,7 @@ namespace Flowframes.Forms.Main
             InitializeComponent();
         }
 
-        private async void Form1_Load(object sender, EventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
             CheckForIllegalCrossThreadCalls = false;
             AutoScaleMode = AutoScaleMode.None;
@@ -47,7 +46,7 @@ namespace Flowframes.Forms.Main
         private async void Form1_Shown(object sender, EventArgs e)
         {
             Refresh();
-            await Task.Delay(1);
+            //await Task.Delay(1);
 
             StartupChecks.CheckOs();
 
@@ -67,7 +66,7 @@ namespace Flowframes.Forms.Main
             RemovePreviewIfDisabled();
             await Checks();
             InitOutputUi();
-            InitAis();
+            await InitAisAsync();
             UpdateStepByStepControls();
             Initialized();
             HandleArgs();
@@ -154,12 +153,12 @@ namespace Flowframes.Forms.Main
         {
             try
             {
-                Task.Run(() => Updater.UpdateModelList());
-                Task.Run(() => Updater.AsyncUpdateCheck());
-                Task.Run(() => GetWebInfo.LoadNews(newsLabel));
-                Task.Run(() => GetWebInfo.LoadPatronListCsv(patronsLabel));
-                Task.Run(() => Servers.Init());
-                await Python.CheckCompression();
+                //_ = Task.Run(() => Updater.UpdateModelList());
+                //_ = Task.Run(() => Updater.AsyncUpdateCheck());
+                //_ = Task.Run(() => GetWebInfo.LoadNews(newsLabel));
+                //_ = Task.Run(() => GetWebInfo.LoadPatronListCsv(patronsLabel));
+                _ = Servers.Init();
+                _ = Task.Run(() => Python.CheckCompression());
                 await StartupChecks.SymlinksCheck();
                 await StartupChecks.DetectHwEncoders();
             }
@@ -238,6 +237,7 @@ namespace Flowframes.Forms.Main
                 outItsScale = outSpeedCombox.GetInt().Clamp(1, 64),
                 outSettings = GetOutputSettings(),
                 model = GetModel(ai),
+                is3D = is3D.Checked
             };
 
             s.InitArgs();
@@ -263,6 +263,7 @@ namespace Flowframes.Forms.Main
             settings.outFps = settings.inFps * settings.interpFactor;
             settings.outSettings = GetOutputSettings();
             settings.model = GetModel(GetAi());
+            settings.is3D = is3D.Checked;
 
             return settings;
         }
@@ -349,9 +350,9 @@ namespace Flowframes.Forms.Main
             UpdateInputInfo();
         }
 
-        void InitAis()
+        async Task InitAisAsync()
         {
-            bool pytorchAvailable = Python.IsPytorchReady();
+            bool pytorchAvailable = await Python.IsPytorchReadyAsync();
 
             foreach (AI ai in Implementations.NetworksAvailable)
                 aiCombox.Items.Add(GetAiComboboxName(ai));
@@ -604,7 +605,7 @@ namespace Flowframes.Forms.Main
                 SetTab(interpOptsTab.Name);
                 queueBtn_Click(null, null);
                 if (BatchProcessing.currentBatchForm != null)
-                    BatchProcessing.currentBatchForm.LoadDroppedPaths(files, start);
+                    _ = BatchProcessing.currentBatchForm.LoadDroppedPaths(files, start);
             }
             else
             {
@@ -620,7 +621,7 @@ namespace Flowframes.Forms.Main
 
                 trimCombox.SelectedIndex = 0;
 
-                MainUiFunctions.InitInput(outputTbox, inputTbox, fpsInTbox, start);
+                _ = MainUiFunctions.InitInput(outputTbox, inputTbox, fpsInTbox, start);
             }
         }
 
@@ -680,7 +681,7 @@ namespace Flowframes.Forms.Main
             }
         }
 
-        private async void updateBtn_Click(object sender, EventArgs e)
+        private void updateBtn_Click(object sender, EventArgs e)
         {
             new UpdaterForm().ShowDialog();
         }

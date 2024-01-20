@@ -15,7 +15,7 @@ namespace Flowframes.MiscUtils
         public static async Task Rename()
         {
             importFilenames = IoUtils.GetFilesSorted(Interpolate.currentSettings.framesFolder).Select(x => Path.GetFileName(x)).ToArray();
-            await IoUtils.RenameCounterDir(Interpolate.currentSettings.framesFolder, 0, Padding.inputFramesRenamed);
+            await IoUtils.RenameCounterDir(Interpolate.currentSettings.framesFolder, 0, Padding.inputFramesRenamed, Interpolate.currentSettings.is3D);
             framesAreRenamed = true;
         }
 
@@ -25,18 +25,36 @@ namespace Flowframes.MiscUtils
 
             Stopwatch sw = new Stopwatch();
             sw.Restart();
+            int multiplier = Interpolate.currentSettings.is3D ? 2 : 1;
 
             string[] files = IoUtils.GetFilesSorted(Interpolate.currentSettings.framesFolder);
 
             for (int i = 0; i < files.Length; i++)
             {
-                string movePath = Path.Combine(Interpolate.currentSettings.framesFolder, importFilenames[i]);
+                string movePath = Path.Combine(Interpolate.currentSettings.framesFolder, importFilenames[i * multiplier]);
                 File.Move(files[i], movePath);
 
                 if (sw.ElapsedMilliseconds > 100)
                 {
                     await Task.Delay(1);
                     sw.Restart();
+                }
+            }
+
+            if (Interpolate.currentSettings.is3D)
+            {
+                files = IoUtils.GetFilesSorted(Paths.GetOtherDir(Interpolate.currentSettings.framesFolder));
+
+                for (int i = 0; i < files.Length; i++)
+                {
+                    string movePath = Path.Combine(Interpolate.currentSettings.framesFolder, importFilenames[i * multiplier + 1]);
+                    File.Move(files[i], movePath);
+
+                    if (sw.ElapsedMilliseconds > 100)
+                    {
+                        await Task.Delay(1);
+                        sw.Restart();
+                    }
                 }
             }
 

@@ -20,20 +20,21 @@ namespace Flowframes.Os
         public static bool hasShownError;
         public static string lastLogName;
         public static Process lastAiProcess;
+        public static Process lastAiProcessOther;
         public static Stopwatch processTime = new Stopwatch();
-        public static Stopwatch processTimeMulti = new Stopwatch();
 
         public static int lastStartupTimeMs = 1000;
         static string lastInPath;
 
         public static void Kill()
         {
-            if (lastAiProcess == null) return;
-
             try
             {
                 AiProcessSuspend.SetRunning(false);
-                OsUtils.KillProcessTree(lastAiProcess.Id);
+                if (lastAiProcess != null && !lastAiProcess.HasExited)
+                    OsUtils.KillProcessTree(lastAiProcess.Id);
+                if (lastAiProcessOther != null && !lastAiProcessOther.HasExited)
+                    OsUtils.KillProcessTree(lastAiProcessOther.Id);
             }
             catch (Exception e)
             {
@@ -45,6 +46,8 @@ namespace Flowframes.Os
         {
             lastStartupTimeMs = startupTimeMs;
             processTime.Restart();
+            if (lastAiProcess != null)
+                lastAiProcessOther = lastAiProcess;
             lastAiProcess = proc;
             AiProcessSuspend.SetRunning(true);
             lastInPath = string.IsNullOrWhiteSpace(inPath) ? Interpolate.currentSettings.framesFolder : inPath;
@@ -291,7 +294,6 @@ namespace Flowframes.Os
         public static async Task RunRifeNcnn(string framesPath, string outPath, float factor, string mdl)
         {
             AI ai = Implementations.rifeNcnn;
-            processTimeMulti.Restart();
 
             try
             {
@@ -349,7 +351,6 @@ namespace Flowframes.Os
             if (Interpolate.canceled) return;
 
             AI ai = Implementations.rifeNcnnVs;
-            processTimeMulti.Restart();
 
             try
             {
@@ -547,8 +548,6 @@ namespace Flowframes.Os
         public static async Task RunIfrnetNcnn(string framesPath, string outPath, float factor, string mdl)
         {
             AI ai = Implementations.ifrnetNcnn;
-
-            processTimeMulti.Restart();
 
             try
             {

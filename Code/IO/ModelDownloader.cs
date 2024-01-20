@@ -66,7 +66,7 @@ namespace Flowframes.IO
                 completed = true;
             };
 
-            client.DownloadFileTaskAsync(url, savePath).ConfigureAwait(false);
+            _ = client.DownloadFileTaskAsync(url, savePath).ConfigureAwait(false);
 
             while (!completed)
             {
