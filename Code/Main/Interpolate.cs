@@ -62,7 +62,7 @@ namespace Flowframes
             {
                 if (currentSettings.ai.Piped)
                 {
-                    if(!currentSettings.outSettings.Encoder.GetInfo().IsImageSequence)
+                    if (!currentSettings.outSettings.Encoder.GetInfo().IsImageSequence)
                         await Export.MuxPipedVideo(currentSettings.inPath, currentSettings.FullOutPath);
                 }
                 else
@@ -91,13 +91,13 @@ namespace Flowframes
             Program.mainForm.InterpolationDone();
         }
 
-        public static async Task Realtime ()
+        public static async Task Realtime()
         {
             canceled = false;
 
             Program.mainForm.SetWorking(true);
 
-            if(currentSettings.ai.NameInternal != Implementations.rifeNcnnVs.NameInternal)
+            if (currentSettings.ai.NameInternal != Implementations.rifeNcnnVs.NameInternal)
                 Cancel($"Real-time interpolation is only available when using {Implementations.rifeNcnnVs.FriendlyName}.");
 
             if (canceled) return;
@@ -122,6 +122,7 @@ namespace Flowframes
             {
                 Program.mainForm.SetStatus("Extracting scenes from video...");
                 await FfmpegExtract.ExtractSceneChanges(currentSettings.inPath, Path.Combine(currentSettings.tempFolder, Paths.scenesDir), currentSettings.inFps, currentSettings.inputIsFrames, currentSettings.framesExt);
+                Utils.RemoveConsecutiveFrames(Path.Combine(currentSettings.tempFolder, Paths.scenesDir));
             }
 
             if (!currentSettings.inputIsFrames)        // Extract if input is video, import if image sequence
@@ -223,9 +224,9 @@ namespace Flowframes
             if (canceled) return;
 
             currentlyUsingAutoEnc = Utils.CanUseAutoEnc(stepByStep, currentSettings);
-//            IoUtils.CreateDir(outpath);
-//            if (Interpolate.currentSettings.is3D)
-//                IoUtils.CreateDir(Paths.GetOtherDir(outpath));
+            //            IoUtils.CreateDir(outpath);
+            //            if (Interpolate.currentSettings.is3D)
+            //                IoUtils.CreateDir(Paths.GetOtherDir(outpath));
 
             List<Task> tasks = new List<Task>();
             AiProcess.lastAiProcess = AiProcess.lastAiProcessOther = null;
@@ -252,7 +253,7 @@ namespace Flowframes
             if (ai.NameInternal == Implementations.xvfiCuda.NameInternal)
                 tasks.Add(AiProcess.RunXvfiCuda(currentSettings.framesFolder, currentSettings.interpFactor, currentSettings.model.Dir));
 
-            if(ai.NameInternal == Implementations.ifrnetNcnn.NameInternal)
+            if (ai.NameInternal == Implementations.ifrnetNcnn.NameInternal)
                 tasks.Add(AiProcess.RunIfrnetNcnn(currentSettings.framesFolder, outpath, currentSettings.interpFactor, currentSettings.model.Dir));
 
             if (currentlyUsingAutoEnc)

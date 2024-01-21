@@ -3,7 +3,6 @@ using DiskDetector.Models;
 using Flowframes.Extensions;
 using Flowframes.IO;
 using Flowframes.MiscUtils;
-using Microsoft.VisualBasic.Devices;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -172,17 +171,17 @@ namespace Flowframes.Os
             return (Encoding.UTF8.GetByteCount(str) != str.Length);
         }
 
-        public static int GetFreeRamMb()
-        {
-            try
-            {
-                return (int)(new ComputerInfo().AvailablePhysicalMemory / 1048576);
-            }
-            catch
-            {
-                return 1000;
-            }
-        }
+        //public static int GetFreeRamMb()
+        //{
+        //    try
+        //    {
+        //        return (int)(new ComputerInfo().AvailablePhysicalMemory / 1048576);
+        //    }
+        //    catch
+        //    {
+        //        return 1000;
+        //    }
+        //}
 
         public static string TryGetOs()
         {

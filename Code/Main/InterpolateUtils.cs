@@ -1,7 +1,7 @@
-﻿using Flowframes.Media;
-using Flowframes.Data;
+﻿using Flowframes.Data;
 using Flowframes.Forms;
 using Flowframes.IO;
+using Flowframes.Media;
 using Flowframes.Os;
 using Flowframes.Ui;
 using System;
@@ -363,6 +363,22 @@ namespace Flowframes.Main
 
             foreach (string frame in sceneFramesToDelete)
                 IoUtils.TryDeleteIfExists(Path.Combine(sceneFramesPath, frame + I.currentSettings.framesExt));
+        }
+
+        public static void RemoveConsecutiveFrames(string framesPath)
+        {
+            if (!Directory.Exists(framesPath))
+                return;
+
+            List<string> frames = IoUtils.GetFilesSorted(framesPath).Select(x => Path.GetFileNameWithoutExtension(x)).ToList();
+
+            for (int i = 0; i < frames.Count - 1; i++)
+            {
+                int frameNo = frames[i].GetInt();
+                int frameNoNext = frames[i + 1].GetInt();
+                if (frameNo + 1 == frameNoNext)
+                    IoUtils.TryDeleteIfExists(Path.Combine(framesPath, frames[i + 1] + I.currentSettings.framesExt));
+            }
         }
 
         public static int GetRoundedInterpFramesPerInputFrame(float factor, bool roundDown = true)
