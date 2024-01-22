@@ -32,8 +32,8 @@ namespace Flowframes.Forms
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TimeoutForm));
             this.mainLabel = new System.Windows.Forms.Label();
             this.countdownLabel = new System.Windows.Forms.Label();
-            this.cancelActionBtn = new HTAlt.WinForms.HTButton();
-            this.skipCountdownBtn = new HTAlt.WinForms.HTButton();
+            this.cancelActionBtn = new System.Windows.Forms.Button();
+            this.skipCountdownBtn = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // mainLabel
@@ -112,7 +112,7 @@ namespace Flowframes.Forms
 
         private System.Windows.Forms.Label mainLabel;
         private System.Windows.Forms.Label countdownLabel;
-        private HTAlt.WinForms.HTButton cancelActionBtn;
-        private HTAlt.WinForms.HTButton skipCountdownBtn;
+        private System.Windows.Forms.Button cancelActionBtn;
+        private System.Windows.Forms.Button skipCountdownBtn;
     }
 }

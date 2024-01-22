@@ -30,13 +30,13 @@ namespace Flowframes.Forms
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ModelDownloadForm));
-            this.longProgBar = new HTAlt.WinForms.HTProgressBar();
-            this.downloadModelsBtn = new HTAlt.WinForms.HTButton();
+            this.longProgBar = new System.Windows.Forms.ProgressBar();
+            this.downloadModelsBtn = new System.Windows.Forms.Button();
             this.titleLabel = new System.Windows.Forms.Label();
             this.progressCircle = new CircularProgressBar.CircularProgressBar();
             this.label39 = new System.Windows.Forms.Label();
-            this.closeBtn = new HTAlt.WinForms.HTButton();
-            this.cancelBtn = new HTAlt.WinForms.HTButton();
+            this.closeBtn = new System.Windows.Forms.Button();
+            this.cancelBtn = new System.Windows.Forms.Button();
             this.statusLabel = new System.Windows.Forms.Label();
             this.rifeCuda = new System.Windows.Forms.CheckBox();
             this.rifeNcnn = new System.Windows.Forms.CheckBox();
@@ -49,7 +49,7 @@ namespace Flowframes.Forms
             // 
             this.longProgBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.longProgBar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.longProgBar.BorderThickness = 0;
+            //this.longProgBar.BorderThickness = 0;
             this.longProgBar.Location = new System.Drawing.Point(12, 274);
             this.longProgBar.Name = "longProgBar";
             this.longProgBar.Size = new System.Drawing.Size(600, 15);
@@ -262,13 +262,13 @@ namespace Flowframes.Forms
 
         #endregion
 
-        private HTAlt.WinForms.HTProgressBar longProgBar;
-        private HTAlt.WinForms.HTButton downloadModelsBtn;
+        private System.Windows.Forms.ProgressBar longProgBar;
+        private System.Windows.Forms.Button downloadModelsBtn;
         private System.Windows.Forms.Label titleLabel;
         private CircularProgressBar.CircularProgressBar progressCircle;
         private System.Windows.Forms.Label label39;
-        private HTAlt.WinForms.HTButton closeBtn;
-        private HTAlt.WinForms.HTButton cancelBtn;
+        private System.Windows.Forms.Button closeBtn;
+        private System.Windows.Forms.Button cancelBtn;
         private System.Windows.Forms.Label statusLabel;
         private System.Windows.Forms.CheckBox rifeCuda;
         private System.Windows.Forms.CheckBox rifeNcnn;

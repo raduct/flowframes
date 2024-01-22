@@ -38,15 +38,15 @@ namespace Flowframes.Forms
             this.panel1 = new System.Windows.Forms.Panel();
             this.configDataGrid = new System.Windows.Forms.DataGridView();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.copyTextClipboardBtn = new HTAlt.WinForms.HTButton();
-            this.monospaceBtn = new HTAlt.WinForms.HTButton();
-            this.refreshBtn = new HTAlt.WinForms.HTButton();
-            this.textWrapBtn = new HTAlt.WinForms.HTButton();
-            this.clearLogsBtn = new HTAlt.WinForms.HTButton();
-            this.openLogFolderBtn = new HTAlt.WinForms.HTButton();
+            this.copyTextClipboardBtn = new System.Windows.Forms.Button();
+            this.monospaceBtn = new System.Windows.Forms.Button();
+            this.refreshBtn = new System.Windows.Forms.Button();
+            this.textWrapBtn = new System.Windows.Forms.Button();
+            this.clearLogsBtn = new System.Windows.Forms.Button();
+            this.openLogFolderBtn = new System.Windows.Forms.Button();
             this.logFilesDropdown = new System.Windows.Forms.ComboBox();
             this.logBox = new System.Windows.Forms.TextBox();
-            this.htTabControl1 = new HTAlt.WinForms.HTTabControl();
+            this.htTabControl1 = new System.Windows.Forms.TabControl();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.tabPage2.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -165,12 +165,12 @@ namespace Flowframes.Forms
             // monospaceBtn
             // 
             this.monospaceBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.monospaceBtn.ButtonImage = global::Flowframes.Properties.Resources.baseline_format_size_white_48dp;
-            this.monospaceBtn.DrawImage = true;
+            this.monospaceBtn.BackgroundImage = global::Flowframes.Properties.Resources.baseline_format_size_white_48dp;
+            //this.monospaceBtn.DrawImage = true;
             this.monospaceBtn.FlatAppearance.BorderSize = 0;
             this.monospaceBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.monospaceBtn.ForeColor = System.Drawing.Color.White;
-            this.monospaceBtn.ImageSizeMode = HTAlt.WinForms.HTButton.ButtonImageSizeMode.Zoom;
+            this.monospaceBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.monospaceBtn.Location = new System.Drawing.Point(241, 6);
             this.monospaceBtn.Name = "monospaceBtn";
             this.monospaceBtn.Size = new System.Drawing.Size(23, 23);
@@ -182,12 +182,12 @@ namespace Flowframes.Forms
             // refreshBtn
             // 
             this.refreshBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.refreshBtn.ButtonImage = global::Flowframes.Properties.Resources.baseline_refresh_white_48dp;
-            this.refreshBtn.DrawImage = true;
+            this.refreshBtn.BackgroundImage = global::Flowframes.Properties.Resources.baseline_refresh_white_48dp;
+            //this.refreshBtn.DrawImage = true;
             this.refreshBtn.FlatAppearance.BorderSize = 0;
             this.refreshBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.refreshBtn.ForeColor = System.Drawing.Color.White;
-            this.refreshBtn.ImageSizeMode = HTAlt.WinForms.HTButton.ButtonImageSizeMode.Zoom;
+            this.refreshBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.refreshBtn.Location = new System.Drawing.Point(212, 6);
             this.refreshBtn.Name = "refreshBtn";
             this.refreshBtn.Size = new System.Drawing.Size(23, 23);
@@ -199,12 +199,12 @@ namespace Flowframes.Forms
             // textWrapBtn
             // 
             this.textWrapBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.textWrapBtn.ButtonImage = global::Flowframes.Properties.Resources.baseline_wrap_text_white_48dp;
-            this.textWrapBtn.DrawImage = true;
+            this.textWrapBtn.BackgroundImage = global::Flowframes.Properties.Resources.baseline_wrap_text_white_48dp;
+            //this.textWrapBtn.DrawImage = true;
             this.textWrapBtn.FlatAppearance.BorderSize = 0;
             this.textWrapBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.textWrapBtn.ForeColor = System.Drawing.Color.White;
-            this.textWrapBtn.ImageSizeMode = HTAlt.WinForms.HTButton.ButtonImageSizeMode.Zoom;
+            this.textWrapBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.textWrapBtn.Location = new System.Drawing.Point(270, 5);
             this.textWrapBtn.Name = "textWrapBtn";
             this.textWrapBtn.Size = new System.Drawing.Size(23, 23);
@@ -280,30 +280,30 @@ namespace Flowframes.Forms
             this.htTabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.htTabControl1.BackgroundColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
-            this.htTabControl1.BorderTabLineColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
+            //this.htTabControl1.BackgroundColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
+            //this.htTabControl1.BorderTabLineColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
             this.htTabControl1.Controls.Add(this.tabPage1);
             this.htTabControl1.Controls.Add(this.tabPage2);
-            this.htTabControl1.DisableClose = true;
-            this.htTabControl1.DisableDragging = true;
+            //this.htTabControl1.DisableClose = true;
+            //this.htTabControl1.DisableDragging = true;
             this.htTabControl1.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.htTabControl1.HoverTabButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(82)))), ((int)(((byte)(176)))), ((int)(((byte)(239)))));
-            this.htTabControl1.HoverTabColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(151)))), ((int)(((byte)(234)))));
-            this.htTabControl1.HoverUnselectedTabButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(85)))), ((int)(((byte)(85)))), ((int)(((byte)(85)))));
+            //this.htTabControl1.HoverTabButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(82)))), ((int)(((byte)(176)))), ((int)(((byte)(239)))));
+            //this.htTabControl1.HoverTabColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(151)))), ((int)(((byte)(234)))));
+            //this.htTabControl1.HoverUnselectedTabButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(85)))), ((int)(((byte)(85)))), ((int)(((byte)(85)))));
             this.htTabControl1.Location = new System.Drawing.Point(12, 62);
             this.htTabControl1.Name = "htTabControl1";
             this.htTabControl1.Padding = new System.Drawing.Point(14, 4);
             this.htTabControl1.SelectedIndex = 0;
-            this.htTabControl1.SelectedTabButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(151)))), ((int)(((byte)(234)))));
-            this.htTabControl1.SelectedTabColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
+            //this.htTabControl1.SelectedTabButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(151)))), ((int)(((byte)(234)))));
+            //this.htTabControl1.SelectedTabColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
             this.htTabControl1.Size = new System.Drawing.Size(920, 427);
             this.htTabControl1.TabIndex = 3;
-            this.htTabControl1.TextColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-            this.htTabControl1.UnderBorderTabLineColor = System.Drawing.Color.FromArgb(((int)(((byte)(67)))), ((int)(((byte)(67)))), ((int)(((byte)(70)))));
-            this.htTabControl1.UnselectedBorderTabLineColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(63)))), ((int)(((byte)(70)))));
-            this.htTabControl1.UnselectedTabColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(63)))), ((int)(((byte)(70)))));
-            this.htTabControl1.UpDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(63)))), ((int)(((byte)(70)))));
-            this.htTabControl1.UpDownTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(112)))));
+            //this.htTabControl1.TextColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            //this.htTabControl1.UnderBorderTabLineColor = System.Drawing.Color.FromArgb(((int)(((byte)(67)))), ((int)(((byte)(67)))), ((int)(((byte)(70)))));
+            //this.htTabControl1.UnselectedBorderTabLineColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(63)))), ((int)(((byte)(70)))));
+            //this.htTabControl1.UnselectedTabColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(63)))), ((int)(((byte)(70)))));
+            //this.htTabControl1.UpDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(63)))), ((int)(((byte)(70)))));
+            //this.htTabControl1.UpDownTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(112)))));
             // 
             // DebugForm
             // 
@@ -338,19 +338,19 @@ namespace Flowframes.Forms
         private System.Windows.Forms.Label titleLabel;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.TabPage tabPage1;
-        private HTAlt.WinForms.HTTabControl htTabControl1;
+        private System.Windows.Forms.TabControl htTabControl1;
         private System.Windows.Forms.DataGridView configDataGrid;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.TextBox logBox;
         private System.Windows.Forms.ComboBox logFilesDropdown;
-        private HTAlt.WinForms.HTButton clearLogsBtn;
-        private HTAlt.WinForms.HTButton openLogFolderBtn;
-        private HTAlt.WinForms.HTButton textWrapBtn;
-        private HTAlt.WinForms.HTButton refreshBtn;
+        private System.Windows.Forms.Button clearLogsBtn;
+        private System.Windows.Forms.Button openLogFolderBtn;
+        private System.Windows.Forms.Button textWrapBtn;
+        private System.Windows.Forms.Button refreshBtn;
         private System.Windows.Forms.ToolTip toolTip;
-        private HTAlt.WinForms.HTButton monospaceBtn;
-        private HTAlt.WinForms.HTButton copyTextClipboardBtn;
+        private System.Windows.Forms.Button monospaceBtn;
+        private System.Windows.Forms.Button copyTextClipboardBtn;
     }
 }

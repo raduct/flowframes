@@ -30,29 +30,29 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsForm));
-            this.settingsTabList = new Cyotek.Windows.Forms.TabList();
-            this.generalTab = new Cyotek.Windows.Forms.TabListPage();
-            this.btnResetHwEnc = new HTAlt.WinForms.HTButton();
+            this.settingsTabList = new System.Windows.Forms.TabControl();
+            this.generalTab = new System.Windows.Forms.TabPage();
+            this.btnResetHwEnc = new System.Windows.Forms.Button();
             this.label10 = new System.Windows.Forms.Label();
-            this.custOutDirBrowseBtn = new HTAlt.WinForms.HTButton();
+            this.custOutDirBrowseBtn = new System.Windows.Forms.Button();
             this.custOutDir = new System.Windows.Forms.TextBox();
             this.outFolderLoc = new System.Windows.Forms.ComboBox();
             this.label78 = new System.Windows.Forms.Label();
             this.label77 = new System.Windows.Forms.Label();
             this.disablePreview = new System.Windows.Forms.CheckBox();
             this.label76 = new System.Windows.Forms.Label();
-            this.modelDownloaderBtn = new HTAlt.WinForms.HTButton();
+            this.modelDownloaderBtn = new System.Windows.Forms.Button();
             this.exportNamePatternLoop = new System.Windows.Forms.TextBox();
             this.label69 = new System.Windows.Forms.Label();
             this.label68 = new System.Windows.Forms.Label();
             this.info1 = new System.Windows.Forms.PictureBox();
             this.exportNamePattern = new System.Windows.Forms.TextBox();
             this.label67 = new System.Windows.Forms.Label();
-            this.clearModelCacheBtn = new HTAlt.WinForms.HTButton();
+            this.clearModelCacheBtn = new System.Windows.Forms.Button();
             this.label64 = new System.Windows.Forms.Label();
             this.processingMode = new System.Windows.Forms.ComboBox();
             this.label39 = new System.Windows.Forms.Label();
-            this.tempDirBrowseBtn = new HTAlt.WinForms.HTButton();
+            this.tempDirBrowseBtn = new System.Windows.Forms.Button();
             this.tempDirCustom = new System.Windows.Forms.TextBox();
             this.keepTempFolder = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
@@ -62,7 +62,7 @@
             this.panel10 = new System.Windows.Forms.Panel();
             this.maxVidHeight = new System.Windows.Forms.ComboBox();
             this.label31 = new System.Windows.Forms.Label();
-            this.tabListPage2 = new Cyotek.Windows.Forms.TabListPage();
+            this.tabListPage2 = new System.Windows.Forms.TabPage();
             this.autoEncBlockPanel = new System.Windows.Forms.Panel();
             this.label70 = new System.Windows.Forms.Label();
             this.alwaysWaitForAutoEnc = new System.Windows.Forms.CheckBox();
@@ -105,7 +105,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.keepAudio = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.aiOptsPage = new Cyotek.Windows.Forms.TabListPage();
+            this.aiOptsPage = new System.Windows.Forms.TabPage();
             this.label66 = new System.Windows.Forms.Label();
             this.rifeCudaFp16 = new System.Windows.Forms.CheckBox();
             this.label65 = new System.Windows.Forms.Label();
@@ -129,7 +129,7 @@
             this.ncnnGpus = new System.Windows.Forms.ComboBox();
             this.label5 = new System.Windows.Forms.Label();
             this.label32 = new System.Windows.Forms.Label();
-            this.vidExportTab = new Cyotek.Windows.Forms.TabListPage();
+            this.vidExportTab = new System.Windows.Forms.TabPage();
             this.label73 = new System.Windows.Forms.Label();
             this.fixOutputDuration = new System.Windows.Forms.CheckBox();
             this.label72 = new System.Windows.Forms.Label();
@@ -144,7 +144,7 @@
             this.label21 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
-            this.debugTab = new Cyotek.Windows.Forms.TabListPage();
+            this.debugTab = new System.Windows.Forms.TabPage();
             this.label7 = new System.Windows.Forms.Label();
             this.serverCombox = new System.Windows.Forms.ComboBox();
             this.ffEncArgs = new System.Windows.Forms.TextBox();
@@ -158,7 +158,7 @@
             this.cmdDebugMode = new System.Windows.Forms.ComboBox();
             this.titleLabel = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.resetBtn = new HTAlt.WinForms.HTButton();
+            this.resetBtn = new System.Windows.Forms.Button();
             this.settingsTabList.SuspendLayout();
             this.generalTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.info1)).BeginInit();
@@ -1788,13 +1788,13 @@
             // resetBtn
             // 
             this.resetBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(48)))), ((int)(((byte)(48)))));
-            this.resetBtn.ButtonImage = global::Flowframes.Properties.Resources.baseline_restart_alt_white_48dp;
-            this.resetBtn.DrawImage = true;
+            this.resetBtn.BackgroundImage = global::Flowframes.Properties.Resources.baseline_restart_alt_white_48dp;
+            //this.resetBtn.DrawImage = true;
             this.resetBtn.FlatAppearance.BorderSize = 0;
             this.resetBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.resetBtn.ForeColor = System.Drawing.Color.White;
             this.resetBtn.ImageIndex = 0;
-            this.resetBtn.ImageSizeMode = HTAlt.WinForms.HTButton.ButtonImageSizeMode.Zoom;
+            this.resetBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.resetBtn.Location = new System.Drawing.Point(889, 12);
             this.resetBtn.Name = "resetBtn";
             this.resetBtn.Size = new System.Drawing.Size(40, 40);
@@ -1846,10 +1846,10 @@
 
         #endregion
 
-        private Cyotek.Windows.Forms.TabList settingsTabList;
-        private Cyotek.Windows.Forms.TabListPage generalTab;
-        private Cyotek.Windows.Forms.TabListPage tabListPage2;
-        private Cyotek.Windows.Forms.TabListPage debugTab;
+        private System.Windows.Forms.TabControl settingsTabList;
+        private System.Windows.Forms.TabPage generalTab;
+        private System.Windows.Forms.TabPage tabListPage2;
+        private System.Windows.Forms.TabPage debugTab;
         private System.Windows.Forms.Label titleLabel;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox keepAudio;
@@ -1860,7 +1860,7 @@
         private System.Windows.Forms.Label dedupeSensLabel;
         private System.Windows.Forms.CheckBox enableLoop;
         private System.Windows.Forms.Label label15;
-        private Cyotek.Windows.Forms.TabListPage vidExportTab;
+        private System.Windows.Forms.TabPage vidExportTab;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label22;
@@ -1868,7 +1868,7 @@
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.Label label24;
-        private Cyotek.Windows.Forms.TabListPage aiOptsPage;
+        private System.Windows.Forms.TabPage aiOptsPage;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.ComboBox torchGpus;
         private System.Windows.Forms.Label label33;
@@ -1889,7 +1889,7 @@
         private System.Windows.Forms.CheckBox keepTempFolder;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox tempDirCustom;
-        private HTAlt.WinForms.HTButton tempDirBrowseBtn;
+        private System.Windows.Forms.Button tempDirBrowseBtn;
         private System.Windows.Forms.ComboBox processingMode;
         private System.Windows.Forms.Label label39;
         private System.Windows.Forms.Panel mpDedupePanel;
@@ -1921,7 +1921,7 @@
         private System.Windows.Forms.TextBox ffEncArgs;
         private System.Windows.Forms.Label label56;
         private System.Windows.Forms.Label label64;
-        private HTAlt.WinForms.HTButton clearModelCacheBtn;
+        private System.Windows.Forms.Button clearModelCacheBtn;
         private System.Windows.Forms.NumericUpDown scnDetectValue;
         private System.Windows.Forms.NumericUpDown dedupThresh;
         private System.Windows.Forms.NumericUpDown ncnnThreads;
@@ -1958,22 +1958,22 @@
         private System.Windows.Forms.ComboBox autoEncBackupMode;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.PictureBox pictureBox2;
-        private HTAlt.WinForms.HTButton modelDownloaderBtn;
+        private System.Windows.Forms.Button modelDownloaderBtn;
         private System.Windows.Forms.Label label70;
         private System.Windows.Forms.CheckBox alwaysWaitForAutoEnc;
         private System.Windows.Forms.Label label58;
         private System.Windows.Forms.Panel autoEncBlockPanel;
-        private HTAlt.WinForms.HTButton resetBtn;
+        private System.Windows.Forms.Button resetBtn;
         private System.Windows.Forms.CheckBox disablePreview;
         private System.Windows.Forms.Label label76;
         private System.Windows.Forms.Label label77;
-        private HTAlt.WinForms.HTButton custOutDirBrowseBtn;
+        private System.Windows.Forms.Button custOutDirBrowseBtn;
         private System.Windows.Forms.TextBox custOutDir;
         private System.Windows.Forms.ComboBox outFolderLoc;
         private System.Windows.Forms.Label label78;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.ComboBox serverCombox;
-        private HTAlt.WinForms.HTButton btnResetHwEnc;
+        private System.Windows.Forms.Button btnResetHwEnc;
         private System.Windows.Forms.Label label10;
     }
 }

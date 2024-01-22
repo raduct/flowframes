@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             this.textLabel = new System.Windows.Forms.Label();
-            this.btn1 = new HTAlt.WinForms.HTButton();
-            this.btn2 = new HTAlt.WinForms.HTButton();
-            this.btn3 = new HTAlt.WinForms.HTButton();
+            this.btn1 = new System.Windows.Forms.Button();
+            this.btn2 = new System.Windows.Forms.Button();
+            this.btn3 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // textLabel
@@ -115,8 +115,8 @@
         #endregion
 
         private System.Windows.Forms.Label textLabel;
-        private HTAlt.WinForms.HTButton btn1;
-        private HTAlt.WinForms.HTButton btn2;
-        private HTAlt.WinForms.HTButton btn3;
+        private System.Windows.Forms.Button btn1;
+        private System.Windows.Forms.Button btn2;
+        private System.Windows.Forms.Button btn3;
     }
 }

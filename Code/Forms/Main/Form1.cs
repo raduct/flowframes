@@ -4,7 +4,6 @@ using Flowframes.Main;
 using Flowframes.MiscUtils;
 using Flowframes.Os;
 using Flowframes.Ui;
-using HTAlt.WinForms;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using System;
@@ -203,7 +202,7 @@ namespace Flowframes.Forms.Main
                 mainTabControl.TabPages.Cast<TabPage>().Where(p => p.Name == previewTab.Name).ToList().ForEach(t => mainTabControl.TabPages.Remove(t));
         }
 
-        public HTTabControl GetMainTabControl() { return mainTabControl; }
+        public TabControl GetMainTabControl() { return mainTabControl; }
         public TextBox GetInputFpsTextbox() { return fpsInTbox; }
         public Button GetPauseBtn() { return pauseBtn; }
 

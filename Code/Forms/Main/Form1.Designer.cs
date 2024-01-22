@@ -60,26 +60,26 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.statusLabel = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.updateBtn = new HTAlt.WinForms.HTButton();
-            this.queueBtn = new HTAlt.WinForms.HTButton();
+            this.updateBtn = new System.Windows.Forms.Button();
+            this.queueBtn = new System.Windows.Forms.Button();
             this.pictureBox4 = new System.Windows.Forms.PictureBox();
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
             this.info1 = new System.Windows.Forms.PictureBox();
-            this.settingsBtn = new HTAlt.WinForms.HTButton();
-            this.patreonBtn = new HTAlt.WinForms.HTButton();
-            this.paypalBtn = new HTAlt.WinForms.HTButton();
-            this.discordBtn = new HTAlt.WinForms.HTButton();
+            this.settingsBtn = new System.Windows.Forms.Button();
+            this.patreonBtn = new System.Windows.Forms.Button();
+            this.paypalBtn = new System.Windows.Forms.Button();
+            this.discordBtn = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.panel10 = new System.Windows.Forms.Panel();
             this.panel14 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
-            this.debugBtn = new HTAlt.WinForms.HTButton();
+            this.debugBtn = new System.Windows.Forms.Button();
             this.panel2 = new System.Windows.Forms.Panel();
             this.pictureBox5 = new System.Windows.Forms.PictureBox();
             this.is3D = new System.Windows.Forms.CheckBox();
-            this.longProgBar = new HTAlt.WinForms.HTProgressBar();
-            this.mainTabControl = new HTAlt.WinForms.HTTabControl();
+            this.longProgBar = new System.Windows.Forms.ProgressBar();
+            this.mainTabControl = new System.Windows.Forms.TabControl();
             this.welcomeTab = new System.Windows.Forms.TabPage();
             this.welcomeLabel2 = new System.Windows.Forms.Label();
             this.panel8 = new System.Windows.Forms.Panel();
@@ -97,16 +97,16 @@
             this.comboxOutputQuality = new System.Windows.Forms.ComboBox();
             this.textboxOutputQualityCust = new System.Windows.Forms.TextBox();
             this.comboxOutputColors = new System.Windows.Forms.ComboBox();
-            this.aiInfoBtn = new HTAlt.WinForms.HTButton();
+            this.aiInfoBtn = new System.Windows.Forms.Button();
             this.outSpeedCombox = new System.Windows.Forms.ComboBox();
             this.completionActionPanel = new System.Windows.Forms.Panel();
             this.completionAction = new System.Windows.Forms.ComboBox();
             this.label25 = new System.Windows.Forms.Label();
             this.inputInfo = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.browseOutBtn = new HTAlt.WinForms.HTButton();
-            this.browseInputFileBtn = new HTAlt.WinForms.HTButton();
-            this.browseInputBtn = new HTAlt.WinForms.HTButton();
+            this.browseOutBtn = new System.Windows.Forms.Button();
+            this.browseInputFileBtn = new System.Windows.Forms.Button();
+            this.browseInputBtn = new System.Windows.Forms.Button();
             this.quickSettingsTab = new System.Windows.Forms.TabPage();
             this.label20 = new System.Windows.Forms.Label();
             this.maxFps = new System.Windows.Forms.ComboBox();
@@ -127,7 +127,7 @@
             this.maxVidHeight = new System.Windows.Forms.ComboBox();
             this.label18 = new System.Windows.Forms.Label();
             this.trimPanel = new System.Windows.Forms.Panel();
-            this.trimResetBtn = new HTAlt.WinForms.HTButton();
+            this.trimResetBtn = new System.Windows.Forms.Button();
             this.trimStartBox = new System.Windows.Forms.TextBox();
             this.label10 = new System.Windows.Forms.Label();
             this.trimEndBox = new System.Windows.Forms.TextBox();
@@ -136,7 +136,7 @@
             this.label22 = new System.Windows.Forms.Label();
             this.previewPicturebox = new System.Windows.Forms.PictureBox();
             this.abtTab = new System.Windows.Forms.TabPage();
-            this.htButton1 = new HTAlt.WinForms.HTButton();
+            this.htButton1 = new System.Windows.Forms.Button();
             this.runStepBtn = new System.Windows.Forms.Button();
             this.stepSelector = new System.Windows.Forms.ComboBox();
             this.busyControlsPanel = new System.Windows.Forms.Panel();
@@ -515,13 +515,13 @@
             // updateBtn
             // 
             this.updateBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(48)))), ((int)(((byte)(48)))));
-            this.updateBtn.ButtonImage = global::Flowframes.Properties.Resources.baseline_system_update_alt_white_48dp;
-            this.updateBtn.DrawImage = true;
+            this.updateBtn.BackgroundImage = global::Flowframes.Properties.Resources.baseline_system_update_alt_white_48dp;
+            //this.updateBtn.DrawImage = true;
             this.updateBtn.FlatAppearance.BorderSize = 0;
             this.updateBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.updateBtn.ForeColor = System.Drawing.Color.White;
             this.updateBtn.ImageIndex = 0;
-            this.updateBtn.ImageSizeMode = HTAlt.WinForms.HTButton.ButtonImageSizeMode.Zoom;
+            this.updateBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.updateBtn.Location = new System.Drawing.Point(790, 12);
             this.updateBtn.Name = "updateBtn";
             this.updateBtn.Size = new System.Drawing.Size(40, 40);
@@ -533,13 +533,13 @@
             // queueBtn
             // 
             this.queueBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(48)))), ((int)(((byte)(48)))));
-            this.queueBtn.ButtonImage = global::Flowframes.Properties.Resources.baseline_queue_white_48dp;
-            this.queueBtn.DrawImage = true;
+            this.queueBtn.BackgroundImage = global::Flowframes.Properties.Resources.baseline_queue_white_48dp;
+            //this.queueBtn.DrawImage = true;
             this.queueBtn.FlatAppearance.BorderSize = 0;
             this.queueBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.queueBtn.ForeColor = System.Drawing.Color.White;
             this.queueBtn.ImageIndex = 0;
-            this.queueBtn.ImageSizeMode = HTAlt.WinForms.HTButton.ButtonImageSizeMode.Zoom;
+            this.queueBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.queueBtn.Location = new System.Drawing.Point(836, 12);
             this.queueBtn.Name = "queueBtn";
             this.queueBtn.Size = new System.Drawing.Size(40, 40);
@@ -587,13 +587,13 @@
             // settingsBtn
             // 
             this.settingsBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(48)))), ((int)(((byte)(48)))));
-            this.settingsBtn.ButtonImage = global::Flowframes.Properties.Resources.baseline_settings_white_48dp;
-            this.settingsBtn.DrawImage = true;
+            this.settingsBtn.BackgroundImage = global::Flowframes.Properties.Resources.baseline_settings_white_48dp;
+            //this.settingsBtn.DrawImage = true;
             this.settingsBtn.FlatAppearance.BorderSize = 0;
             this.settingsBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.settingsBtn.ForeColor = System.Drawing.Color.White;
             this.settingsBtn.ImageIndex = 0;
-            this.settingsBtn.ImageSizeMode = HTAlt.WinForms.HTButton.ButtonImageSizeMode.Zoom;
+            this.settingsBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.settingsBtn.Location = new System.Drawing.Point(882, 12);
             this.settingsBtn.Name = "settingsBtn";
             this.settingsBtn.Size = new System.Drawing.Size(40, 40);
@@ -605,13 +605,13 @@
             // patreonBtn
             // 
             this.patreonBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(48)))), ((int)(((byte)(48)))));
-            this.patreonBtn.ButtonImage = global::Flowframes.Properties.Resources.patreon256pxColored;
-            this.patreonBtn.DrawImage = true;
+            this.patreonBtn.BackgroundImage = global::Flowframes.Properties.Resources.patreon256pxColored;
+            //this.patreonBtn.DrawImage = true;
             this.patreonBtn.FlatAppearance.BorderSize = 0;
             this.patreonBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.patreonBtn.ForeColor = System.Drawing.Color.White;
             this.patreonBtn.ImageIndex = 0;
-            this.patreonBtn.ImageSizeMode = HTAlt.WinForms.HTButton.ButtonImageSizeMode.Zoom;
+            this.patreonBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.patreonBtn.Location = new System.Drawing.Point(606, 12);
             this.patreonBtn.Name = "patreonBtn";
             this.patreonBtn.Size = new System.Drawing.Size(40, 40);
@@ -623,13 +623,13 @@
             // paypalBtn
             // 
             this.paypalBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(48)))), ((int)(((byte)(48)))));
-            this.paypalBtn.ButtonImage = global::Flowframes.Properties.Resources.paypal256px;
-            this.paypalBtn.DrawImage = true;
+            this.paypalBtn.BackgroundImage = global::Flowframes.Properties.Resources.paypal256px;
+            //this.paypalBtn.DrawImage = true;
             this.paypalBtn.FlatAppearance.BorderSize = 0;
             this.paypalBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.paypalBtn.ForeColor = System.Drawing.Color.White;
             this.paypalBtn.ImageIndex = 0;
-            this.paypalBtn.ImageSizeMode = HTAlt.WinForms.HTButton.ButtonImageSizeMode.Zoom;
+            this.paypalBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.paypalBtn.Location = new System.Drawing.Point(559, 12);
             this.paypalBtn.Name = "paypalBtn";
             this.paypalBtn.Size = new System.Drawing.Size(40, 40);
@@ -641,13 +641,13 @@
             // discordBtn
             // 
             this.discordBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(48)))), ((int)(((byte)(48)))));
-            this.discordBtn.ButtonImage = global::Flowframes.Properties.Resources.discordNew;
-            this.discordBtn.DrawImage = true;
+            this.discordBtn.BackgroundImage = global::Flowframes.Properties.Resources.discordNew;
+            //this.discordBtn.DrawImage = true;
             this.discordBtn.FlatAppearance.BorderSize = 0;
             this.discordBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.discordBtn.ForeColor = System.Drawing.Color.White;
             this.discordBtn.ImageIndex = 0;
-            this.discordBtn.ImageSizeMode = HTAlt.WinForms.HTButton.ButtonImageSizeMode.Zoom;
+            this.discordBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.discordBtn.Location = new System.Drawing.Point(652, 12);
             this.discordBtn.Name = "discordBtn";
             this.discordBtn.Size = new System.Drawing.Size(40, 40);
@@ -713,13 +713,13 @@
             // debugBtn
             // 
             this.debugBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(48)))), ((int)(((byte)(48)))));
-            this.debugBtn.ButtonImage = global::Flowframes.Properties.Resources.baseline_list_alt_white_48dp;
-            this.debugBtn.DrawImage = true;
+            this.debugBtn.BackgroundImage = global::Flowframes.Properties.Resources.baseline_list_alt_white_48dp;
+            //this.debugBtn.DrawImage = true;
             this.debugBtn.FlatAppearance.BorderSize = 0;
             this.debugBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.debugBtn.ForeColor = System.Drawing.Color.White;
             this.debugBtn.ImageIndex = 0;
-            this.debugBtn.ImageSizeMode = HTAlt.WinForms.HTButton.ButtonImageSizeMode.Zoom;
+            this.debugBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.debugBtn.Location = new System.Drawing.Point(744, 12);
             this.debugBtn.Name = "debugBtn";
             this.debugBtn.Size = new System.Drawing.Size(40, 40);
@@ -765,7 +765,7 @@
             // longProgBar
             // 
             this.longProgBar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.longProgBar.BorderThickness = 0;
+            //this.longProgBar.BorderThickness = 0;
             this.longProgBar.Location = new System.Drawing.Point(221, 474);
             this.longProgBar.Name = "longProgBar";
             this.longProgBar.Size = new System.Drawing.Size(700, 15);
@@ -774,33 +774,33 @@
             // mainTabControl
             // 
             this.mainTabControl.AllowDrop = true;
-            this.mainTabControl.BackgroundColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
-            this.mainTabControl.BorderTabLineColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
+            //this.mainTabControl.BackgroundColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(48)))));
+            //this.mainTabControl.BorderTabLineColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
             this.mainTabControl.Controls.Add(this.welcomeTab);
             this.mainTabControl.Controls.Add(this.interpOptsTab);
             this.mainTabControl.Controls.Add(this.quickSettingsTab);
             this.mainTabControl.Controls.Add(this.previewTab);
             this.mainTabControl.Controls.Add(this.abtTab);
-            this.mainTabControl.DisableClose = true;
-            this.mainTabControl.DisableDragging = true;
+            //this.mainTabControl.DisableClose = true;
+            //this.mainTabControl.DisableDragging = true;
             this.mainTabControl.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.mainTabControl.HoverTabButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(82)))), ((int)(((byte)(176)))), ((int)(((byte)(239)))));
-            this.mainTabControl.HoverTabColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(63)))), ((int)(((byte)(70)))));
-            this.mainTabControl.HoverUnselectedTabButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(85)))), ((int)(((byte)(85)))), ((int)(((byte)(85)))));
+            //this.mainTabControl.HoverTabButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(82)))), ((int)(((byte)(176)))), ((int)(((byte)(239)))));
+            //this.mainTabControl.HoverTabColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(63)))), ((int)(((byte)(70)))));
+            //this.mainTabControl.HoverUnselectedTabButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(85)))), ((int)(((byte)(85)))), ((int)(((byte)(85)))));
             this.mainTabControl.Location = new System.Drawing.Point(13, 62);
             this.mainTabControl.Name = "mainTabControl";
             this.mainTabControl.Padding = new System.Drawing.Point(14, 4);
             this.mainTabControl.SelectedIndex = 0;
-            this.mainTabControl.SelectedTabButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(151)))), ((int)(((byte)(234)))));
-            this.mainTabControl.SelectedTabColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
+            //this.mainTabControl.SelectedTabButtonColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(151)))), ((int)(((byte)(234)))));
+            //this.mainTabControl.SelectedTabColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
             this.mainTabControl.Size = new System.Drawing.Size(909, 289);
             this.mainTabControl.TabIndex = 4;
-            this.mainTabControl.TextColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-            this.mainTabControl.UnderBorderTabLineColor = System.Drawing.Color.FromArgb(((int)(((byte)(67)))), ((int)(((byte)(67)))), ((int)(((byte)(70)))));
-            this.mainTabControl.UnselectedBorderTabLineColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(63)))), ((int)(((byte)(70)))));
-            this.mainTabControl.UnselectedTabColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(63)))), ((int)(((byte)(70)))));
-            this.mainTabControl.UpDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(63)))), ((int)(((byte)(70)))));
-            this.mainTabControl.UpDownTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(112)))));
+            //this.mainTabControl.TextColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            //this.mainTabControl.UnderBorderTabLineColor = System.Drawing.Color.FromArgb(((int)(((byte)(67)))), ((int)(((byte)(67)))), ((int)(((byte)(70)))));
+            //this.mainTabControl.UnselectedBorderTabLineColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(63)))), ((int)(((byte)(70)))));
+            //this.mainTabControl.UnselectedTabColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(63)))), ((int)(((byte)(70)))));
+            //this.mainTabControl.UpDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(63)))), ((int)(((byte)(63)))), ((int)(((byte)(70)))));
+            //this.mainTabControl.UpDownTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(109)))), ((int)(((byte)(109)))), ((int)(((byte)(112)))));
             this.mainTabControl.SelectedIndexChanged += new System.EventHandler(this.mainTabControl_SelectedIndexChanged);
             this.mainTabControl.DragDrop += new System.Windows.Forms.DragEventHandler(this.Form1_DragDrop);
             this.mainTabControl.DragEnter += new System.Windows.Forms.DragEventHandler(this.Form1_DragEnter);
@@ -1620,14 +1620,14 @@
             // htButton1
             // 
             this.htButton1.BackColor = System.Drawing.Color.Transparent;
-            this.htButton1.ButtonImage = global::Flowframes.Properties.Resources.separatorTest1;
-            this.htButton1.DrawImage = true;
+            this.htButton1.BackgroundImage = global::Flowframes.Properties.Resources.separatorTest1;
+            //this.htButton1.DrawImage = true;
             this.htButton1.Enabled = false;
             this.htButton1.FlatAppearance.BorderSize = 0;
             this.htButton1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.htButton1.ForeColor = System.Drawing.Color.White;
             this.htButton1.ImageIndex = 0;
-            this.htButton1.ImageSizeMode = HTAlt.WinForms.HTButton.ButtonImageSizeMode.Zoom;
+            this.htButton1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.htButton1.Location = new System.Drawing.Point(698, 9);
             this.htButton1.Name = "htButton1";
             this.htButton1.Size = new System.Drawing.Size(40, 40);
@@ -1852,19 +1852,19 @@
         private System.Windows.Forms.PictureBox pictureBox4;
         private System.Windows.Forms.PictureBox pictureBox3;
         private System.Windows.Forms.Label label23;
-        private HTAlt.WinForms.HTProgressBar longProgBar;
-        private HTAlt.WinForms.HTButton discordBtn;
-        private HTAlt.WinForms.HTButton paypalBtn;
-        private HTAlt.WinForms.HTButton patreonBtn;
-        private HTAlt.WinForms.HTButton settingsBtn;
-        private HTAlt.WinForms.HTButton browseOutBtn;
-        private HTAlt.WinForms.HTButton browseInputFileBtn;
-        private HTAlt.WinForms.HTButton browseInputBtn;
+        private System.Windows.Forms.ProgressBar longProgBar;
+        private System.Windows.Forms.Button discordBtn;
+        private System.Windows.Forms.Button paypalBtn;
+        private System.Windows.Forms.Button patreonBtn;
+        private System.Windows.Forms.Button settingsBtn;
+        private System.Windows.Forms.Button browseOutBtn;
+        private System.Windows.Forms.Button browseInputFileBtn;
+        private System.Windows.Forms.Button browseInputBtn;
         private System.Windows.Forms.PictureBox previewPicturebox;
-        public HTAlt.WinForms.HTTabControl mainTabControl;
-        private HTAlt.WinForms.HTButton queueBtn;
-        private HTAlt.WinForms.HTButton htButton1;
-        private HTAlt.WinForms.HTButton updateBtn;
+        public System.Windows.Forms.TabControl mainTabControl;
+        private System.Windows.Forms.Button queueBtn;
+        private System.Windows.Forms.Button htButton1;
+        private System.Windows.Forms.Button updateBtn;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Panel panel6;
         private System.Windows.Forms.Label label15;
@@ -1883,7 +1883,7 @@
         private System.Windows.Forms.TextBox trimStartBox;
         private System.Windows.Forms.ComboBox trimCombox;
         private System.Windows.Forms.Panel trimPanel;
-        private HTAlt.WinForms.HTButton trimResetBtn;
+        private System.Windows.Forms.Button trimResetBtn;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.Label label34;
         private System.Windows.Forms.Panel panel10;
@@ -1906,7 +1906,7 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.Button pauseBtn;
         private System.Windows.Forms.Button cancelBtn;
-        private HTAlt.WinForms.HTButton debugBtn;
+        private System.Windows.Forms.Button debugBtn;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.ComboBox maxFps;
@@ -1916,7 +1916,7 @@
         private System.Windows.Forms.Label label25;
         private System.Windows.Forms.ComboBox outSpeedCombox;
         private System.Windows.Forms.PictureBox pictureBox5;
-        private HTAlt.WinForms.HTButton aiInfoBtn;
+        private System.Windows.Forms.Button aiInfoBtn;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         public System.Windows.Forms.ComboBox comboxOutputFormat;
         public System.Windows.Forms.ComboBox comboxOutputColors;
