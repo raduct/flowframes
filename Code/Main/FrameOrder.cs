@@ -176,8 +176,8 @@ namespace Flowframes.Main
             {
                 for (int i = 0; i < frameFiles.Length; i += linesPerTask)
                 {
-                    int startIndex = i;// capture value
-                    int taskNo = num;// capture value
+                    int startIndex = i; // capture value
+                    int taskNo = num; // capture value
                     tasks.Add(Task.Run(() => GenerateFrameLines(taskNo, startIndex, linesPerTask, (int)interpFactor, sceneDetection, debug)));
                     num++;
                 }
@@ -197,12 +197,12 @@ namespace Flowframes.Main
             if (Config.GetBool(Config.Key.fixOutputDuration)) // Match input duration by padding duping last frame until interp frames == (inputframes * factor)
             {
                 string[] lines = fileContent.SplitIntoLines();
-                int neededFrames = (frameFiles.Length * interpFactor).RoundToInt() - lines.Where(x => x.StartsWith("file ")).Count()/(Interpolate.currentSettings.is3D ? 2 : 1);
+                int neededFrames = (frameFiles.Length * interpFactor).RoundToInt() - lines.Where(x => x.StartsWith("file ")).Count() / (Interpolate.currentSettings.is3D ? 2 : 1);
                 IEnumerable<string> fileLines = lines.Where(x => x.StartsWith("file ")).Reverse();
 
                 for (int i = 0; i < neededFrames; i++)
                 {
-                    if(Interpolate.currentSettings.is3D)
+                    if (Interpolate.currentSettings.is3D)
                     {
                         fileContent += fileLines.ElementAt(1) + "\n";
                         fileContent += lines.Where(x => x.StartsWith("duration ")).Last() + "\n";
@@ -358,25 +358,27 @@ namespace Flowframes.Main
                 if (i >= frameFiles.Length) break;
 
                 string frameName = GetNameNoExt(frameFiles[i].Name);
-                int importFilenamesIndex = !Interpolate.currentSettings.is3D ? i : 2 * i;
-                string frameNameImport = GetNameNoExt(FrameRename.importFilenames[importFilenamesIndex]);
-                int dupesAmount = dupesDict.ContainsKey(frameNameImport) ? dupesDict[frameNameImport].Count : 0;
-                int nextImportFilenamesIndex = !Interpolate.currentSettings.is3D ? importFilenamesIndex + 1 : importFilenamesIndex + 2;
-                //bool discardThisFrame = (sceneDetection && (i + 1) < FrameRename.importFilenames.Length && sceneFrames.Contains(GetNameNoExt(FrameRename.importFilenames[i + 1]))); // i+2 is in scene detection folder, means i+1 is ugly interp frame
-                bool discardThisFrame = (sceneDetection && nextImportFilenamesIndex < FrameRename.importFilenames.Length && sceneFrames.Contains(GetNameNoExt(FrameRename.importFilenames[nextImportFilenamesIndex]))); // i+2 is in scene detection folder, means i+1 is ugly interp frame
+                string origFrameName = GetNameNoExt(FrameRename.importFilenames[Interpolate.currentSettings.is3D ? i * 2 : i]);
+                int dupesAmount = dupesDict.ContainsKey(origFrameName) ? dupesDict[origFrameName].Count : 0;
+                bool noInterpolationAfterThisFrame = false;
+                if (sceneDetection && (i + 1) < FrameRename.importFilenames.Length)
+                {
+                    // in 3D the scenes are half the total frames, so use the index in renamed frames
+                    string origNextFrameName = Interpolate.currentSettings.is3D ? (i + 1).ToString().PadLeft(Padding.inputFrames, '0') : GetNameNoExt(FrameRename.importFilenames[i + 1]);
+                    if (sceneFrames.Contains(origNextFrameName))
+                        noInterpolationAfterThisFrame = true;
+                }
 
                 if (i == frameFiles.Length - 1)
                     interpFramesAmount = 1;
                 for (int frm = 0; frm < interpFramesAmount; frm++)  // Generate frames file lines
                 {
-                    if (discardThisFrame)     // If frame is scene cut frame
+                    if (noInterpolationAfterThisFrame)     // If next frame is scene cut frame
                     {
-                        string frameBeforeScn = i.ToString().PadLeft(Padding.inputFramesRenamed, '0') + Path.GetExtension(FrameRename.importFilenames[importFilenamesIndex]);
-                        string frameAfterScn = (i + 1).ToString().PadLeft(Padding.inputFramesRenamed, '0') + Path.GetExtension(FrameRename.importFilenames[nextImportFilenamesIndex]);
-                        string scnChangeNote = $"SCN:{frameBeforeScn}>{frameAfterScn}";
+                        string scnChangeNote = $"SCN:{frameFiles[i]}>{frameFiles[i + 1]}";
 
                         totalFileCount++;
-                        fileContent = WriteFrameWithDupes(dupesAmount, fileContent, totalFileCount, ext, debug, $"[In: {frameName}] [{((frm == 0) ? " Source " : $"Interp {frm}")}]", scnChangeNote);
+                        fileContent = WriteFrameWithDupes(dupesAmount, fileContent, totalFileCount, ext, debug, $"[In: {frameName}] [ Source ]", scnChangeNote);
 
                         if (Config.GetInt(Config.Key.sceneChangeFillMode) == 0)      // Duplicate last frame
                         {
@@ -422,7 +424,7 @@ namespace Flowframes.Main
             {
                 fileContent += $"file '{Paths.interpDir}/{frameNum.ToString().PadLeft(Padding.interpFrames, '0')}{ext}' # {(debug ? ($"Dupe {(writtenDupes + 1).ToString("000")} {debugNote}").Replace("Dupe 000", "        ") : "")}{forcedNote}\n";
                 fileContent += $"{duration}\n";
-                if(Interpolate.currentSettings.is3D)
+                if (Interpolate.currentSettings.is3D)
                 {
                     fileContent += $"file '{Paths.GetOtherDir(Paths.interpDir)}/{frameNum.ToString().PadLeft(Padding.interpFrames, '0')}{ext}' # {(debug ? ($"Dupe {(writtenDupes + 1).ToString("000")} {debugNote}").Replace("Dupe 000", "        ") : "")}{forcedNote}\n";
                     fileContent += $"{duration}\n";

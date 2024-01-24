@@ -235,11 +235,7 @@ namespace Flowframes
                 tasks.Add(AiProcess.RunRifeCuda(currentSettings.framesFolder, currentSettings.interpFactor, currentSettings.model.Dir));
 
             if (ai.NameInternal == Implementations.rifeNcnn.NameInternal)
-            {
-                if (Interpolate.currentSettings.is3D)
-                    tasks.Add(AiProcess.RunRifeNcnn(Paths.GetOtherDir(currentSettings.framesFolder), Paths.GetOtherDir(outpath), currentSettings.interpFactor, currentSettings.model.Dir));
                 tasks.Add(AiProcess.RunRifeNcnn(currentSettings.framesFolder, outpath, currentSettings.interpFactor, currentSettings.model.Dir));
-            }
 
             if (ai.NameInternal == Implementations.rifeNcnnVs.NameInternal)
                 tasks.Add(AiProcess.RunRifeNcnnVs(currentSettings.framesFolder, outpath, currentSettings.interpFactor, currentSettings.model.Dir));

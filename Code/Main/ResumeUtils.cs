@@ -25,50 +25,50 @@ namespace Flowframes.Main
 
         public static Stopwatch timeSinceLastSave = new Stopwatch();
 
-        public static void Save ()
-        {
-            if (timeSinceLastSave.IsRunning && timeSinceLastSave.ElapsedMilliseconds < (timeBetweenSaves * 1000f).RoundToInt()) return;
-            int frames = (int)Math.Round((float)InterpolationProgress.interpolatedInputFramesCount / I.currentSettings.interpFactor) - safetyDelayFrames;
-            if (frames < 1) return;
-            timeSinceLastSave.Restart();
-            Directory.CreateDirectory(Path.Combine(I.currentSettings.tempFolder, Paths.resumeDir));
-            SaveState(frames);
-            SaveInterpSettings();
-            _ = SaveFilenameMap();
-        }
+        //public static void Save ()
+        //{
+        //    if (timeSinceLastSave.IsRunning && timeSinceLastSave.ElapsedMilliseconds < (timeBetweenSaves * 1000f).RoundToInt()) return;
+        //    int frames = (int)Math.Round((float)InterpolationProgress.interpolatedInputFramesCount / I.currentSettings.interpFactor) - safetyDelayFrames;
+        //    if (frames < 1) return;
+        //    timeSinceLastSave.Restart();
+        //    Directory.CreateDirectory(Path.Combine(I.currentSettings.tempFolder, Paths.resumeDir));
+        //    SaveState(frames);
+        //    SaveInterpSettings();
+        //    _ = SaveFilenameMap();
+        //}
 
-        static void SaveState (int frames)
-        {
-            ResumeState state = new ResumeState(I.currentlyUsingAutoEnc, frames);
-            string filePath = Path.Combine(I.currentSettings.tempFolder, Paths.resumeDir, resumeFilename);
-            File.WriteAllText(filePath, state.ToString());
-        }
+        //static void SaveState (int frames)
+        //{
+        //    ResumeState state = new ResumeState(I.currentlyUsingAutoEnc, frames);
+        //    string filePath = Path.Combine(I.currentSettings.tempFolder, Paths.resumeDir, resumeFilename);
+        //    File.WriteAllText(filePath, state.ToString());
+        //}
 
-        static async Task SaveFilenameMap ()
-        {
-            string filePath = Path.Combine(I.currentSettings.tempFolder, Paths.resumeDir, filenameMapFilename);
+        //static async Task SaveFilenameMap ()
+        //{
+        //    string filePath = Path.Combine(I.currentSettings.tempFolder, Paths.resumeDir, filenameMapFilename);
 
-            if (File.Exists(filePath) && IoUtils.GetFilesize(filePath) > 0)
-                return;
+        //    if (File.Exists(filePath) && IoUtils.GetFilesize(filePath) > 0)
+        //        return;
 
-            string fileContent = "";
-            int counter = 0;
+        //    string fileContent = "";
+        //    int counter = 0;
 
-            foreach (string file in FrameRename.importFilenames)
-            {
-                if (counter % 1000 == 0) await Task.Delay(1);
-                fileContent += $"{file}\n";
-                counter++;
-            }
+        //    foreach (string file in FrameRename.importFilenames)
+        //    {
+        //        if (counter % 1000 == 0) await Task.Delay(1);
+        //        fileContent += $"{file}\n";
+        //        counter++;
+        //    }
 
-            File.WriteAllText(filePath, fileContent);
-        }
+        //    File.WriteAllText(filePath, fileContent);
+        //}
 
-        static void SaveInterpSettings ()
-        {
-            string filepath = Path.Combine(I.currentSettings.tempFolder, Paths.resumeDir, interpSettingsFilename);
-            File.WriteAllText(filepath, I.currentSettings.Serialize());
-        }
+        //static void SaveInterpSettings ()
+        //{
+        //    string filepath = Path.Combine(I.currentSettings.tempFolder, Paths.resumeDir, interpSettingsFilename);
+        //    File.WriteAllText(filepath, I.currentSettings.Serialize());
+        //}
 
         // public static void LoadTempFolder (string tempFolderPath)
         // {

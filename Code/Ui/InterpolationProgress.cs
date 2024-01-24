@@ -19,8 +19,8 @@ namespace Flowframes.Ui
     {
         public static int deletedFramesCount;
         public static int lastFrame;
+        public static int lastOtherFrame;
         public static int targetFrames;
-        public static string currentOutdir;
         public static float currentFactor;
         public static bool progressPaused = false;
         public static bool progCheckRunning = false;
@@ -28,11 +28,11 @@ namespace Flowframes.Ui
         public static PictureBox preview;
         public static BigPreviewForm bigPreviewForm;
 
-        public static void Restart ()
+        public static void Restart()
         {
             progCheckRunning = true;
             deletedFramesCount = 0;
-            lastFrame = 0;
+            lastFrame = lastOtherFrame = 0;
             peakFpsOut = 0f;
             Program.mainForm.SetProgress(0);
         }
@@ -40,7 +40,7 @@ namespace Flowframes.Ui
         public static async void GetProgressByFrameAmount(string outdir, int target)
         {
             targetFrames = target;
-            currentOutdir = outdir;
+            string currentOutdir = outdir;
             Restart();
             Logger.Log($"Starting GetProgressByFrameAmount() loop for outdir '{currentOutdir}', target is {target} frames", true);
             bool firstProgUpd = true;
@@ -53,20 +53,20 @@ namespace Flowframes.Ui
                         Program.mainForm.SetTab(Program.mainForm.previewTab.Name);
 
                     firstProgUpd = false;
-                    string lastFramePath = currentOutdir + "\\" + lastFrame.ToString("00000000") + I.currentSettings.interpExt;
+                    int lastFrameNo = Interpolate.currentSettings.is3D ? Math.Min(InterpolationProgress.lastFrame, InterpolationProgress.lastOtherFrame) : InterpolationProgress.lastFrame;
+                    string lastFramePath = currentOutdir + "\\" + lastFrameNo.ToString().PadLeft(Flowframes.Data.Padding.interpFrames, '0') + I.currentSettings.interpExt;
 
-                    if (lastFrame > 1)
-                        UpdateInterpProgress(lastFrame, targetFrames, lastFramePath);
+                    if (lastFrameNo > 1)
+                        UpdateInterpProgress(lastFrameNo, targetFrames, lastFramePath);
 
-                    //await Task.Delay((target < 1000) ? 100 : 200);  // Update 10x/sec if interpolating <1k frames, otherwise 5x/sec
                     await Task.Delay((target < 1000) ? 200 : 1000);
 
-                    if (lastFrame >= targetFrames)
+                    if (lastFrameNo >= targetFrames)
                         break;
                 }
                 else
                 {
-                    await Task.Delay(100);
+                    await Task.Delay(200);
                 }
             }
 
@@ -81,9 +81,22 @@ namespace Flowframes.Ui
             try
             {
                 string ncnnStr = I.currentSettings.ai.NameInternal.Contains("NCNN") ? " done" : "";
-                Regex frameRegex = new Regex($@"(?<=.)\d*(?={I.currentSettings.interpExt}{ncnnStr})");
-                if (!frameRegex.IsMatch(output)) return;
-                lastFrame = Math.Max(int.Parse(frameRegex.Match(output).Value), lastFrame);
+                Regex frameRegex = new Regex($@"\d*(?={I.currentSettings.interpExt}{ncnnStr})");
+                Match result = frameRegex.Match(output);
+                if (result.Success)
+                {
+                    int frame = int.Parse(result.Value);
+                    if (Interpolate.currentSettings.is3D)
+                    {
+                        Regex interpRegex = new Regex($@"{Paths.interpDir}/(?=\d*{I.currentSettings.interpExt}{ncnnStr})");
+                        if (interpRegex.IsMatch(output))
+                            lastFrame = Math.Max(int.Parse(result.Value), lastFrame);
+                        else
+                            lastOtherFrame = Math.Max(int.Parse(result.Value), lastOtherFrame);
+                    }
+                    else
+                        lastFrame = Math.Max(frame, lastFrame);
+                }
             }
             catch
             {
@@ -105,7 +118,7 @@ namespace Flowframes.Ui
                     string lastLogLine = Logger.GetSessionLogLastLines(logFile, 1).Where(x => x.Contains("frame=")).LastOrDefault();
                     int num = lastLogLine == null ? 0 : lastLogLine.Split("frame=")[1].Split("fps=")[0].GetInt();
 
-                    if(num > 0)
+                    if (num > 0)
                         UpdateInterpProgress(num, targetFrames);
 
                     await Task.Delay(500);
@@ -125,15 +138,15 @@ namespace Flowframes.Ui
                 Program.mainForm.SetProgress(0);
         }
 
-        public static int interpolatedInputFramesCount;
+        //public static int interpolatedInputFramesCount;
         public static float peakFpsOut;
 
-        public static int previewUpdateRateMs = 200;
+        static int previewUpdateRateMs = 200;
 
         public static void UpdateInterpProgress(int frames, int target, string latestFramePath = "")
         {
             if (I.canceled) return;
-            interpolatedInputFramesCount = ((frames / I.currentSettings.interpFactor).RoundToInt() - 1);
+            //interpolatedInputFramesCount = ((frames / I.currentSettings.interpFactor).RoundToInt() - 1);
             //ResumeUtils.Save();
             target = (target / Interpolate.InterpProgressMultiplier).RoundToInt();
             frames = frames.Clamp(0, target);
@@ -175,22 +188,22 @@ namespace Flowframes.Ui
             }
         }
 
-        public static async Task DeleteInterpolatedInputFrames()
-        {
-            interpolatedInputFramesCount = 0;
-            string[] inputFrames = IoUtils.GetFilesSorted(I.currentSettings.framesFolder);
+        //public static async Task DeleteInterpolatedInputFrames()
+        //{
+        //    interpolatedInputFramesCount = 0;
+        //    string[] inputFrames = IoUtils.GetFilesSorted(I.currentSettings.framesFolder);
 
-            for (int i = 0; i < inputFrames.Length; i++)
-            {
-                while (Program.busy && (i + 10) > interpolatedInputFramesCount) await Task.Delay(1000);
-                if (!Program.busy) break;
+        //    for (int i = 0; i < inputFrames.Length; i++)
+        //    {
+        //        while (Program.busy && (i + 10) > interpolatedInputFramesCount) await Task.Delay(1000);
+        //        if (!Program.busy) break;
 
-                if (i != 0 && i != inputFrames.Length - 1)
-                    IoUtils.OverwriteFileWithText(inputFrames[i]);
+        //        if (i != 0 && i != inputFrames.Length - 1)
+        //            IoUtils.OverwriteFileWithText(inputFrames[i]);
 
-                if (i % 10 == 0) await Task.Delay(10);
-            }
-        }
+        //        if (i % 10 == 0) await Task.Delay(10);
+        //    }
+        //}
 
         public static Stopwatch timeSinceLastPreviewUpdate = new Stopwatch();
 

@@ -194,13 +194,13 @@ namespace Flowframes
             return "/C";
         }
 
-        public static async Task SetBusyWhileRunning()
-        {
-            if (Program.busy) return;
+        //public static async Task SetBusyWhileRunning()
+        //{
+        //    if (Program.busy) return;
 
-            await Task.Delay(100);
-            while (!lastAvProcess.HasExited)
-                await Task.Delay(10);
-        }
+        //    await Task.Delay(100);
+        //    while (!lastAvProcess.HasExited)
+        //        await Task.Delay(10);
+        //}
     }
 }

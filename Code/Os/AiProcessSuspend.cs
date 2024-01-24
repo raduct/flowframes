@@ -1,15 +1,14 @@
 ﻿using Flowframes.Extensions;
 using Flowframes.Properties;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Flowframes.Os
 {
     class AiProcessSuspend
     {
+        public enum ProcessType { Main, Other, Both };
+
         public static bool aiProcFrozen;
         static List<Process> suspendedProcesses = new List<Process>();
         public static bool isRunning;
@@ -20,15 +19,15 @@ namespace Flowframes.Os
             SetPauseButtonStyle(false);
         }
 
-        public static void SetRunning (bool running)
+        public static void SetRunning(bool running)
         {
             isRunning = running;
             Program.mainForm.GetPauseBtn().Visible = running;
         }
 
-        public static void SuspendIfRunning ()
+        public static void SuspendIfRunning()
         {
-            if(!aiProcFrozen)
+            if (!aiProcFrozen)
                 SuspendResumeAi(true);
         }
 
@@ -38,37 +37,32 @@ namespace Flowframes.Os
                 SuspendResumeAi(false);
         }
 
-        public static void SuspendResumeAi(bool freeze, bool excludeCmd = true)
+        public static void SuspendResumeAi(bool freeze, ProcessType type = ProcessType.Both, bool excludeCmd = false)
         {
-            Logger.Log($"{(freeze ? "Suspending" : "Resuming")} main process ({AiProcess.lastAiProcess.StartInfo.FileName} {AiProcess.lastAiProcess.StartInfo.Arguments})", true);
-            if (Interpolate.currentSettings.is3D && AiProcess.lastAiProcessOther != null)
-                Logger.Log($"{(freeze ? "Suspending" : "Resuming")} main process ({AiProcess.lastAiProcessOther.StartInfo.FileName} {AiProcess.lastAiProcessOther.StartInfo.Arguments})", true);
+            if ((type == ProcessType.Both || type == ProcessType.Main) && AiProcess.lastAiProcess != null)
+                Logger.Log($"{(freeze ? "Suspending" : "Resuming")} main process ({AiProcess.lastAiProcess.StartInfo.FileName} {AiProcess.lastAiProcess.StartInfo.Arguments})", true);
+            if ((type == ProcessType.Both || type == ProcessType.Other) && AiProcess.lastAiProcessOther != null)
+                Logger.Log($"{(freeze ? "Suspending" : "Resuming")} other process ({AiProcess.lastAiProcessOther.StartInfo.FileName} {AiProcess.lastAiProcessOther.StartInfo.Arguments})", true);
 
             if (freeze)
             {
                 List<Process> procs = new List<Process>();
-                Process currProcess = AiProcess.lastAiProcess;
 
-                if (AiProcess.lastAiProcess != null && !AiProcess.lastAiProcess.HasExited)
+                if ((type == ProcessType.Both || type == ProcessType.Main) && AiProcess.lastAiProcess != null && !AiProcess.lastAiProcess.HasExited && !IsMainSuspended())
                 {
-                    procs.Add(currProcess);
+                    procs.Add(AiProcess.lastAiProcess);
 
-                    foreach (var subProc in OsUtils.GetChildProcesses(currProcess))
+                    foreach (var subProc in OsUtils.GetChildProcesses(AiProcess.lastAiProcess))
                         procs.Add(subProc);
                 }
 
-                if (Interpolate.currentSettings.is3D && AiProcess.lastAiProcessOther != null && !AiProcess.lastAiProcessOther.HasExited)
+                if ((type == ProcessType.Both || type == ProcessType.Other) && AiProcess.lastAiProcessOther != null && !AiProcess.lastAiProcessOther.HasExited && !IsOtherSuspended())
                 {
-                    currProcess = AiProcess.lastAiProcessOther;
-                    procs.Add(currProcess);
+                    procs.Add(AiProcess.lastAiProcessOther);
 
-                    foreach (var subProc in OsUtils.GetChildProcesses(currProcess))
+                    foreach (var subProc in OsUtils.GetChildProcesses(AiProcess.lastAiProcessOther))
                         procs.Add(subProc);
                 }
-
-                aiProcFrozen = true;
-                SetPauseButtonStyle(true);
-                AiProcess.processTime.Stop();
 
                 foreach (Process process in procs)
                 {
@@ -82,6 +76,13 @@ namespace Flowframes.Os
 
                     process.Suspend();
                     suspendedProcesses.Add(process);
+                }
+
+                if ((AiProcess.lastAiProcess == null || AiProcess.lastAiProcess.HasExited || IsMainSuspended()) && (AiProcess.lastAiProcessOther == null || AiProcess.lastAiProcessOther.HasExited || IsOtherSuspended()))
+                {
+                    aiProcFrozen = true;
+                    SetPauseButtonStyle(true);
+                    AiProcess.processTime.Stop();
                 }
             }
             else
@@ -103,7 +104,17 @@ namespace Flowframes.Os
             }
         }
 
-        public static void SetPauseButtonStyle (bool paused)
+        public static bool IsMainSuspended()
+        {
+            return suspendedProcesses.Contains(AiProcess.lastAiProcess);
+        }
+
+        public static bool IsOtherSuspended()
+        {
+            return suspendedProcesses.Contains(AiProcess.lastAiProcessOther);
+        }
+
+        public static void SetPauseButtonStyle(bool paused)
         {
             System.Windows.Forms.Button btn = Program.mainForm.GetPauseBtn();
 
@@ -116,7 +127,7 @@ namespace Flowframes.Os
             else
             {
                 btn.BackgroundImage = Resources.baseline_pause_white_48dp;
-                btn.FlatAppearance.BorderColor= System.Drawing.Color.DarkOrange;
+                btn.FlatAppearance.BorderColor = System.Drawing.Color.DarkOrange;
                 btn.FlatAppearance.MouseOverBackColor = System.Drawing.Color.DarkOrange;
             }
         }

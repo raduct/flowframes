@@ -57,16 +57,6 @@ namespace Flowframes.Magick
                         string frameTo = FrameRename.framesAreRenamed ? values[1] : frames[values[1].GetInt()];
                         int amountOfBlendFrames = values.Count() == 3 ? values[2].GetInt() : (int)Interpolate.currentSettings.interpFactor - 1;
 
-                        if (Interpolate.currentSettings.is3D)
-                        {
-                            string extFrame = Path.GetExtension(frameFrom);
-                            int origFrameNum = Path.GetFileNameWithoutExtension(frameFrom).GetInt();
-                            int newFrameNum = origFrameNum * 2 + (isOther ? 1 : 0);
-                            frameFrom = Path.ChangeExtension(newFrameNum.ToString().PadLeft(Padding.inputFramesRenamed, '0'), extFrame);
-                            origFrameNum = Path.GetFileNameWithoutExtension(frameTo).GetInt();
-                            newFrameNum = origFrameNum * 2 + (isOther ? 1 : 0);
-                            frameTo = Path.ChangeExtension(newFrameNum.ToString().PadLeft(Padding.inputFramesRenamed, '0'), extFrame);
-                        }
                         string img1 = Path.Combine(framesFolder, frameFrom);
                         string img2 = Path.Combine(framesFolder, frameTo);
 

@@ -18,7 +18,7 @@ namespace Flowframes.Os
     class AiProcess
     {
         public static bool hasShownError;
-        public static string lastLogName;
+        static string lastLogName;
         public static Process lastAiProcess;
         public static Process lastAiProcessOther;
         public static Stopwatch processTime = new Stopwatch();
@@ -46,8 +46,6 @@ namespace Flowframes.Os
         {
             lastStartupTimeMs = startupTimeMs;
             processTime.Restart();
-            if (lastAiProcess != null)
-                lastAiProcessOther = lastAiProcess;
             lastAiProcess = proc;
             AiProcessSuspend.SetRunning(true);
             lastInPath = string.IsNullOrWhiteSpace(inPath) ? Interpolate.currentSettings.framesFolder : inPath;
@@ -294,13 +292,23 @@ namespace Flowframes.Os
         public static async Task RunRifeNcnn(string framesPath, string outPath, float factor, string mdl)
         {
             AI ai = Implementations.rifeNcnn;
-
             try
             {
                 Logger.Log($"Running RIFE (NCNN){(await InterpolateUtils.UseUhd() ? " (UHD Mode)" : "")}...", false);
 
+                Task otherProc = null;
+                if (Interpolate.currentSettings.is3D)
+                    otherProc = Task.Run(async () =>
+                    {
+                        await RunRifeNcnnProcess(Paths.GetOtherDir(framesPath), factor, Paths.GetOtherDir(outPath), mdl, false);
+                        await NcnnUtils.DeleteNcnnDupes(Paths.GetOtherDir(outPath), factor);
+                    });
+
                 await RunRifeNcnnProcess(framesPath, factor, outPath, mdl);
                 await NcnnUtils.DeleteNcnnDupes(outPath, factor);
+
+                if (otherProc != null)
+                    await otherProc;
             }
             catch (Exception e)
             {
@@ -311,13 +319,11 @@ namespace Flowframes.Os
             await AiFinished(ai.NameShort);
         }
 
-        static async Task RunRifeNcnnProcess(string inPath, float factor, string outPath, string mdl)
+        static async Task RunRifeNcnnProcess(string inPath, float factor, string outPath, string mdl, bool main = true)
         {
             Directory.CreateDirectory(outPath);
             Process rifeNcnn = OsUtils.NewProcess(!OsUtils.ShowHiddenCmd());
-            AiStarted(rifeNcnn, 1500, inPath);
-            SetProgressCheck(outPath, factor);
-            int targetFrames = ((IoUtils.GetAmountOfFiles(lastInPath, false, "*.*") * factor).RoundToInt()); // TODO: Maybe won't work with fractional factors ??
+            int targetFrames = ((IoUtils.GetAmountOfFiles(inPath, false, "*.*") * factor).RoundToInt()); // TODO: Maybe won't work with fractional factors ??
 
             string frames = mdl.Contains("v4") ? $"-n {targetFrames}" : "";
             string uhdStr = await InterpolateUtils.UseUhd() ? "-u" : "";
@@ -336,6 +342,14 @@ namespace Flowframes.Os
 
             rifeNcnn.Start();
             rifeNcnn.PriorityClass = ProcessPriorityClass.BelowNormal;
+
+            if (main)
+            {
+                AiStarted(rifeNcnn, 1500, inPath);
+                SetProgressCheck(outPath, factor);
+            }
+            else
+                lastAiProcessOther = rifeNcnn;
 
             if (!OsUtils.ShowHiddenCmd())
             {
@@ -609,8 +623,6 @@ namespace Flowframes.Os
             lastLogName = ai.LogFilename;
             Logger.Log(line, true, false, ai.LogFilename);
 
-            string lastLogLines = string.Join("\n", Logger.GetSessionLogLastLines(lastLogName, 6).Select(x => $"[{x.Split("]: [").Skip(1).FirstOrDefault()}"));
-
             if (ai.Backend == AI.AiBackend.Pytorch) // Pytorch specific
             {
                 if (line.Contains("ff:nocuda-cpu"))
@@ -644,6 +656,7 @@ namespace Flowframes.Os
                 if (!hasShownError && err && (line.Contains("RuntimeError") || line.Contains("ImportError") || line.Contains("OSError")))
                 {
                     hasShownError = true;
+                    string lastLogLines = string.Join("\n", Logger.GetSessionLogLastLines(lastLogName, 6).Select(x => $"[{x.Split("]: [").Skip(1).FirstOrDefault()}"));
                     UiUtils.ShowMessageBox($"A python error occured during interpolation!\nCheck the log for details:\n\n{lastLogLines}", UiUtils.MessageType.Error);
                 }
             }
@@ -673,6 +686,7 @@ namespace Flowframes.Os
                 if (!hasShownError && err && line.MatchesWildcard("vk* failed"))
                 {
                     hasShownError = true;
+                    string lastLogLines = string.Join("\n", Logger.GetSessionLogLastLines(lastLogName, 6).Select(x => $"[{x.Split("]: [").Skip(1).FirstOrDefault()}"));
                     UiUtils.ShowMessageBox($"A Vulkan error occured during interpolation!\n\n{lastLogLines}", UiUtils.MessageType.Error);
                 }
             }
@@ -682,6 +696,7 @@ namespace Flowframes.Os
                 if (!hasShownError && Interpolate.currentSettings.outSettings.Format != Enums.Output.Format.Realtime && line.ToLowerInvariant().Contains("fwrite() call failed"))
                 {
                     hasShownError = true;
+                    string lastLogLines = string.Join("\n", Logger.GetSessionLogLastLines(lastLogName, 6).Select(x => $"[{x.Split("]: [").Skip(1).FirstOrDefault()}"));
                     UiUtils.ShowMessageBox($"VapourSynth interpolation failed with an unknown error. Check the log for details:\n\n{lastLogLines}", UiUtils.MessageType.Error);
                 }
 

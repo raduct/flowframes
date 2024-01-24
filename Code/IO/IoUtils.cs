@@ -276,12 +276,21 @@ namespace Flowframes.IO
             if (is3D)
                 CreateDir(dirB);
 
+            string dir = dirA;
             foreach (FileInfo file in files)
             {
-                //dir = new DirectoryInfo(file.FullName).Parent.FullName;
-                string dir = !is3D || counter % 2 == 0 ? dirA : dirB;
                 File.Move(file.FullName, Path.Combine(dir, counter.ToString().PadLeft(zPad, '0') + Path.GetExtension(file.FullName)));
-                counter++;
+
+                if (is3D)
+                    if (dir == dirA)
+                        dir = dirB;
+                    else
+                    {
+                        dir = dirA;
+                        counter++;
+                    }
+                else
+                    counter++;
 
                 if (sw.ElapsedMilliseconds > 100)
                 {
@@ -966,17 +975,17 @@ namespace Flowframes.IO
             }
         }
 
-        public static void OverwriteFileWithText(string path, string text = "THIS IS A DUMMY FILE - DO NOT DELETE ME")
-        {
-            try
-            {
-                File.WriteAllText(path, text);
-            }
-            catch (Exception e)
-            {
-                Logger.Log($"OverwriteWithText failed for '{path}': {e.Message}", true);
-            }
-        }
+        //public static void OverwriteFileWithText(string path, string text = "THIS IS A DUMMY FILE - DO NOT DELETE ME")
+        //{
+        //    try
+        //    {
+        //        File.WriteAllText(path, text);
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Logger.Log($"OverwriteWithText failed for '{path}': {e.Message}", true);
+        //    }
+        //}
 
         public static long GetDiskSpace(string path, bool mbytes = true)
         {
