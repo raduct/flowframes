@@ -122,7 +122,7 @@ namespace Flowframes
             {
                 Program.mainForm.SetStatus("Extracting scenes from video...");
                 await FfmpegExtract.ExtractSceneChanges(currentSettings.inPath, Path.Combine(currentSettings.tempFolder, Paths.scenesDir), currentSettings.inFps, currentSettings.inputIsFrames, currentSettings.framesExt);
-                Utils.RemoveConsecutiveFrames(Path.Combine(currentSettings.tempFolder, Paths.scenesDir));
+                Utils.RemoveConsecutiveFrames(Path.Combine(currentSettings.tempFolder, Paths.scenesDir), Path.Combine(currentSettings.tempFolder, InterpolateUtils.sceneScoresFile), currentSettings.inFps);
             }
 
             if (!currentSettings.inputIsFrames)        // Extract if input is video, import if image sequence

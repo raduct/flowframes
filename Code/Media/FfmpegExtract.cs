@@ -1,5 +1,6 @@
 ﻿using Flowframes.Data;
 using Flowframes.IO;
+using Flowframes.Main;
 using Flowframes.MiscUtils;
 using Flowframes.Ui;
 using System;
@@ -29,13 +30,13 @@ namespace Flowframes.Media
             }
 
             string rateFilter = rate.GetFloat() > 0 ? $"fps={rate}," : "";
-            string scnDetect = $"-vf \"{rateFilter}select='gt(scene,{Config.GetFloatString(Config.Key.scnDetectValue)})'\"";
+            string scnDetect = $"-vf \"{rateFilter}select='gt(scene,{Config.GetFloatString(Config.Key.scnDetectValue)})',metadata=print:file={InterpolateUtils.sceneScoresFile}\"";
             //string rateArg = (rate.GetFloat() > 0) ? $"-fps_mode cfr -r {rate}" : "-fps_mode passthrough";
             string rateArg = "-fps_mode passthrough";
             string args = $"{GetTrimArg(true)} {inArg} {GetImgArgs(format)} {rateArg} {scnDetect} -frame_pts 1 -s 256x144 {GetTrimArg(false)} \"{outDir}/%{Padding.inputFrames}d{format}\"";
 
             LogMode logMode = Interpolate.currentMediaFile.FrameCount > 50 ? LogMode.OnlyLastLine : LogMode.Hidden;
-            await RunFfmpeg(args, logMode, inputIsFrames ? "panic" : "warning", true);
+            await RunFfmpeg(args, Interpolate.currentSettings.tempFolder, logMode, inputIsFrames ? "panic" : "warning", true);
 
             bool hiddenLog = Interpolate.currentMediaFile.FrameCount <= 50;
             int amount = IoUtils.GetAmountOfFiles(outDir, false);
