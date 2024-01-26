@@ -32,7 +32,7 @@ namespace Flowframes.Magick
                 counter++;
                 if(setProgress)
                     Program.mainForm.SetProgress((int)Math.Round(((float)counter / files.Length) * 100f));
-                await Task.Delay(1);
+                await Task.CompletedTask;
             }
         }
 
@@ -60,7 +60,7 @@ namespace Flowframes.Magick
                     {
                         if (setProgress)
                             Program.mainForm.SetProgress((int)Math.Round(((float)counter / files.Length) * 100f));
-                        await Task.Delay(1);
+                        await Task.CompletedTask;
                         sw.Restart();
                     }
                 }
@@ -110,7 +110,7 @@ namespace Flowframes.Magick
                     {
                         if (setProgress)
                             Program.mainForm.SetProgress((int)Math.Round(((float)counter / files.Length) * 100f));
-                        await Task.Delay(1);
+                        await Task.CompletedTask;
                         sw.Restart();
                     }
                 }
@@ -138,7 +138,7 @@ namespace Flowframes.Magick
                 counter++;
                 if (setProgress)
                     Program.mainForm.SetProgress((int)Math.Round(((float)counter / files.Length) * 100f));
-                await Task.Delay(1);
+                await Task.CompletedTask;
             }
         }
     }

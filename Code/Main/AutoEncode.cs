@@ -77,6 +77,7 @@ namespace Flowframes.Main
 
                 //int lastEncodedFrameNum = 0;
                 int maxUnbalance = chunkSize / 10; // Maximum ahead interpolated frames per 3D eye AI process
+                int maxFrames = chunkSize + (0.5f * chunkSize).RoundToInt() + safetyBufferFrames;
                 Task currentMuxTask = null;
                 Task currentEncodingTask = null;
 
@@ -103,9 +104,8 @@ namespace Flowframes.Main
                         unencodedFrameLines.Add(frameLineNum);
                     }
 
-                    if (Config.GetBool(Config.Key.alwaysWaitForAutoEnc))
+                    if (aiRunning && Config.GetBool(Config.Key.alwaysWaitForAutoEnc))
                     {
-                        int maxFrames = chunkSize + (0.5f * chunkSize).RoundToInt() + safetyBufferFrames;
                         bool overwhelmed = unencodedFrameLines.Count > maxFrames;
 
                         if (overwhelmed && !AiProcessSuspend.aiProcFrozen && OsUtils.IsProcessHidden(AiProcess.lastAiProcess))

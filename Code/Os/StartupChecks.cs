@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Flowframes.Extensions;
 using Flowframes.IO;
 using Flowframes.Ui;
 
@@ -91,7 +92,7 @@ namespace Flowframes.Os
                 Process devmodeProc = OsUtils.NewProcess(true);
                 devmodeProc.StartInfo.Arguments = $"/C {devmodeBatchPath.Wrap()}";
                 devmodeProc.Start();
-                while (!devmodeProc.HasExited) await Task.Delay(100);
+                await devmodeProc.WaitForExitAsync();
 
                 bool symlinksWorksNow = false;
 

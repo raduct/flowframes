@@ -133,7 +133,7 @@ namespace Flowframes.Media
             await RunFfmpeg(args, logMode, true);
             int amount = IoUtils.GetAmountOfFiles(framesDir, false, "*" + format);
             Logger.Log($"Extracted {amount} {(amount == 1 ? "frame" : "frames")} from input.", false, true);
-            await Task.Delay(1);
+            await Task.CompletedTask;
             if (delSrc)
                 DeleteSource(inputFile);
         }

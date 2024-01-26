@@ -155,7 +155,7 @@ namespace Flowframes.Magick
             // wait for all the worker threads to finish and update the info box
             while (!Interpolate.canceled)
             {
-                await Task.Delay(5);
+                await Task.CompletedTask;
 
 
                 bool anyThreadStillWorking = false;

@@ -44,7 +44,7 @@ namespace Flowframes.IO
                     Logger.Log($"Created Symlink - Source: '{pair.Key}' - Target: '{pair.Value}' - Sucess: {success}", true);
             }));
 
-            while (!forEach.IsCompleted) await Task.Delay(1);
+            await forEach;
             Logger.Log($"Created {pathsLinkTarget.Count} symlinks in {FormatUtils.TimeSw(sw)}", true);
         }
 

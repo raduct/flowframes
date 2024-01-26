@@ -85,7 +85,7 @@ namespace Flowframes.Magick
             prevFrame.Dispose();
             currFrame.Dispose();
 
-            await Task.Delay(1);
+            await Task.CompletedTask;
         }
     }
 }

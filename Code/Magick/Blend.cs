@@ -39,7 +39,7 @@ namespace Flowframes.Magick
             string[] frames = FrameRename.framesAreRenamed ? new string[0] : IoUtils.GetFilesSorted(Interpolate.currentSettings.framesFolder);
 
             List<Task> runningTasks = new List<Task>();
-            //int maxThreads = Environment.ProcessorCount * 2;
+            int maxThreads = Environment.ProcessorCount / 2;
 
             foreach (string line in framesLines)
             {
@@ -68,27 +68,24 @@ namespace Flowframes.Magick
                         for (int blendFrameNum = 1; blendFrameNum <= amountOfBlendFrames; blendFrameNum++)
                         {
                             int outputNum = firstOutputFrameNum + blendFrameNum;
-                            string outputPath = Path.Combine(Interpolate.currentSettings.interpFolder, outputNum.ToString().PadLeft(Padding.interpFrames, '0'));
+                            string outputPath = Path.Combine(interpFolder, outputNum.ToString().PadLeft(Padding.interpFrames, '0'));
                             outputPath = Path.ChangeExtension(outputPath, ext);
                             outputFilenames.Add(outputPath);
                         }
 
-                        //if (runningTasks.Count >= maxThreads)
-                        //{
-                        //    do
-                        //    {
-                        //        await Task.Delay(10);
-                        //        RemoveCompletedTasks(runningTasks);
-                        //    } while (runningTasks.Count >= maxThreads);
-                        //}
+                        while (runningTasks.Count >= maxThreads)
+                        {
+                            int x = Task.WaitAny(runningTasks.ToArray());
+                            runningTasks.RemoveAt(x);
+                        }
 
-                        //Logger.Log($"Starting task for transition {values[0]} > {values[1]} ({runningTasks.Count}/{maxThreads} running)", true);
-                        Logger.Log($"Starting task for transition {values[0]} > {values[1]} ({runningTasks.Count}/(Any) running)", true);
-                        Task newTask = Task.Run(() => BlendImages(img1, img2, outputFilenames.ToArray()));
+                        Logger.Log($"Starting task for transition {values[0]} > {values[1]} ({runningTasks.Count}/{maxThreads} running)", true);
+                        
+                        string[] outFilenames = outputFilenames.ToArray(); // capture variable
+                        Task newTask = Task.Run(() => BlendImages(img1, img2, outFilenames));
                         runningTasks.Add(newTask);
-                        totalFrames += outputFilenames.Count;
 
-                        //await Task.Delay(1);
+                        totalFrames += outputFilenames.Count;
                     }
                 }
                 catch (Exception e)
@@ -97,30 +94,12 @@ namespace Flowframes.Magick
                 }
             }
 
-            //while (true)
-            //{
-            //    RemoveCompletedTasks(runningTasks);
-            //
-            //    if (runningTasks.Count < 1)
-            //        break;
-            //
-            //    await Task.Delay(10);
-            //}
             await Task.WhenAll(runningTasks);
 
             Logger.Log($"Created {totalFrames} blend frames in {FormatUtils.TimeSw(sw)} ({(totalFrames / (sw.ElapsedMilliseconds / 1000f)).ToString("0.00")} FPS)", true);
 
             if (setStatus)
                 Program.mainForm.SetStatus(oldStatus);
-        }
-
-        static void RemoveCompletedTasks(List<Task> runningTasks)
-        {
-            foreach (Task task in new List<Task>(runningTasks))
-            {
-                if (task.IsCompleted)
-                    runningTasks.Remove(task);
-            }
         }
 
         public static void BlendImages(string img1Path, string img2Path, string imgOutPath)
@@ -156,45 +135,46 @@ namespace Flowframes.Magick
         {
             try
             {
-                MagickImage img1 = new MagickImage(img1Path);
-                MagickImage img2 = new MagickImage(img2Path);
-
-                int alphaFraction = (100f / (imgOutPaths.Length + 1)).RoundToInt();   // Alpha percentage per image
-                int currentAlpha = alphaFraction;
-
-                foreach (string imgOutPath in imgOutPaths)
+                using (MagickImage img1 = new MagickImage(img1Path), img2 = new MagickImage(img2Path))
                 {
-                    string outPath = imgOutPath.Trim();
+                    float alphaFraction = 100f / (imgOutPaths.Length + 1);   // Alpha percentage per image
+                    float currentAlpha = alphaFraction;
 
-                    MagickImage img1Inst = new MagickImage(img1);
-                    MagickImage img2Inst = new MagickImage(img2);
-
-                    img2Inst.Alpha(AlphaOption.Opaque);
-                    img2Inst.Evaluate(Channels.Alpha, EvaluateOperator.Set, new Percentage(currentAlpha));
-                    currentAlpha += alphaFraction;
-
-                    img1Inst.Composite(img2Inst, Gravity.Center, CompositeOperator.Over);
-                    switch (Config.Get(Config.Key.interpFormat))
+                    await Task.CompletedTask;
+                    foreach (string imgOutPath in imgOutPaths)
                     {
-                        case "png":
-                            img1.Format = MagickFormat.Png24;
-                            break;
-                        case "jpg":
-                            img1.Format = MagickFormat.Jpeg;
-                            break;
-                        case "bmp":
-                            img1.Format = MagickFormat.Bmp;
-                            break;
-                        case "webp":
-                            img1.Format = MagickFormat.WebP;
-                            break;
-                        default:
-                            img1.Format = MagickFormat.Png24;
-                            break;
+                        string outPath = imgOutPath.Trim();
+
+                        using (MagickImage img1Inst = new MagickImage(img1), img2Inst = new MagickImage(img2))
+                        {
+                            img2Inst.Alpha(AlphaOption.Opaque);
+                            img2Inst.Evaluate(Channels.Alpha, EvaluateOperator.Set, new Percentage(currentAlpha));
+                            currentAlpha += alphaFraction;
+
+                            img1Inst.Composite(img2Inst, Gravity.Center, CompositeOperator.Over);
+
+                            switch (Config.Get(Config.Key.interpFormat))
+                            {
+                                case "png":
+                                    img1.Format = MagickFormat.Png24;
+                                    break;
+                                case "jpg":
+                                    img1.Format = MagickFormat.Jpeg;
+                                    break;
+                                case "bmp":
+                                    img1.Format = MagickFormat.Bmp;
+                                    break;
+                                case "webp":
+                                    img1.Format = MagickFormat.WebP;
+                                    break;
+                                default:
+                                    img1.Format = MagickFormat.Png24;
+                                    break;
+                            }
+                            img1Inst.Quality = 100;
+                            img1Inst.Write(outPath);
+                        }
                     }
-                    img1Inst.Quality = 100;
-                    img1Inst.Write(outPath);
-                    await Task.Delay(1);
                 }
             }
             catch (Exception e)

@@ -33,7 +33,7 @@ namespace Flowframes.MiscUtils
 			taskCounter = 1;
 			tasksToDo = GetTaskCount(ais) + 1;
 			form.SetWorking(true);
-			await Task.Delay(10);
+			await Task.CompletedTask;
 			UpdateProgressBar();
 
 			foreach (AI ai in ais)
