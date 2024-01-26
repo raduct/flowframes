@@ -54,9 +54,9 @@ namespace Flowframes.Ui
             Program.mainForm.currInFrames = Interpolate.currentMediaFile.FrameCount;
             Program.mainForm.UpdateInputInfo();
             CheckExistingFolder(path, outputTbox.Text.Trim());
-            await Task.Delay(10);
+            await Task.CompletedTask;
             await PrintResolution(path);
-            await Task.Delay(10);
+            await Task.CompletedTask;
             InterpolationProgress.SetPreviewImg(await GetThumbnail(path));
 
             if(AutoEncodeResume.resumeNextRun)

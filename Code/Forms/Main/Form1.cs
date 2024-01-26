@@ -3,6 +3,7 @@ using Flowframes.IO;
 using Flowframes.Main;
 using Flowframes.MiscUtils;
 using Flowframes.Os;
+using Flowframes.Properties;
 using Flowframes.Ui;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Microsoft.WindowsAPICodePack.Taskbar;
@@ -772,6 +773,24 @@ namespace Flowframes.Forms.Main
             _quickSettingsInitialized = true;
         }
 
+        public void SetPauseButtonStyle(bool paused)
+        {
+            Button btn = GetPauseBtn();
+
+            if (paused)
+            {
+                btn.BackgroundImage = Resources.baseline_play_arrow_white_48dp;
+                btn.FlatAppearance.BorderColor = Color.MediumSeaGreen;
+                btn.FlatAppearance.MouseOverBackColor = Color.MediumSeaGreen;
+            }
+            else
+            {
+                btn.BackgroundImage = Resources.baseline_pause_white_48dp;
+                btn.FlatAppearance.BorderColor = Color.DarkOrange;
+                btn.FlatAppearance.MouseOverBackColor = Color.DarkOrange;
+            }
+        }
+
         private void dedupMode_SelectedIndexChanged(object sender, EventArgs e)
         {
             dedupeSensLabel.Visible = dedupMode.SelectedIndex != 0;
@@ -790,7 +809,7 @@ namespace Flowframes.Forms.Main
 
         private void pauseBtn_Click(object sender, EventArgs e)
         {
-            AiProcessSuspend.SuspendResumeAi(!AiProcessSuspend.aiProcFrozen);
+            AiProcessSuspend.SuspendResume();
         }
 
         private void debugBtn_Click(object sender, EventArgs e)

@@ -414,14 +414,14 @@ namespace Flowframes.Media
         static string GetSvtAv1Speed()
         {
             string preset = Config.Get(Config.Key.ffEncPreset).ToLowerInvariant().Remove(" ");
-            string arg = "9";
+            string arg = "8";
 
-            if (preset == "veryslow") arg = "4";
-            if (preset == "slower") arg = "6";
-            if (preset == "slow") arg = "8";
-            if (preset == "medium") arg = "9";
-            if (preset == "fast") arg = "10";
-            if (preset == "faster") arg = "11";
+            if (preset == "veryslow") arg = "2";
+            if (preset == "slower") arg = "4";
+            if (preset == "slow") arg = "6";
+            if (preset == "medium") arg = "8";
+            if (preset == "fast") arg = "9";
+            if (preset == "faster") arg = "10";
             if (preset == "veryfast") arg = "12";
 
             return $"-preset {arg}";

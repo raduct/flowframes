@@ -294,7 +294,7 @@ namespace Flowframes.IO
 
                 if (sw.ElapsedMilliseconds > 100)
                 {
-                    await Task.Delay(1);
+                    await Task.CompletedTask;
                     sw.Restart();
                 }
             }
@@ -325,7 +325,7 @@ namespace Flowframes.IO
                 counter++;
 
                 if (counter % 1000 == 0)
-                    await Task.Delay(1);
+                    await Task.CompletedTask;
             }
         }
 
@@ -796,7 +796,7 @@ namespace Flowframes.IO
 
         public static async Task<string> GetHashAsync(string path, Hash hashType, bool log = true)
         {
-            await Task.Delay(1);
+            await Task.CompletedTask;
             return GetHash(path, hashType, log);
         }
 

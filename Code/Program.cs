@@ -154,7 +154,7 @@ namespace Flowframes
                         bool tooLowDiskSpace = mb < (Config.GetInt(Config.Key.lowDiskSpaceCancelGb, 2) * 1024);
                         string spaceGb = (mb / 1024f).ToString("0.0");
 
-                        if (!Interpolate.canceled && (AiProcess.lastAiProcess != null && !AiProcess.lastAiProcess.HasExited || AiProcess.lastAiProcessOther != null && !AiProcess.lastAiProcessOther.HasExited) && lowDiskSpace)
+                        if (!Interpolate.canceled && AiProcess.IsRunning() && lowDiskSpace)
                         {
                             if (tooLowDiskSpace)
                             {
@@ -162,11 +162,10 @@ namespace Flowframes
                             }
                             else
                             {
-                                bool showMsg = !AiProcessSuspend.aiProcFrozen;
-                                AiProcessSuspend.SuspendIfRunning();
-
-                                if (showMsg)
+                                if (!AiProcessSuspend.aiProcFrozen)
                                 {
+                                    AiProcessSuspend.Suspend();
+
                                     UiUtils.ShowMessageBox($"Interpolation has been paused because you are running out of disk space on '{drivePath}/' ({spaceGb} GB)!\n\n" +
                                     $"Please either clear up some disk space or cancel the interpolation.", UiUtils.MessageType.Warning);
                                 }

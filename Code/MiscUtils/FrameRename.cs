@@ -36,7 +36,7 @@ namespace Flowframes.MiscUtils
 
                 if (sw.ElapsedMilliseconds > 100)
                 {
-                    await Task.Delay(1);
+                    await Task.CompletedTask;
                     sw.Restart();
                 }
             }
@@ -52,7 +52,7 @@ namespace Flowframes.MiscUtils
 
                     if (sw.ElapsedMilliseconds > 100)
                     {
-                        await Task.Delay(1);
+                        await Task.CompletedTask;
                         sw.Restart();
                     }
                 }

@@ -77,6 +77,7 @@ namespace Flowframes.Main
 
                 //int lastEncodedFrameNum = 0;
                 int maxUnbalance = chunkSize / 10; // Maximum ahead interpolated frames per 3D eye AI process
+                int maxFrames = chunkSize + (0.5f * chunkSize).RoundToInt() + safetyBufferFrames;
                 Task currentMuxTask = null;
                 Task currentEncodingTask = null;
 
@@ -92,7 +93,7 @@ namespace Flowframes.Main
 
                     //unencodedFrameLines.Clear();
 
-                    bool aiRunning = !AiProcess.lastAiProcess.HasExited || (AiProcess.lastAiProcessOther != null && !AiProcess.lastAiProcessOther.HasExited);
+                    bool aiRunning = AiProcess.IsRunning();
 
                     string lastFrame = (Interpolate.currentSettings.is3D ? Math.Min(InterpolationProgress.lastFrame, InterpolationProgress.lastOtherFrame) : InterpolationProgress.lastFrame).ToString().PadLeft(Padding.interpFrames, '0');
                     for (int frameLineNum = unencodedFrameLines.Count > 0 ? unencodedFrameLines.Last() + 1 : 0; frameLineNum < interpFramesLines.Length; frameLineNum++)
@@ -103,40 +104,30 @@ namespace Flowframes.Main
                         unencodedFrameLines.Add(frameLineNum);
                     }
 
-                    if (Config.GetBool(Config.Key.alwaysWaitForAutoEnc))
+                    if (aiRunning && Config.GetBool(Config.Key.alwaysWaitForAutoEnc))
                     {
-                        int maxFrames = chunkSize + (0.5f * chunkSize).RoundToInt() + safetyBufferFrames;
                         bool overwhelmed = unencodedFrameLines.Count > maxFrames;
 
                         if (overwhelmed && !AiProcessSuspend.aiProcFrozen && OsUtils.IsProcessHidden(AiProcess.lastAiProcess))
                         {
                             Logger.Log($"AutoEnc is overwhelmed! ({unencodedFrameLines.Count} unencoded frames > {maxFrames}) - Pausing.", true);
-                            AiProcessSuspend.SuspendResumeAi(true);
+                            AiProcessSuspend.Suspend();
                         }
                         else if (!overwhelmed)
                         {
                             if (AiProcessSuspend.aiProcFrozen)
                             {
-                                AiProcessSuspend.SuspendResumeAi(false);
+                                AiProcessSuspend.Resume();
                             }
                             else if (Interpolate.currentSettings.is3D)
                             {
                                 int unbalance = InterpolationProgress.lastFrame - InterpolationProgress.lastOtherFrame;
                                 if (unbalance > maxUnbalance)
-                                {
-                                    if (!AiProcessSuspend.IsMainSuspended())
-                                        AiProcessSuspend.SuspendResumeAi(true, AiProcessSuspend.ProcessType.Main);
-                                }
+                                    AiProcessSuspend.Suspend(AiProcessSuspend.ProcessType.Main);
                                 else if (unbalance < -maxUnbalance)
-                                {
-                                    if (!AiProcessSuspend.IsOtherSuspended())
-                                        AiProcessSuspend.SuspendResumeAi(true, AiProcessSuspend.ProcessType.Other);
-                                }
-                                else
-                                {
-                                    if ((unbalance < -maxUnbalance / 5 && AiProcessSuspend.IsMainSuspended()) || (unbalance > maxUnbalance / 5 && AiProcessSuspend.IsOtherSuspended()))
-                                        AiProcessSuspend.SuspendResumeAi(false);
-                                }
+                                    AiProcessSuspend.Suspend(AiProcessSuspend.ProcessType.Other);
+                                else if ((unbalance < -maxUnbalance / 5) && !AiProcessSuspend.IsMainRunning() || (unbalance > maxUnbalance / 5) && !AiProcessSuspend.IsOtherRunning())
+                                    AiProcessSuspend.Resume();
                             }
                         }
                     }
@@ -170,13 +161,14 @@ namespace Flowframes.Main
                             int noLinesToEncode = frameLinesToEncode.Count; // capture value
                             currentEncodingTask = Task.Run(async () =>
                             {
-                                await Export.EncodeChunk(outpath, Interpolate.currentSettings.interpFolder, currentChunkNo, Interpolate.currentSettings.outSettings, firstLineToEncode, noLinesToEncode);
+                                await Export.EncodeChunk(outpath, Interpolate.currentSettings.interpFolder, currentChunkNo, Interpolate.currentSettings.outSettings, firstLineToEncode, noLinesToEncode, aiRunning ? AvProcess.LogMode.Hidden : AvProcess.LogMode.OnlyLastLine);
 
                                 if (Interpolate.canceled) return;
 
                                 if (aiRunning && Config.GetInt(Config.Key.autoEncMode) == 2)
                                     DeleteOldFrames(interpFramesPath, frameLinesToEncode);
 
+                                Logger.Log("[AE] Done Encoding Chunk #" + currentChunkNo, true, false, "ffmpeg");
                                 busy = false;
                             });
 
@@ -184,7 +176,6 @@ namespace Flowframes.Main
 
                             encodedFrameLines.AddRange(frameLinesToEncode);
                             unencodedFrameLines.RemoveRange(0, frameLinesToEncode.Count);
-                            Logger.Log("[AE] Done Encoding Chunk #" + chunkNo, true, false, "ffmpeg");
                             //lastEncodedFrameNum = (frameLinesToEncode.Last() + 1);
                             chunkNo++;
                             AutoEncodeResume.Save();
@@ -265,11 +256,11 @@ namespace Flowframes.Main
         {
             //if (Interpolate.canceled || interpFramesFolder == null) return false;
             if (Interpolate.canceled) return false;
-            bool processRunning = (AiProcess.lastAiProcess != null && !AiProcess.lastAiProcess.HasExited) || (AiProcess.lastAiProcessOther != null && !AiProcess.lastAiProcessOther.HasExited);
+            bool aiRunning = AiProcess.IsRunning();
             if (debug)
-                Logger.Log($"[AE] HasWorkToDo - Process Running: {processRunning} - encodedFrameLines.Count: {encodedFrameLines.Count} - interpFramesLines.Length: {interpFramesLines.Length}", true);
+                Logger.Log($"[AE] HasWorkToDo - Process Running: {aiRunning} - encodedFrameLines.Count: {encodedFrameLines.Count} - interpFramesLines.Length: {interpFramesLines.Length}", true);
 
-            return processRunning || encodedFrameLines.Count < interpFramesLines.Length;
+            return aiRunning || encodedFrameLines.Count < interpFramesLines.Length;
         }
 
         static int GetChunkSize(int targetFramesAmount)

@@ -142,7 +142,7 @@ namespace Flowframes.Os
                             Logger.Log(FormatUtils.BeautifyFfmpegStats(Logger.LastLogLine), false, Logger.LastUiLine.ToLowerInvariant().Contains("frame"));
                     }
 
-                    if (AvProcess.lastAvProcess.HasExited && !AutoEncode.HasWorkToDo())     // Stop logging if ffmpeg is not running & AE is done
+                    if (AvProcess.lastAvProcess != null && AvProcess.lastAvProcess.HasExited && !AutoEncode.HasWorkToDo())     // Stop logging if ffmpeg is not running & AE is done
                         break;
 
                     await Task.Delay(500);
@@ -226,7 +226,7 @@ namespace Flowframes.Os
                 rifePy.BeginErrorReadLine();
             }
 
-            while (!rifePy.HasExited) await Task.Delay(1);
+            await rifePy.WaitForExitAsync();
         }
 
         public static async Task RunFlavrCuda(string framesPath, float interpFactor, string mdl)
@@ -286,7 +286,7 @@ namespace Flowframes.Os
                 flavrPy.BeginErrorReadLine();
             }
 
-            while (!flavrPy.HasExited) await Task.Delay(1);
+            await flavrPy.WaitForExitAsync();
         }
 
         public static async Task RunRifeNcnn(string framesPath, string outPath, float factor, string mdl)
@@ -437,7 +437,7 @@ namespace Flowframes.Os
                 rifeNcnnVs.BeginErrorReadLine();
             }
 
-            while (!rifeNcnnVs.HasExited) await Task.Delay(1);
+            await rifeNcnnVs.WaitForExitAsync();
         }
 
         public static async Task RunDainNcnn(string framesPath, string outPath, float factor, string mdl, int tilesize)
@@ -491,8 +491,7 @@ namespace Flowframes.Os
                 dain.BeginErrorReadLine();
             }
 
-            while (!dain.HasExited)
-                await Task.Delay(100);
+            await dain.WaitForExitAsync();
         }
 
         public static async Task RunXvfiCuda(string framesPath, float interpFactor, string mdl)
@@ -556,7 +555,7 @@ namespace Flowframes.Os
                 xvfiPy.BeginErrorReadLine();
             }
 
-            while (!xvfiPy.HasExited) await Task.Delay(1);
+            await xvfiPy.WaitForExitAsync();
         }
 
         public static async Task RunIfrnetNcnn(string framesPath, string outPath, float factor, string mdl)
@@ -609,7 +608,7 @@ namespace Flowframes.Os
                 ifrnetNcnn.BeginErrorReadLine();
             }
 
-            while (!ifrnetNcnn.HasExited) await Task.Delay(1);
+            await ifrnetNcnn.WaitForExitAsync();
         }
 
         static void LogOutput(string line, AI ai, bool err = false)
@@ -731,6 +730,9 @@ namespace Flowframes.Os
             InterpolationProgress.UpdateLastFrameFromInterpOutput(line);
         }
 
-
+        public static bool IsRunning()
+        {
+            return (lastAiProcess != null && !lastAiProcess.HasExited) || (lastAiProcessOther != null && !lastAiProcessOther.HasExited);
+        }
     }
 }
