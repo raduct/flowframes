@@ -297,7 +297,7 @@ namespace Flowframes.Media
             if (enc == Encoder.Nvenc265)
             {
                 int crf = GetCrf(settings);
-                args.Add($"-b:v 0 -preset p7 {(crf > 0 ? $"-cq {crf}" : "-tune lossless")}");
+                args.Add($"-b:v 0 -preset p7 -maxrate 300M {(crf > 0 ? $"-cq {crf}" : "-tune lossless")}");
             }
 
             if (enc == Encoder.NvencAv1)
