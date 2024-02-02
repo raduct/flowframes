@@ -323,7 +323,7 @@ namespace Flowframes.MiscUtils
             var allEncoders = Enum.GetValues(typeof(Encoder)).Cast<Encoder>();
             var supportedCodecs = GetSupportedCodecs(format);
             var availableEncoders = supportedCodecs.SelectMany(codec => allEncoders.Where(enc => enc.GetInfo().Codec == codec)).ToList();
-            RemoveIncompatibleEncoders(ref availableEncoders, new[] { 
+            RemoveIncompatibleEncoders(ref availableEncoders, new[] {
                 Encoder.Nvenc264, Encoder.Nvenc265, Encoder.NvencAv1,
                 Encoder.Amf264, Encoder.Amf265,
                 Encoder.Qsv264, Encoder.Qsv265,
@@ -331,26 +331,26 @@ namespace Flowframes.MiscUtils
             return availableEncoders;
         }
 
-        private static void RemoveIncompatibleEncoders (ref List<Encoder> encoders, IEnumerable<Encoder> encodersToCheck)
+        private static void RemoveIncompatibleEncoders(ref List<Encoder> encoders, IEnumerable<Encoder> encodersToCheck)
         {
             var availHwEncs = Config.Get(Config.Key.SupportedHwEncoders).Split(',');
 
-            foreach(Encoder enc in encodersToCheck)
+            foreach (Encoder enc in encodersToCheck)
             {
                 if (encoders.Contains(enc) && !availHwEncs.Contains(enc.GetInfo().Name))
                     encoders.Remove(enc);
             }
         }
 
-        public static int GetCrf (Quality.Common qualityLevel, Encoder encoder)
+        public static int GetCrf(Quality.Common qualityLevel, Encoder encoder)
         {
             var encoderMultipliers = new Dictionary<Encoder, float>
             {
                 { Encoder.X265, 1.0f },
                 { Encoder.VpxVp9, 1.3f },
-                { Encoder.SvtAv1, 1.4f },
+                { Encoder.SvtAv1, 1.3f },
                 { Encoder.Nvenc264, 1.1f },
-                { Encoder.Nvenc265, 1.15f },
+                { Encoder.Nvenc265, 1.3f },
                 { Encoder.NvencAv1, 1.3f },
                 { Encoder.Qsv265, 0.8f }
             };
@@ -359,7 +359,7 @@ namespace Flowframes.MiscUtils
             return (int)Math.Round(Crfs[qualityLevel] * multiplier);
         }
 
-        public static int GetGifColors (Quality.GifColors qualityLevel)
+        public static int GetGifColors(Quality.GifColors qualityLevel)
         {
             switch (qualityLevel)
             {
@@ -410,7 +410,7 @@ namespace Flowframes.MiscUtils
             { Quality.JpegWebm.ImgLowest, 0 },
         };
 
-        public static int GetImgSeqQ (OutputSettings settings)
+        public static int GetImgSeqQ(OutputSettings settings)
         {
             var qualityLevel = ParseUtils.GetEnum<Quality.JpegWebm>(settings.Quality, true, Strings.VideoQuality);
 

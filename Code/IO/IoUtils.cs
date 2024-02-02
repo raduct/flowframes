@@ -265,8 +265,7 @@ namespace Flowframes.IO
 
         public static async Task RenameCounterDir(string path, int startAt = 0, int zPad = 8, bool is3D = false)
         {
-            Stopwatch sw = new Stopwatch();
-            sw.Restart();
+            Stopwatch sw = Stopwatch.StartNew();
             int counter = startAt;
             DirectoryInfo d = new DirectoryInfo(path);
             FileInfo[] files = d.GetFiles();

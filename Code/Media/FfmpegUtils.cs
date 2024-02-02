@@ -197,7 +197,7 @@ namespace Flowframes.Media
             return new FpsInfo(await IoUtils.GetVideoFramerate(path));
         }
 
-        private static float GetFpsEstimationTolerance (long videoDurationMs)
+        private static float GetFpsEstimationTolerance(long videoDurationMs)
         {
             if (videoDurationMs < 300) return 5.0f;
             if (videoDurationMs < 1000) return 2.5f;
@@ -260,7 +260,7 @@ namespace Flowframes.Media
             if (enc == Encoder.SvtAv1)
             {
                 int crf = GetCrf(settings);
-                args.Add($"-crf {crf} {GetSvtAv1Speed()} -svtav1-params enable-qm=1:enable-overlays=1:enable-tf=0:scd=0");
+                args.Add($"-crf {crf} {GetSvtAv1Speed()} -svtav1-params tune=0:enable-qm=1:qm-min=0:enable-tf=0");
             }
 
             if (enc == Encoder.VpxVp9)
@@ -297,7 +297,7 @@ namespace Flowframes.Media
             if (enc == Encoder.Nvenc265)
             {
                 int crf = GetCrf(settings);
-                args.Add($"-b:v 0 -preset p7 -maxrate 300M {(crf > 0 ? $"-cq {crf}" : "-tune lossless")}");
+                args.Add($"-b:v 0 -preset p7 -maxrate 300M -bf 3 -b_ref_mode middle -temporal-aq 1 -rc-lookahead 50 {(crf > 0 ? $"-cq {crf}" : "-tune lossless")}");
             }
 
             if (enc == Encoder.NvencAv1)

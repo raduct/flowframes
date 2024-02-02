@@ -18,7 +18,7 @@ namespace Flowframes.Main
             canceled = false;
             Program.mainForm.SetWorking(true);
 
-            if(currentSettings == null)
+            if (currentSettings == null)
             {
                 Logger.Log($"[SBS] Getting new current settings", true);
                 currentSettings = Program.mainForm.GetCurrentSettings();
@@ -121,7 +121,7 @@ namespace Flowframes.Main
 
             if (!(await InterpolateUtils.CheckEncoderValid())) return;
 
-            string[] outFrames = IoUtils.GetFilesSorted(currentSettings.interpFolder, currentSettings.interpExt);
+            string[] outFrames = IoUtils.GetFilesSorted(currentSettings.interpFolder, "*" + currentSettings.interpExt);
 
             if (outFrames.Length > 0 && !IoUtils.CheckImageValid(outFrames[0]))
             {

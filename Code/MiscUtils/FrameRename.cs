@@ -15,6 +15,9 @@ namespace Flowframes.MiscUtils
         public static async Task Rename()
         {
             importFilenames = IoUtils.GetFilesSorted(Interpolate.currentSettings.framesFolder).Select(x => Path.GetFileName(x)).ToArray();
+
+            Logger.Log($"Renaming {importFilenames.Length} frames ...");
+
             await IoUtils.RenameCounterDir(Interpolate.currentSettings.framesFolder, 0, Padding.inputFramesRenamed, Interpolate.currentSettings.is3D);
             framesAreRenamed = true;
         }
@@ -23,8 +26,9 @@ namespace Flowframes.MiscUtils
         {
             if (!framesAreRenamed) return;
 
-            Stopwatch sw = new Stopwatch();
-            sw.Restart();
+            Logger.Log($"Unrenaming {importFilenames.Length} frames ...");
+
+            Stopwatch sw = Stopwatch.StartNew();
             int multiplier = Interpolate.currentSettings.is3D ? 2 : 1;
 
             string[] files = IoUtils.GetFilesSorted(Interpolate.currentSettings.framesFolder);
