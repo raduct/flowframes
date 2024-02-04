@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using DT = System.DateTime;
 
@@ -13,9 +14,8 @@ namespace Flowframes
     class Logger
     {
         public static TextBox textbox;
-        static string file;
         public const string defaultLogName = "sessionlog";
-        public static long id;
+        private static long id;
 
         private static ConcurrentDictionary<string, ConcurrentQueue<string>> sessionLogs = new ConcurrentDictionary<string, ConcurrentQueue<string>>();
         private static string _lastUi = "";
@@ -39,20 +39,33 @@ namespace Flowframes
             }
         }
 
-        private static ConcurrentQueue<LogEntry> logQueue = new ConcurrentQueue<LogEntry>();
+        private static BlockingCollection<LogEntry> logQueue = new BlockingCollection<LogEntry>();
 
         public static void Log(string msg, bool hidden = false, bool replaceLastLine = false, string filename = "")
         {
-            logQueue.Enqueue(new LogEntry(msg, hidden, replaceLastLine, filename));
-            ShowNext();
+            logQueue.Add(new LogEntry(msg, hidden, replaceLastLine, filename));
         }
 
-        private static void ShowNext()
+        public static void StartLogging()
         {
-            LogEntry entry;
+            Task.Run(() =>
+            {
+                Console.WriteLine("Start logging");
+                try
+                {
+                    while (true)
+                        Show(logQueue.Take());
+                }
+                catch (InvalidOperationException)
+                {
+                    Console.WriteLine("Finished logging");
+                }
+            });
+        }
 
-            if (logQueue.TryDequeue(out entry))
-                Show(entry);
+        public static void StopLogging()
+        {
+            logQueue.CompleteAdding();
         }
 
         private static void Show(LogEntry entry)
@@ -108,7 +121,7 @@ namespace Flowframes
             if (Path.GetExtension(filename) != ".txt")
                 filename = Path.ChangeExtension(filename, "txt");
 
-            file = Path.Combine(Paths.GetLogPath(), filename);
+            string file = Path.Combine(Paths.GetLogPath(), filename);
             logStr = logStr.Replace(Environment.NewLine, " ").TrimWhitespaces();
             string time = DateTime.Now.ToString("MM-dd-yyyy HH:mm:ss");
 
@@ -171,7 +184,7 @@ namespace Flowframes
             if (Path.GetExtension(filename) != ".txt")
                 filename = Path.ChangeExtension(filename, "txt");
 
-            file = Path.Combine(Paths.GetLogPath(), filename);
+            string file = Path.Combine(Paths.GetLogPath(), filename);
 
             string time = DT.Now.Month + "-" + DT.Now.Day + "-" + DT.Now.Year + " " + DT.Now.Hour + ":" + DT.Now.Minute + ":" + DT.Now.Second;
 

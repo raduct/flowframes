@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Flowframes.MiscUtils
 {
     class BackgroundTaskManager
     {
-        public static ulong currentId = 0;
-        public static List<RunningTask> runningTasks = new List<RunningTask>();
+        private static ulong currentId = 0;
+        private static List<RunningTask> runningTasks = new List<RunningTask>();
 
         public class RunningTask
         {
@@ -18,7 +14,7 @@ namespace Flowframes.MiscUtils
             public ulong id;
             public int timeoutSeconds;
 
-            public RunningTask (string name, ulong id, int timeoutSeconds)
+            public RunningTask(string name, ulong id, int timeoutSeconds)
             {
                 this.name = name;
                 this.id = id;
@@ -27,17 +23,17 @@ namespace Flowframes.MiscUtils
             }
         }
 
-        public static bool IsBusy ()
+        public static bool IsBusy()
         {
             Logger.Log($"[BgTaskMgr] BackgroundTaskManager is busy - {runningTasks.Count} tasks running.", true);
             return runningTasks.Count > 0;
         }
 
-        public static void ClearExpired ()
+        public static void ClearExpired()
         {
-            foreach(RunningTask task in runningTasks)
+            foreach (RunningTask task in runningTasks)
             {
-                if(task.timer.Sw.ElapsedMilliseconds > task.timeoutSeconds * 1000)
+                if (task.timer.Sw.ElapsedMilliseconds > task.timeoutSeconds * 1000)
                 {
                     Logger.Log($"[BgTaskMgr] Task with ID {task.id} timed out, has been running for {task.timer}!", true);
                     runningTasks.Remove(task);
@@ -55,9 +51,9 @@ namespace Flowframes.MiscUtils
 
         public static void Remove(ulong id)
         {
-            foreach(RunningTask task in new List<RunningTask>(runningTasks))
+            foreach (RunningTask task in new List<RunningTask>(runningTasks))
             {
-                if(task.id == id)
+                if (task.id == id)
                 {
                     Logger.Log($"[BgTaskMgr] Task '{task.name}' has finished after {task.timer} (Timeout {task.timeoutSeconds}s)", true);
                     runningTasks.Remove(task);

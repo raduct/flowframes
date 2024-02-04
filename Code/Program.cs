@@ -39,6 +39,7 @@ namespace Flowframes
             CultureInfo.DefaultThreadCurrentCulture = culture;
             CultureInfo.DefaultThreadCurrentUICulture = culture;
 
+            Logger.StartLogging();
             Paths.Init();
             Config.Init();
             Cleanup();
@@ -54,6 +55,7 @@ namespace Flowframes
             Logger.Log($"Args: {(args.Length > 0 ? string.Join(", ", args) : "None")}", true);
 
             LaunchMainForm();
+            Logger.StopLogging();
         }
 
         static void LaunchMainForm()

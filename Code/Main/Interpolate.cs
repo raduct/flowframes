@@ -72,7 +72,7 @@ namespace Flowframes
             }
 
             if (!AutoEncodeResume.resumeNextRun && Config.GetBool(Config.Key.keepTempFolder) && IoUtils.GetAmountOfFiles(currentSettings.framesFolder, false) > 0)
-                await Task.Run(async () => { await FrameRename.Unrename(); });
+                await Task.Run(async () => { await FrameRename.UnRename(); });
 
             IoUtils.DeleteIfSmallerThanKb(currentSettings.FullOutPath);
             await Done();

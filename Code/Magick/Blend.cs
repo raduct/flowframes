@@ -75,12 +75,12 @@ namespace Flowframes.Magick
 
                         while (runningTasks.Count >= maxThreads)
                         {
-                            int x = Task.WaitAny(runningTasks.ToArray());
-                            runningTasks.RemoveAt(x);
+                            await Task.WhenAny(runningTasks);
+                            runningTasks.RemoveAll((Task t) => { return t.Status == TaskStatus.RanToCompletion; });
                         }
 
                         Logger.Log($"Starting task for transition {values[0]} > {values[1]} ({runningTasks.Count}/{maxThreads} running)", true);
-                        
+
                         string[] outFilenames = outputFilenames.ToArray(); // capture variable
                         Task newTask = Task.Run(() => BlendImages(img1, img2, outFilenames));
                         runningTasks.Add(newTask);

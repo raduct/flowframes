@@ -8,7 +8,6 @@ using Force.Crc32;
 using ImageMagick;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -261,42 +260,6 @@ namespace Flowframes.IO
             }
 
             return true;
-        }
-
-        public static async Task RenameCounterDir(string path, int startAt = 0, int zPad = 8, bool is3D = false)
-        {
-            Stopwatch sw = Stopwatch.StartNew();
-            int counter = startAt;
-            DirectoryInfo d = new DirectoryInfo(path);
-            FileInfo[] files = d.GetFiles();
-            files.OrderBy(n => n);
-            string dirA = d.FullName;
-            string dirB = Paths.GetOtherDir(dirA);
-            if (is3D)
-                CreateDir(dirB);
-
-            string dir = dirA;
-            foreach (FileInfo file in files)
-            {
-                File.Move(file.FullName, Path.Combine(dir, counter.ToString().PadLeft(zPad, '0') + Path.GetExtension(file.FullName)));
-
-                if (is3D)
-                    if (dir == dirA)
-                        dir = dirB;
-                    else
-                    {
-                        dir = dirA;
-                        counter++;
-                    }
-                else
-                    counter++;
-
-                if (sw.ElapsedMilliseconds > 100)
-                {
-                    await Task.CompletedTask;
-                    sw.Restart();
-                }
-            }
         }
 
         public static async Task ReverseRenaming(string basePath, Dictionary<string, string> oldNewMap) // Relative -> absolute paths
