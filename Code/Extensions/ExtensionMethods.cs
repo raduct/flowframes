@@ -1,30 +1,28 @@
-﻿using System;
+﻿using Flowframes.Data;
+using Flowframes.MiscUtils;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Management.Automation;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Flowframes.Data;
-using System.Management.Automation;
-using System.Drawing;
-using Flowframes.MiscUtils;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json;
-using Win32Interop.Structs;
 
 namespace Flowframes
 {
     public static class ExtensionMethods
     {
-        public static string TrimNumbers(this string s, bool allowDotComma = false)
+        public static string TrimNotNumbers(this string s, bool allowDotComma = false)
         {
             if (!allowDotComma)
-                s = Regex.Replace(s, "[^0-9]", "");
+                s = Regex.Replace(s, "[^\\-,0-9]", "");
             else
-                s = Regex.Replace(s, "[^.,0-9]", "");
+                s = Regex.Replace(s, "[^.,\\-,0-9]", "");
             return s.Trim();
         }
 
@@ -45,7 +43,7 @@ namespace Flowframes
 
             try
             {
-                return int.Parse(str.TrimNumbers());
+                return int.Parse(str.TrimNotNumbers());
             }
             catch (Exception e)
             {
@@ -81,7 +79,7 @@ namespace Flowframes
             if (str == null || str.Length < 1)
                 return 0f;
 
-            string num = str.TrimNumbers(true).Replace(",", ".");
+            string num = str.Replace(",", ".").TrimNotNumbers(true);
             float.TryParse(num, out float value);
             return value;
         }
@@ -142,7 +140,7 @@ namespace Flowframes
         public static string Trunc(this string inStr, int maxChars, bool addEllipsis = true)
         {
             string str = inStr.Length <= maxChars ? inStr : inStr.Substring(0, maxChars);
-            if(addEllipsis && inStr.Length > maxChars)
+            if (addEllipsis && inStr.Length > maxChars)
                 str += "…";
             return str;
         }
@@ -189,7 +187,7 @@ namespace Flowframes
             return newString.ToString();
         }
 
-        public static string ReplaceLast (this string str, string stringToReplace, string replaceWith)
+        public static string ReplaceLast(this string str, string stringToReplace, string replaceWith)
         {
             int place = str.LastIndexOf(stringToReplace);
 
@@ -199,12 +197,12 @@ namespace Flowframes
             return str.Remove(place, stringToReplace.Length).Insert(place, replaceWith);
         }
 
-        public static string[] SplitBy (this string str, string splitBy)
+        public static string[] SplitBy(this string str, string splitBy)
         {
             return str.Split(new string[] { splitBy }, StringSplitOptions.None);
         }
 
-        public static string RemoveComments (this string str)
+        public static string RemoveComments(this string str)
         {
             return str.Split('#')[0].SplitBy("//")[0];
         }
@@ -216,9 +214,9 @@ namespace Flowframes
             return filename + suffix + ext;
         }
 
-        public static string ToStringDot (this float f, string format = "")
+        public static string ToStringDot(this float f, string format = "")
         {
-            if(string.IsNullOrWhiteSpace(format))
+            if (string.IsNullOrWhiteSpace(format))
                 return f.ToString().Replace(",", ".");
             else
                 return f.ToString(format).Replace(",", ".");
@@ -385,12 +383,12 @@ namespace Flowframes
             return s.ToUpperInvariant();
         }
 
-        public static EncoderInfoVideo GetInfo (this Enums.Encoding.Encoder enc)
+        public static EncoderInfoVideo GetInfo(this Enums.Encoding.Encoder enc)
         {
             return OutputUtils.GetEncoderInfoVideo(enc);
         }
 
-        public static bool IsEmpty (this string s)
+        public static bool IsEmpty(this string s)
         {
             return string.IsNullOrWhiteSpace(s);
         }

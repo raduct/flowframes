@@ -87,9 +87,15 @@ namespace Flowframes.Main
                 }
             }
 
-            if (!(await IoUtils.TryDeleteIfExistsAsync(currentSettings.interpFolder)))
+            if (!await IoUtils.TryDeleteIfExistsAsync(currentSettings.interpFolder))
             {
-                UiUtils.ShowMessageBox("Failed to delete existing frames folder - Make sure no file is opened in another program!", UiUtils.MessageType.Error);
+                UiUtils.ShowMessageBox("Failed to delete existing interpolated frames folder - Make sure no file is opened in another program!", UiUtils.MessageType.Error);
+                return;
+            }
+
+            if (!await IoUtils.TryDeleteIfExistsAsync(Paths.GetOtherDir(currentSettings.interpFolder)))
+            {
+                UiUtils.ShowMessageBox("Failed to delete existing other interpolated frames folder - Make sure no file is opened in another program!", UiUtils.MessageType.Error);
                 return;
             }
 

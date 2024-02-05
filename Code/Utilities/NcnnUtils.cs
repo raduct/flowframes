@@ -4,9 +4,6 @@ using Flowframes.Main;
 using Flowframes.Os;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,13 +11,13 @@ namespace Flowframes.Utilities
 {
     class NcnnUtils
     {
-        public static int GetRifeNcnnGpuThreads(Size res, int gpuId, AI ai)
+        public static int GetRifeNcnnGpuThreads(int gpuId, AI ai)
         {
             int threads = Config.GetInt(Config.Key.ncnnThreads);
-            int maxThreads = VulkanUtils.GetMaxNcnnThreads(gpuId);
+            int maxThreads = gpuId == -1 ? Environment.ProcessorCount / 2 : VulkanUtils.GetMaxNcnnThreads(gpuId);
 
             threads = threads.Clamp(1, maxThreads); // To avoid exceeding the max queue count
-            Logger.Log($"Using {threads}/{maxThreads} GPU compute threads.", true, false, ai.LogFilename);
+            Logger.Log($"Using {threads}/{maxThreads} compute threads on GPU with ID {gpuId}.", true, false, ai.LogFilename);
 
             return threads;
         }
@@ -44,7 +41,7 @@ namespace Flowframes.Utilities
         public static string GetNcnnThreads(AI ai)
         {
             List<int> enabledGpuIds = Config.Get(Config.Key.ncnnGpus).Split(',').Select(s => s.GetInt()).ToList(); // Get GPU IDs
-            List<int> gpuThreadCounts = enabledGpuIds.Select(g => GetRifeNcnnGpuThreads(new Size(), g, ai)).ToList(); // Get max thread count for each GPU
+            List<int> gpuThreadCounts = enabledGpuIds.Select(g => GetRifeNcnnGpuThreads(g, ai)).ToList(); // Get max thread count for each GPU
             string progThreadsStr = string.Join(",", gpuThreadCounts);
             return $"{(Interpolate.currentlyUsingAutoEnc ? 2 : 4)}:{progThreadsStr}:4"; // Read threads: 1 for singlethreaded, 2 for autoenc, 4 if order is irrelevant
         }

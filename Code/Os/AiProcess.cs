@@ -329,7 +329,7 @@ namespace Flowframes.Os
             string uhdStr = await InterpolateUtils.UseUhd() ? "-u" : "";
             string ttaStr = Config.GetBool(Config.Key.rifeNcnnUseTta, false) ? "-x" : "";
 
-            rifeNcnn.StartInfo.Arguments = $"{OsUtils.GetCmdArg()} cd /D {Path.Combine(Paths.GetPkgPath(), Implementations.rifeNcnn.PkgDir).Wrap()} & rife-ncnn-vulkan.exe " +
+            rifeNcnn.StartInfo.Arguments = $"{OsUtils.GetCmdArg()} cd /D {Path.Combine(Paths.GetPkgPath(), Implementations.rifeNcnn.PkgDir).Wrap()} & rife-ncnn-vulkan.exe" +
                 $" -v -i {inPath.Wrap()} -o {outPath.Wrap()} {frames} -m {mdl.ToLowerInvariant()} {ttaStr} {uhdStr} -g {Config.Get(Config.Key.ncnnGpus)} -f {NcnnUtils.GetNcnnPattern()} -j {NcnnUtils.GetNcnnThreads(Implementations.rifeNcnn)}";
 
             Logger.Log("cmd.exe " + rifeNcnn.StartInfo.Arguments, true);
@@ -399,7 +399,7 @@ namespace Flowframes.Os
                 Res = res,
                 Uhd = InterpolateUtils.UseUhd(res),
                 GpuId = gpuId,
-                GpuThreads = NcnnUtils.GetRifeNcnnGpuThreads(res, gpuId, Implementations.rifeNcnnVs),
+                GpuThreads = NcnnUtils.GetRifeNcnnGpuThreads(gpuId, Implementations.rifeNcnnVs),
                 SceneDetectSensitivity = Config.GetBool(Config.Key.scnDetect) ? Config.GetFloat(Config.Key.scnDetectValue) * 0.7f : 0f,
                 Loop = Config.GetBool(Config.Key.enableLoop),
                 MatchDuration = Config.GetBool(Config.Key.fixOutputDuration),
@@ -616,11 +616,9 @@ namespace Flowframes.Os
             if (string.IsNullOrWhiteSpace(line) || line.Length < 6)
                 return;
 
-            Stopwatch sw = new Stopwatch();
-            sw.Restart();
-
             lastLogName = ai.LogFilename;
-            Logger.Log(line, true, false, ai.LogFilename);
+            if (!line.EndsWith(" done"))
+                Logger.Log(line, true, false, ai.LogFilename);
 
             if (ai.Backend == AI.AiBackend.Pytorch) // Pytorch specific
             {

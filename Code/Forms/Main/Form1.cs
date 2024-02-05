@@ -497,7 +497,7 @@ namespace Flowframes.Forms.Main
             }
             else    // Parse float
             {
-                fpsInTbox.Text = fpsInTbox.Text.TrimNumbers(true);
+                fpsInTbox.Text = fpsInTbox.Text.TrimNotNumbers(true);
                 fpsOutTbox.Text = (fpsInTbox.GetFloat() * interpFactorCombox.GetFloat()).ToString() + " FPS";
 
                 if (!fpsInTbox.ReadOnly)

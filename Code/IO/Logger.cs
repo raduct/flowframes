@@ -29,6 +29,7 @@ namespace Flowframes
             public bool hidden;
             public bool replaceLastLine;
             public string filename;
+            public DT time;
 
             public LogEntry(string logMessageArg, bool hiddenArg = false, bool replaceLastLineArg = false, string filenameArg = "")
             {
@@ -36,6 +37,7 @@ namespace Flowframes
                 hidden = hiddenArg;
                 replaceLastLine = replaceLastLineArg;
                 filename = filenameArg;
+                time = DateTime.Now;
             }
         }
 
@@ -110,10 +112,10 @@ namespace Flowframes
             if (!entry.hidden)
                 msg = "[UI] " + msg;
 
-            LogToFile(msg, false, entry.filename);
+            LogToFile(entry.time, msg, false, entry.filename);
         }
 
-        private static void LogToFile(string logStr, bool noLineBreak, string filename)
+        private static void LogToFile(DT time, string logStr, bool noLineBreak, string filename)
         {
             if (string.IsNullOrWhiteSpace(filename))
                 filename = defaultLogName;
@@ -123,11 +125,10 @@ namespace Flowframes
 
             string file = Path.Combine(Paths.GetLogPath(), filename);
             logStr = logStr.Replace(Environment.NewLine, " ").TrimWhitespaces();
-            string time = DateTime.Now.ToString("MM-dd-yyyy HH:mm:ss");
 
             try
             {
-                string appendStr = noLineBreak ? $" {logStr}" : $"{Environment.NewLine}[{id.ToString().PadLeft(8, '0')}] [{time}]: {logStr}";
+                string appendStr = noLineBreak ? $" {logStr}" : $"{Environment.NewLine}[{id.ToString().PadLeft(8, '0')}] [{time.ToString("yyyy-MM-dd HH:mm:ss")}]: {logStr}";
 
                 if (sessionLogs.ContainsKey(filename))
                 {
@@ -186,7 +187,7 @@ namespace Flowframes
 
             string file = Path.Combine(Paths.GetLogPath(), filename);
 
-            string time = DT.Now.Month + "-" + DT.Now.Day + "-" + DT.Now.Year + " " + DT.Now.Hour + ":" + DT.Now.Minute + ":" + DT.Now.Second;
+            string time = DT.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
             try
             {
