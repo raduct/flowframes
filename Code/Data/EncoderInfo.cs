@@ -2,7 +2,7 @@
 {
     public class EncoderInfo
     {
-        public virtual string FfmpegName { get; set; } = "";
+        public string FfmpegName { get; set; } = "";
 
         public EncoderInfo() { }
 

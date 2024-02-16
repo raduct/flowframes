@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Flowframes.Ui
@@ -10,7 +8,7 @@ namespace Flowframes.Ui
     public static class ControlExtensions
     {
         [System.Runtime.InteropServices.DllImport("user32.dll")]
-        public static extern bool LockWindowUpdate(IntPtr hWndLock);
+        private static extern bool LockWindowUpdate(IntPtr hWndLock);
 
         public static void Suspend(this Control control)
         {

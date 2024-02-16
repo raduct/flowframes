@@ -12,8 +12,8 @@ namespace Flowframes.IO
     class Symlinks
     {
         public enum Flag { File = 0, Directory = 1, Unprivileged = 2 }
-        [DllImport("kernel32.dll")]
-        public static extern bool CreateSymbolicLink(string lpSymlinkFileName, string lpTargetFileName, Flag dwFlags);
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        private static extern bool CreateSymbolicLink(string lpSymlinkFileName, string lpTargetFileName, Flag dwFlags);
 
         public static bool SymlinksAllowed()
         {
