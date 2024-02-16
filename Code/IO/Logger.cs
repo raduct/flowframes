@@ -60,6 +60,7 @@ namespace Flowframes
                 }
                 catch (InvalidOperationException)
                 {
+                    logQueue.Dispose();
                     Console.WriteLine("Finished logging");
                 }
             });

@@ -19,14 +19,14 @@ namespace Flowframes.MiscUtils
             Logger.Log($"Renaming {importFilenames.Length} frames...");
             Stopwatch benchmark = Stopwatch.StartNew();
 
-            int chunkSize = importFilenames.Length;// 2 * (int)Math.Ceiling((double)importFilenames.Length / 2 / Environment.ProcessorCount); // Make sure is even for 3D double frames
+            //int chunkSize = 2* (int)Math.Ceiling((double)importFilenames.Length / 4);// 2 * (int)Math.Ceiling((double)importFilenames.Length / 2 / Environment.ProcessorCount); // Make sure is even for 3D double frames
+            int chunkSize = importFilenames.Length;
             List<Task> tasks = new List<Task>();
 
             for (int i = 0; i < importFilenames.Length; i += chunkSize)
             {
                 int from = i; // capture variable
-                //tasks.Add(Task.Run(() => RenameCounterDirWorker(files, from, chunkSize)));
-                RenameCounterDirWorker(importFilenames, from, chunkSize);
+                tasks.Add(Task.Run(() => RenameCounterDirWorker(importFilenames, from, chunkSize)));
             }
             await Task.WhenAll(tasks);
 
