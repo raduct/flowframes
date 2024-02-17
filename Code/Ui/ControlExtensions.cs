@@ -1,23 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace Flowframes.Ui
 {
     public static class ControlExtensions
     {
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
-        private static extern bool LockWindowUpdate(IntPtr hWndLock);
+        internal static class NativeMethods
+        {
+            [DllImport("user32.dll")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            internal static extern bool LockWindowUpdate(IntPtr hWndLock);
+        }
 
         public static void Suspend(this Control control)
         {
-            LockWindowUpdate(control.Handle);
+            NativeMethods.LockWindowUpdate(control.Handle);
         }
 
         public static void Resume(this Control control)
         {
-            LockWindowUpdate(IntPtr.Zero);
+            NativeMethods.LockWindowUpdate(IntPtr.Zero);
         }
 
         public static List<Control> GetControls(this Control control)

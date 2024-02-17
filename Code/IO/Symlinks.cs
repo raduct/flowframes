@@ -11,15 +11,20 @@ namespace Flowframes.IO
 {
     class Symlinks
     {
-        public enum Flag { File = 0, Directory = 1, Unprivileged = 2 }
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-        private static extern bool CreateSymbolicLink(string lpSymlinkFileName, string lpTargetFileName, Flag dwFlags);
+        internal static class NativeMethods
+        {
+            internal enum Flag { File = 0, Directory = 1, Unprivileged = 2 }
+
+            [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            internal static extern bool CreateSymbolicLink(string lpSymlinkFileName, string lpTargetFileName, Flag dwFlags);
+        }
 
         public static bool SymlinksAllowed()
         {
             string origFile = Paths.GetExe();
             string linkPath = Paths.GetExe() + "linktest";
-            bool success = CreateSymbolicLink(linkPath, origFile, Flag.Unprivileged);
+            bool success = NativeMethods.CreateSymbolicLink(linkPath, origFile, NativeMethods.Flag.Unprivileged);
 
             if (success)
             {
@@ -34,11 +39,11 @@ namespace Flowframes.IO
         {
             Stopwatch sw = new Stopwatch();
             sw.Restart();
-            ParallelOptions opts = new ParallelOptions() {MaxDegreeOfParallelism = maxThreads};
+            ParallelOptions opts = new ParallelOptions() { MaxDegreeOfParallelism = maxThreads };
 
             Task forEach = Task.Run(() => Parallel.ForEach(pathsLinkTarget, opts, pair =>
             {
-                bool success = CreateSymbolicLink(pair.Key, pair.Value, Flag.Unprivileged);
+                bool success = NativeMethods.CreateSymbolicLink(pair.Key, pair.Value, NativeMethods.Flag.Unprivileged);
 
                 if (debug)
                     Logger.Log($"Created Symlink - Source: '{pair.Key}' - Target: '{pair.Value}' - Sucess: {success}", true);
@@ -51,7 +56,7 @@ namespace Flowframes.IO
         public static async Task<bool> MakeSymlinksForEncode(string framesFile, string linksDir, int zPad = 8)
         {
             try
-            { 
+            {
                 IoUtils.DeleteIfExists(linksDir);
                 Directory.CreateDirectory(linksDir);
                 Stopwatch sw = new Stopwatch();
