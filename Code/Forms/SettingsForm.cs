@@ -8,8 +8,6 @@ using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-#pragma warning disable IDE1006
-
 namespace Flowframes.Forms
 {
     public partial class SettingsForm : Form
@@ -45,7 +43,7 @@ namespace Flowframes.Forms
             serverCombox.SelectedIndex = 0;
         }
 
-        public async Task CheckModelCacheSize ()
+        public async Task CheckModelCacheSize()
         {
             await Task.Delay(200);
 
@@ -72,7 +70,7 @@ namespace Flowframes.Forms
             Program.mainForm.LoadQuickSettings();
         }
 
-        void SaveSettings ()
+        void SaveSettings()
         {
             // Remove spaces...
             torchGpus.Text = torchGpus.Text.Replace(" ", "");
@@ -160,7 +158,7 @@ namespace Flowframes.Forms
             ConfigParser.LoadGuiElement(dainNcnnTilesize);
             // Export
             ConfigParser.LoadGuiElement(minOutVidLength);
-            ConfigParser.LoadGuiElement(maxFps); 
+            ConfigParser.LoadGuiElement(maxFps);
             ConfigParser.LoadComboxIndex(loopMode);
             ConfigParser.LoadGuiElement(fixOutputDuration);
             // Debugging
@@ -185,7 +183,7 @@ namespace Flowframes.Forms
         private void tempDirBrowseBtn_Click(object sender, EventArgs e)
         {
             CommonOpenFileDialog dialog = new CommonOpenFileDialog { InitialDirectory = tempDirCustom.Text.Trim(), IsFolderPicker = true };
-            
+
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
                 tempDirCustom.Text = dialog.FileName;
 

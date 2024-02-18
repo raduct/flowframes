@@ -24,12 +24,13 @@ namespace Flowframes.Os
             Program.mainForm.GetPauseBtn().Visible = running;
         }
 
-        public static void SuspendResume()
+        public static bool SuspendResume()
         {
             if (aiProcFrozen)
                 Resume();
             else
                 Suspend();
+            return aiProcFrozen;
         }
 
         public static void Suspend(ProcessType type = ProcessType.Both, bool excludeCmd = false)

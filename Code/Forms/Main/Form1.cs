@@ -13,11 +13,8 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
-#pragma warning disable IDE1006
 
 namespace Flowframes.Forms.Main
 {
@@ -809,7 +806,7 @@ namespace Flowframes.Forms.Main
 
         private void pauseBtn_Click(object sender, EventArgs e)
         {
-            AiProcessSuspend.SuspendResume();
+            AutoEncode.paused = AiProcessSuspend.SuspendResume();
         }
 
         private void debugBtn_Click(object sender, EventArgs e)

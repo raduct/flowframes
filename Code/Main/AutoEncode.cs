@@ -43,6 +43,7 @@ namespace Flowframes.Main
             if (!AutoEncodeResume.resumeNextRun)
                 AutoEncodeResume.Reset();
 
+            paused = false;
             debug = Config.GetBool("autoEncDebug", false);
 
             try
