@@ -8,7 +8,7 @@ namespace Flowframes.Media
 {
     class GetMediaResolutionCached
     {
-        private static Dictionary<QueryInfo, Size> cache = new Dictionary<QueryInfo, Size>();
+        private static readonly Dictionary<QueryInfo, Size> cache = new Dictionary<QueryInfo, Size>();
 
         public static async Task<Size> GetSizeAsync(string path)
         {

@@ -18,8 +18,8 @@ namespace Flowframes
 {
     static class Program
     {
-        public static string[] fileArgs = new string[0];
-        public static string[] args = new string[0];
+        public static string[] fileArgs = Array.Empty<string>();
+        public static string[] args = Array.Empty<string>();
         public static bool initialRun = true;
         public static Form1 mainForm;
 

@@ -22,7 +22,6 @@ namespace Flowframes.Ui
         public static int lastOtherFrame;
         public static int targetFrames;
         public static float currentFactor;
-        public static bool progressPaused = false;
         public static bool progCheckRunning = false;
 
         public static PictureBox preview;
@@ -47,7 +46,7 @@ namespace Flowframes.Ui
 
             while (Program.busy)
             {
-                if (!progressPaused && AiProcess.processTime.IsRunning && Directory.Exists(currentOutdir))
+                if (AiProcess.processTime.IsRunning && Directory.Exists(currentOutdir))
                 {
                     if (firstProgUpd && Program.mainForm.IsInFocus())
                         Program.mainForm.SetTab(Program.mainForm.previewTab.Name);
@@ -113,9 +112,9 @@ namespace Flowframes.Ui
 
             while (Program.busy)
             {
-                if (!progressPaused && AiProcess.processTime.IsRunning)
+                if (AiProcess.processTime.IsRunning)
                 {
-                    string lastLogLine = Logger.GetSessionLogLastLines(logFile, 1).Where(x => x.Contains("frame=")).LastOrDefault();
+                    string lastLogLine = Logger.GetSessionLogLastLine(logFile);
                     int num = lastLogLine == null ? 0 : lastLogLine.Split("frame=")[1].Split("fps=")[0].GetInt();
 
                     if (num > 0)
@@ -141,7 +140,7 @@ namespace Flowframes.Ui
         //public static int interpolatedInputFramesCount;
         public static float peakFpsOut;
 
-        static int previewUpdateRateMs = 200;
+        static readonly int previewUpdateRateMs = 200;
 
         public static void UpdateInterpProgress(int frames, int target, string latestFramePath = "")
         {
@@ -178,7 +177,7 @@ namespace Flowframes.Ui
                 {
                     if (bigPreviewForm == null && !preview.Visible  /* ||Program.mainForm.WindowState != FormWindowState.Minimized */ /* || !Program.mainForm.IsInFocus()*/) return;        // Skip if the preview is not visible or the form is not in focus
                     if (timeSinceLastPreviewUpdate.IsRunning && timeSinceLastPreviewUpdate.ElapsedMilliseconds < previewUpdateRateMs) return;
-                    Image img = IoUtils.GetImage(latestFramePath, false, false);
+                    Image img = IoUtils.GetImage(latestFramePath, false);
                     SetPreviewImg(img);
                 }
             }
@@ -216,8 +215,7 @@ namespace Flowframes.Ui
 
             preview.Image = img;
 
-            if (bigPreviewForm != null)
-                bigPreviewForm.SetImage(img);
+            bigPreviewForm?.SetImage(img);
         }
     }
 }

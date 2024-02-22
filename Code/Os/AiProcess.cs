@@ -64,7 +64,6 @@ namespace Flowframes.Os
         {
             int frames = IoUtils.GetAmountOfFiles(lastInPath, false);
             int target = ((frames * factor) - (factor - 1)).RoundToInt();
-            InterpolationProgress.progressPaused = false;
             InterpolationProgress.currentFactor = factor;
 
             if (InterpolationProgress.progCheckRunning)
@@ -76,7 +75,6 @@ namespace Flowframes.Os
         static void SetProgressCheck(int sourceFrames, float factor, string logFile)
         {
             int target = ((sourceFrames * factor) - (factor - 1)).RoundToInt();
-            InterpolationProgress.progressPaused = false;
             InterpolationProgress.currentFactor = factor;
 
             if (InterpolationProgress.progCheckRunning)
@@ -103,7 +101,7 @@ namespace Flowframes.Os
             if (!Interpolate.currentSettings.ai.Piped)
                 InterpolationProgress.UpdateInterpProgress(interpFramesCount, InterpolationProgress.targetFrames);
 
-            string logStr = $"Done running {aiName} - Interpolation took {FormatUtils.Time(processTime.Elapsed)}. Peak Output FPS: {InterpolationProgress.peakFpsOut.ToString("0.00")}";
+            string logStr = $"Done running {aiName} - Interpolation took {FormatUtils.Time(processTime.Elapsed)}. Peak Output FPS: {InterpolationProgress.peakFpsOut:0.00}";
 
             if (Interpolate.currentlyUsingAutoEnc && AutoEncode.HasWorkToDo())
             {

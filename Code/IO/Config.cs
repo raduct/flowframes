@@ -76,11 +76,7 @@ namespace Flowframes.IO
             try
             {
                 Dictionary<string, string> newDict = new Dictionary<string, string>();
-                Dictionary<string, string> deserializedConfig = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(configPath));
-
-                if (deserializedConfig == null)
-                    deserializedConfig = new Dictionary<string, string>();
-
+                Dictionary<string, string> deserializedConfig = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(configPath)) ?? new Dictionary<string, string>();
                 foreach (KeyValuePair<string, string> entry in deserializedConfig)
                     newDict.Add(entry.Key, entry.Value);
 
@@ -117,8 +113,8 @@ namespace Flowframes.IO
 
             try
             {
-                if (cachedValues.ContainsKey(keyStr))
-                    return cachedValues[keyStr];
+                if (cachedValues.TryGetValue(keyStr, out string value))
+                    return value;
 
                 return WriteDefaultValIfExists(key.ToString(), type);
             }

@@ -15,6 +15,10 @@ namespace Flowframes.Media
 {
     partial class FfmpegExtract : FfmpegCommands
     {
+        internal static readonly string[] pixelFmtJpg = new[] { "yuv420p", "yuv422p", "yuv444p" };
+        internal static readonly string[] pixelFmtTiff = new[] { "rgb24", "rgb48le", "pal8", "rgba", "yuv420p", "yuv422p", "yuv440p", "yuv444p" };
+        internal static readonly string[] pixelFmtWebp = new[] { "bgra", "yuv420p", "yuva420p" };
+
         public static async Task ExtractSceneChanges(string inPath, string outDir, Fraction rate, bool inputIsFrames, string format)
         {
             Logger.Log("Extracting scene changes...");
@@ -49,7 +53,7 @@ namespace Flowframes.Media
 
             string pixFmt = "yuv420p";
 
-            if (Interpolate.currentMediaFile != null && Interpolate.currentMediaFile.VideoStreams.Any())
+            if (Interpolate.currentMediaFile != null && Interpolate.currentMediaFile.VideoStreams.Count != 0)
             {
                 pixFmt = Interpolate.currentMediaFile.VideoStreams.First().PixelFormat;
                 pixFmt = SimplifyPixFmt(pixFmt);
@@ -68,7 +72,7 @@ namespace Flowframes.Media
             else if (extension == "jpg")
             {
                 // Fallback to YUV420P if not in list of supported formats
-                if (!new[] { "yuv420p", "yuv422p", "yuv444p" }.Contains(pixFmt))
+                if (!pixelFmtJpg.Contains(pixFmt))
                 {
                     pixFmt = "yuv420p";
                 }
@@ -80,7 +84,7 @@ namespace Flowframes.Media
             else if (extension == "tiff")
             {
                 // Fallback to YUV420P if not in list of supported formats
-                if (!new[] { "rgb24", "rgb48le", "pal8", "rgba", "yuv420p", "yuv422p", "yuv440p", "yuv444p" }.Contains(pixFmt))
+                if (!pixelFmtTiff.Contains(pixFmt))
                 {
                     pixFmt = inputHighBitDepth && outputHighBitDepth ? "rgb48le" : "yuv420p";
                 }
@@ -88,7 +92,7 @@ namespace Flowframes.Media
             else if (extension == "webp")
             {
                 // Fallback to YUV420P if not in list of supported formats
-                if (!new[] { "bgra", "yuv420p", "yuva420p" }.Contains(pixFmt))
+                if (!pixelFmtWebp.Contains(pixFmt))
                 {
                     pixFmt = "yuv420p";
                 }

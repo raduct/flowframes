@@ -16,6 +16,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+#pragma warning disable IDE1006
+
 namespace Flowframes.Forms.Main
 {
     public partial class Form1 : Form
@@ -146,7 +148,7 @@ namespace Flowframes.Forms.Main
             labelOutput.Text = $"Set {string.Join(", ", infoStrings)}";
         }
 
-        async Task Checks()
+        static async Task Checks()
         {
             try
             {
@@ -360,7 +362,7 @@ namespace Flowframes.Forms.Main
             Config.Set(Config.Key.lastUsedAiName, GetAi().NameInternal);
         }
 
-        private string GetAiComboboxName(AI ai)
+        private static string GetAiComboboxName(AI ai)
         {
             return ai.FriendlyName + " - " + ai.Description;
         }

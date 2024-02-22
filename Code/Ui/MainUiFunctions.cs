@@ -1,26 +1,23 @@
-﻿using Flowframes.Media;
+﻿using Flowframes.Data;
 using Flowframes.IO;
-using Flowframes.Magick;
 using Flowframes.Main;
+using Flowframes.Media;
+using Flowframes.MiscUtils;
 using Flowframes.Os;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Flowframes.Data;
-using Flowframes.MiscUtils;
 
 namespace Flowframes.Ui
 {
     class MainUiFunctions
     {
-        public static async Task InitInput (TextBox outputTbox, TextBox inputTbox, TextBox fpsInTbox, bool start = false)
+        public static async Task InitInput(TextBox outputTbox, TextBox inputTbox, TextBox fpsInTbox, bool start = false)
         {
-            
+
             Program.mainForm.SetTab(Program.mainForm.interpOptsTab.Name);
             Program.mainForm.ResetInputInfo();
             string path = inputTbox.Text.Trim();
@@ -59,15 +56,15 @@ namespace Flowframes.Ui
             await Task.CompletedTask;
             InterpolationProgress.SetPreviewImg(await GetThumbnail(path));
 
-            if(AutoEncodeResume.resumeNextRun)
+            if (AutoEncodeResume.resumeNextRun)
                 Logger.Log($"Incomplete interpolation detected. Flowframes will resume the interpolation.");
 
             if (start)
                 Program.mainForm.runBtn_Click(null, null);
-                
+
         }
 
-        public static bool SetOutPath (TextBox outputTbox, string outPath)
+        public static bool SetOutPath(TextBox outputTbox, string outPath)
         {
             bool customOutDir = Config.GetInt("outFolderLoc") == 1;
             outputTbox.Text = customOutDir ? Config.Get("custOutDir").Trim() : outPath;
@@ -89,7 +86,7 @@ namespace Flowframes.Ui
             return true;
         }
 
-        static void CheckExistingFolder (string inpath, string outpath)
+        static void CheckExistingFolder(string inpath, string outpath)
         {
             if (Interpolate.currentSettings == null || !Interpolate.currentSettings.stepByStep) return;
             string tmpFolder = InterpolateUtils.GetTempFolderLoc(inpath, outpath);
@@ -105,7 +102,7 @@ namespace Flowframes.Ui
                 string msg = $"A temporary folder for this video already exists. It contains {scnFrames}, {srcFrames}, {interpFrames}.";
 
                 DialogResult dialogResult = UiUtils.ShowMessageBox($"{msg}\n\nClick \"Yes\" to use the existing files or \"No\" to delete them.", "Use files from existing temp folder?", MessageBoxButtons.YesNo);
-                
+
                 if (dialogResult == DialogResult.No)
                 {
                     IoUtils.TryDeleteIfExists(tmpFolder);
@@ -114,11 +111,10 @@ namespace Flowframes.Ui
             }
         }
 
-        static async Task PrintResolution (string path)
+        static async Task PrintResolution(string path)
         {
-            Size res = new Size();
-
-            if(path == Interpolate.currentSettings?.inPath)
+            Size res;
+            if (path == Interpolate.currentSettings?.inPath)
                 res = Interpolate.currentSettings.InputResolution;
             else
                 res = await GetMediaResolutionCached.GetSizeAsync(path);
@@ -130,7 +126,7 @@ namespace Flowframes.Ui
             Program.mainForm.UpdateInputInfo();
         }
 
-        public static async Task<Image> GetThumbnail (string path)
+        public static async Task<Image> GetThumbnail(string path)
         {
             string imgOnDisk = Path.Combine(Paths.GetSessionDataPath(), "thumb-temp.jpg");
 
@@ -153,7 +149,7 @@ namespace Flowframes.Ui
             }
         }
 
-        public static float ValidateInterpFactor (float factor)
+        public static float ValidateInterpFactor(float factor)
         {
             AI ai = Program.mainForm.GetAi();
 
@@ -171,17 +167,17 @@ namespace Flowframes.Ui
                 return (float)closest;
             }
 
-            if(ai.FactorSupport == AI.InterpFactorSupport.AnyPowerOfTwo)
+            if (ai.FactorSupport == AI.InterpFactorSupport.AnyPowerOfTwo)
             {
                 return ToNearestPow2(factor.RoundToInt()).Clamp(2, 128);
             }
 
-            if(ai.FactorSupport == AI.InterpFactorSupport.AnyInteger)
+            if (ai.FactorSupport == AI.InterpFactorSupport.AnyInteger)
             {
                 return factor.RoundToInt().Clamp(2, 128);
             }
 
-            if(ai.FactorSupport == AI.InterpFactorSupport.AnyFloat)
+            if (ai.FactorSupport == AI.InterpFactorSupport.AnyFloat)
             {
                 return factor.Clamp(2, 128);
             }

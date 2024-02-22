@@ -1,16 +1,10 @@
-﻿using Flowframes.MiscUtils;
-using ImageMagick;
+﻿using ImageMagick;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
 
 namespace Flowframes.Magick
 {
@@ -29,7 +23,6 @@ namespace Flowframes.Magick
 
     public static class MagickExtensions
     {
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "False positive.")]
         public static Bitmap ToBitmap(this MagickImage magickImg, BitmapDensity density)
         {
             string mapping = "BGR";

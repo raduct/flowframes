@@ -1,13 +1,4 @@
-﻿using Flowframes.Data;
-using Flowframes.IO;
-using Flowframes.MiscUtils;
-using Flowframes.Ui;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
-using I = Flowframes.Interpolate;
+﻿using System.Diagnostics;
 
 namespace Flowframes.Main
 {

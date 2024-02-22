@@ -1,16 +1,11 @@
-﻿using Flowframes.Data;
-using Flowframes.IO;
+﻿using Flowframes.IO;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Flowframes.MiscUtils;
-using Flowframes.Ui;
 using I = Flowframes.Interpolate;
-using Newtonsoft.Json;
 
 namespace Flowframes.Main
 {
@@ -25,14 +20,14 @@ namespace Flowframes.Main
         public static string chunksFilename = "chunks.json";
         public static string inputFramesFilename = "input-frames.json";
 
-        public static void Reset ()
+        public static void Reset()
         {
             processedInputFrames = new List<string>();
             encodedChunks = 0;
             encodedFrames = 0;
         }
 
-        public static void Save ()
+        public static void Save()
         {
             string saveDir = Path.Combine(I.currentSettings.tempFolder, Paths.resumeDir);
             Directory.CreateDirectory(saveDir);
@@ -59,7 +54,7 @@ namespace Flowframes.Main
                 InterpSettings interpSettings = JsonConvert.DeserializeObject<InterpSettings>(File.ReadAllText(settingsJsonPath));
                 Program.mainForm.LoadBatchEntry(interpSettings);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Logger.Log($"Failed to load resume data: {e.Message}\n{e.StackTrace}");
                 resumeNextRun = false;
@@ -99,9 +94,9 @@ namespace Flowframes.Main
 
                 Logger.Log($"Resume: Already encoded {encodedFrames} frames in {encodedChunks} chunks. There are now {inputFramesLeft} input frames left to interpolate.");
 
-                if(inputFramesLeft < 2)
+                if (inputFramesLeft < 2)
                 {
-                    if(IoUtils.GetAmountOfFiles(videoChunksFolder, true, "*.*") > 0)
+                    if (IoUtils.GetAmountOfFiles(videoChunksFolder, true, "*.*") > 0)
                     {
                         Logger.Log($"No more frames left to interpolate - Merging existing video chunks instead.");
                         await Export.ChunksToVideo(I.currentSettings.tempFolder, videoChunksFolder, I.currentSettings.outPath);

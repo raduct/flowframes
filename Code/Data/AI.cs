@@ -1,11 +1,7 @@
 ﻿using Flowframes.IO;
 using Flowframes.MiscUtils;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Flowframes.Data
 {
@@ -21,12 +17,12 @@ namespace Flowframes.Data
         public string PkgDir { get { return NameInternal.Replace("_", "-").ToLowerInvariant(); } }
         public enum InterpFactorSupport { Fixed, AnyPowerOfTwo, AnyInteger, AnyFloat }
         public InterpFactorSupport FactorSupport { get; set; } = InterpFactorSupport.Fixed;
-        public int[] SupportedFactors { get; set; } = new int[0];
+        public int[] SupportedFactors { get; set; } = System.Array.Empty<int>();
         public bool Piped { get; set; } = false;
 
         public string LogFilename { get { return PkgDir + "-log"; } }
 
-        public AI () { }
+        public AI() { }
 
         public AI(AiBackend backend, string aiName, string longName, InterpFactorSupport factorSupport = InterpFactorSupport.Fixed, int[] supportedFactors = null)
         {
@@ -37,7 +33,7 @@ namespace Flowframes.Data
             FactorSupport = factorSupport;
         }
 
-        public string GetVerboseInfo ()
+        public string GetVerboseInfo()
         {
             return $"Name:\n{NameShort}\n\n" +
                 $"Full Name:\n{NameLong}\n\n" +
@@ -48,12 +44,12 @@ namespace Flowframes.Data
                 $"Package Directory/Size:\n{PkgDir} ({FormatUtils.Bytes(IoUtils.GetDirSize(Path.Combine(Paths.GetPkgPath(), PkgDir), true))})";
         }
 
-        private string GetImplemString (AiBackend backend)
+        private string GetImplemString(AiBackend backend)
         {
             if (backend == AiBackend.Pytorch)
                 return $"CUDA/Pytorch Implementation";
 
-            if(backend == AiBackend.Ncnn)
+            if (backend == AiBackend.Ncnn)
                 return $"Vulkan/NCNN{(Piped ? "/VapourSynth" : "")} Implementation";
 
             if (backend == AiBackend.Tensorflow)
@@ -76,18 +72,18 @@ namespace Flowframes.Data
             return "Custom";
         }
 
-        private string GetHwAccelString (AiBackend backend)
+        private static string GetHwAccelString(AiBackend backend)
         {
-            if (Backend == AiBackend.Pytorch)
+            if (backend == AiBackend.Pytorch)
                 return $"GPU (Nvidia CUDA)";
 
-            if (Backend == AiBackend.Ncnn)
+            if (backend == AiBackend.Ncnn)
                 return $"GPU (Vulkan)";
 
             return "Unknown";
         }
 
-        private string GetFactorsString (InterpFactorSupport factorSupport)
+        private string GetFactorsString(InterpFactorSupport factorSupport)
         {
             if (factorSupport == InterpFactorSupport.Fixed)
                 return $"{string.Join(", ", SupportedFactors.Select(x => $"{x}x"))}";

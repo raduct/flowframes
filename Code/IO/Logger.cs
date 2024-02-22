@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using DT = System.DateTime;
 
 namespace Flowframes
 {
@@ -17,11 +16,22 @@ namespace Flowframes
         public const string defaultLogName = "sessionlog";
         private static long id;
 
-        private static ConcurrentDictionary<string, ConcurrentQueue<string>> sessionLogs = new ConcurrentDictionary<string, ConcurrentQueue<string>>();
+        private static readonly ConcurrentDictionary<string, ConcurrentQueueL<string>> sessionLogs = new ConcurrentDictionary<string, ConcurrentQueueL<string>>();
         private static string _lastUi = "";
         public static string LastUiLine { get { return _lastUi; } }
         private static string _lastLog = "";
         public static string LastLogLine { get { return _lastLog; } }
+
+        class ConcurrentQueueL<T> : ConcurrentQueue<T>
+        {
+            public T Last { get; private set; }
+
+            public new void Enqueue(T item)
+            {
+                Last = item;
+                base.Enqueue(item);
+            }
+        }
 
         public struct LogEntry
         {
@@ -29,7 +39,7 @@ namespace Flowframes
             public bool hidden;
             public bool replaceLastLine;
             public string filename;
-            public DT time;
+            public DateTime time;
 
             public LogEntry(string logMessageArg, bool hiddenArg = false, bool replaceLastLineArg = false, string filenameArg = "")
             {
@@ -41,7 +51,7 @@ namespace Flowframes
             }
         }
 
-        private static BlockingCollection<LogEntry> logQueue = new BlockingCollection<LogEntry>();
+        private static readonly BlockingCollection<LogEntry> logQueue = new BlockingCollection<LogEntry>();
 
         public static void Log(string msg, bool hidden = false, bool replaceLastLine = false, string filename = "")
         {
@@ -94,7 +104,7 @@ namespace Flowframes
                 {
                     textbox.Suspend();
                     string[] lines = textbox.Text.SplitIntoLines();
-                    textbox.Text = string.Join(Environment.NewLine, lines.Take(lines.Count() - 1).ToArray());
+                    textbox.Text = string.Join(Environment.NewLine, lines.Take(lines.Length - 1).ToArray());
                 }
             }
             catch { }
@@ -116,7 +126,7 @@ namespace Flowframes
             LogToFile(entry.time, msg, false, entry.filename);
         }
 
-        private static void LogToFile(DT time, string logStr, bool noLineBreak, string filename)
+        private static void LogToFile(DateTime time, string logStr, bool noLineBreak, string filename)
         {
             if (string.IsNullOrWhiteSpace(filename))
                 filename = defaultLogName;
@@ -129,21 +139,19 @@ namespace Flowframes
 
             try
             {
-                string appendStr = noLineBreak ? $" {logStr}" : $"{Environment.NewLine}[{id.ToString().PadLeft(8, '0')}] [{time.ToString("yyyy-MM-dd HH:mm:ss")}]: {logStr}";
+                string appendStr = noLineBreak ? $" {logStr}" : $"{Environment.NewLine}[{id.ToString().PadLeft(8, '0')}] [{time:yyyy-MM-dd HH:mm:ss}]: {logStr}";
 
-                if (sessionLogs.ContainsKey(filename))
+                if (sessionLogs.TryGetValue(filename, out ConcurrentQueueL<string> sessionLog))
                 {
-                    ConcurrentQueue<string> sessionLog = sessionLogs[filename];
-                    sessionLog.Enqueue(appendStr);
-                    if (sessionLog.Count > 10)
+                    if (sessionLog.Count > 9)
                         sessionLog.TryDequeue(out _);
                 }
                 else
                 {
-                    ConcurrentQueue<string> sessionLog = new ConcurrentQueue<string>();
+                    sessionLog = new ConcurrentQueueL<string>();
                     sessionLogs[filename] = sessionLog;
-                    sessionLog.Enqueue(appendStr);
                 }
+                sessionLog.Enqueue(appendStr);
 
                 File.AppendAllText(file, appendStr);
                 id++;
@@ -154,22 +162,26 @@ namespace Flowframes
             }
         }
 
-        private static ConcurrentQueue<string> GetSessionLog(string filename)
+        private static ConcurrentQueueL<string> GetSessionLog(string filename)
         {
             if (!filename.Contains(".txt"))
                 filename = Path.ChangeExtension(filename, "txt");
 
-            if (sessionLogs.ContainsKey(filename))
-                return sessionLogs[filename];
-            else
-                return null;
+            sessionLogs.TryGetValue(filename, out ConcurrentQueueL<string> logQ);
+            return logQ;
         }
 
-        public static List<string> GetSessionLogLastLines(string filename, int linesCount = 5)
+        public static List<string> GetSessionLogLastLines(string filename, int linesCount)
         {
-            ConcurrentQueue<string> logQ = GetSessionLog(filename);
+            ConcurrentQueueL<string> logQ = GetSessionLog(filename);
             List<string> log = logQ != null ? logQ.ToList() : new List<string>();
-            return log.Count > linesCount ? log.GetRange(0, linesCount) : log;
+            return log.Count > linesCount ? log.GetRange(log.Count - linesCount, linesCount) : log;
+        }
+
+        public static string GetSessionLogLastLine(string filename)
+        {
+            ConcurrentQueueL<string> logQ = GetSessionLog(filename);
+            return logQ?.Last;
         }
 
         public static void LogIfLastLineDoesNotContainMsg(string s, bool hidden = false, bool replaceLastLine = false, string filename = "")
@@ -188,7 +200,7 @@ namespace Flowframes
 
             string file = Path.Combine(Paths.GetLogPath(), filename);
 
-            string time = DT.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            string time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
             try
             {

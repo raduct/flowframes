@@ -16,10 +16,8 @@ namespace Flowframes.Main
     {
         static FileInfo[] frameFiles;
         static List<string> sceneFrames = new List<string>();
-        static ConcurrentDictionary<int, string> frameFileContents = new ConcurrentDictionary<int, string>();
-        //static List<string> inputFilenames = new List<string>();
-        static ConcurrentDictionary<int, List<string>> inputFilenames = new ConcurrentDictionary<int, List<string>>();
-        //static int lastOutFileCount;
+        static readonly ConcurrentDictionary<int, string> frameFileContents = new ConcurrentDictionary<int, string>();
+        static readonly ConcurrentDictionary<int, List<string>> inputFilenames = new ConcurrentDictionary<int, List<string>>();
 
         public static async Task CreateFrameOrderFile(string tempFolder, bool loopEnabled, float interpFactor)
         {
@@ -64,19 +62,15 @@ namespace Flowframes.Main
             string inputJsonPath = Path.Combine(tempFolder, "input.json");
             List<int> inputFrames = JsonConvert.DeserializeObject<List<int>>(File.ReadAllText(inputJsonPath));
 
-            int frameCount = Interpolate.currentMediaFile.FrameCount;
-            frameCount = inputFrames.Count;
+            int frameCount = inputFrames.Count;
 
             // if (loop)
             // {
             //     frameCount++;
             // }
 
-            int frameCountWithoutLast = frameCount - 1;
             string dupesFile = Path.Combine(tempFolder, "dupes.test.json");
             var dupes = JsonConvert.DeserializeObject<Dictionary<int, List<int>>>(File.ReadAllText(dupesFile));
-
-            bool debug = Config.GetBool("frameOrderDebug", false);
 
             int targetFrameCount = (frameCount * interpFactor).RoundToInt() - InterpolateUtils.GetRoundedInterpFramesPerInputFrame(interpFactor);
 
@@ -115,8 +109,6 @@ namespace Flowframes.Main
             //for (int x = 0; x < frameFileContents.Count; x++)
             //    fileContent += frameFileContents[x];
 
-            lastOutFileCount++;
-
             if (Config.GetBool(Config.Key.fixOutputDuration)) // Match input duration by padding duping last frame until interp frames == (inputframes * factor)
             {
                 int neededFrames = (frameCount * interpFactor).RoundToInt() - framesList.Count;
@@ -126,7 +118,7 @@ namespace Flowframes.Main
             }
 
             if (loop)
-                framesList.RemoveAt(framesList.Count() - 1);
+                framesList.RemoveAt(framesList.Count - 1);
 
             string framesFileVs = Path.Combine(tempFolder, "frames.vs.json");
             // List<int> frameNums = new List<int>();
@@ -148,7 +140,6 @@ namespace Flowframes.Main
             //string ext = Interpolate.currentSettings.interpExt;
 
             frameFileContents.Clear();
-            //lastOutFileCount = 0;
 
             string framesDir = Path.Combine(tempFolder, Paths.framesDir);
             frameFiles = new DirectoryInfo(framesDir).GetFiles("*" + Interpolate.currentSettings.framesExt);
@@ -191,8 +182,6 @@ namespace Flowframes.Main
 
             for (int x = 0; x < frameFileContents.Count; x++)
                 fileContent += frameFileContents[x];
-
-            //lastOutFileCount++;
 
             if (Config.GetBool(Config.Key.fixOutputDuration)) // Match input duration by padding duping last frame until interp frames == (inputframes * factor)
             {
@@ -316,9 +305,6 @@ namespace Flowframes.Main
                 }
             }
 
-            //if (totalFileCount > lastOutFileCount)
-            //    lastOutFileCount = totalFileCount;
-
             for (int lineIdx = 0; lineIdx < lines.Count; lineIdx++)
             {
                 bool discardNext = lineIdx > 0 && (lineIdx + 1) < lines.Count && !lines.ElementAt(lineIdx).Discard && lines.ElementAt(lineIdx + 1).Discard;
@@ -359,7 +345,7 @@ namespace Flowframes.Main
 
                 string frameName = GetNameNoExt(frameFiles[i].Name);
                 string origFrameName = GetNameNoExt(FrameRename.importFilenames[Interpolate.currentSettings.is3D ? i * 2 : i]);
-                int dupesAmount = dupesDict.ContainsKey(origFrameName) ? dupesDict[origFrameName].Count : 0;
+                int dupesAmount = dupesDict.TryGetValue(origFrameName, out List<string> value) ? value.Count : 0;
                 bool noInterpolationAfterThisFrame = false;
                 if (sceneDetection && (i + 1) < FrameRename.importFilenames.Length)
                 {
@@ -410,9 +396,6 @@ namespace Flowframes.Main
                     currentinputFilenames.Add(frameFiles[i].Name);
                 }
             }
-
-            //if (totalFileCount > lastOutFileCount)
-            //    lastOutFileCount = totalFileCount;
 
             frameFileContents[number] = fileContent;
         }

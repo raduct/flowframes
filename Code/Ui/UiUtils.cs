@@ -1,6 +1,5 @@
 ﻿using Flowframes.Data;
 using Flowframes.Forms;
-using Flowframes.IO;
 using Flowframes.Main;
 using Flowframes.Os;
 using System;
@@ -92,9 +91,9 @@ namespace Flowframes.Ui
                 return new DialogResult();
             }
 
-//            MessageBoxIcon icon = MessageBoxIcon.Information;
-//            if (type == MessageType.Warning) icon = MessageBoxIcon.Warning;
-//            else if (type == MessageType.Error) icon = MessageBoxIcon.Error;
+            //            MessageBoxIcon icon = MessageBoxIcon.Information;
+            //            if (type == MessageType.Warning) icon = MessageBoxIcon.Warning;
+            //            else if (type == MessageType.Error) icon = MessageBoxIcon.Error;
 
             MessageForm form = new MessageForm(text, type.ToString());
             form.ShowDialog();
@@ -106,7 +105,7 @@ namespace Flowframes.Ui
             MessageForm form = new MessageForm(text, title, btns);
             return form.ShowDialog();
         }
-         
+
         public enum MoveDirection { Up = -1, Down = 1 };
 
         public static void MoveListViewItem(ListView listView, MoveDirection direction)

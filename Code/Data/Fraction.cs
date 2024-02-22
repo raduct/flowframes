@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Windows.Navigation;
 
 namespace Flowframes.Data
 {
@@ -7,7 +6,6 @@ namespace Flowframes.Data
     {
         public long Numerator;
         public long Denominator;
-        public static Fraction Zero = new Fraction(0, 0);
 
         public Fraction(long numerator, long denominator)
         {

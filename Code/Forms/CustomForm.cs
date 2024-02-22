@@ -41,8 +41,7 @@ namespace Flowframes.Forms
                     next = _tabOrderedControls.ElementAt(index >= _tabOrderedControls.Count ? 0 : index);
                 }
 
-                if (next != null)
-                    next.Focus();
+                next?.Focus();
 
                 return;
             }

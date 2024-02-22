@@ -2,12 +2,9 @@
 using Flowframes.IO;
 using Flowframes.MiscUtils;
 using Flowframes.Ui;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace Flowframes.Os
 {
@@ -18,9 +15,9 @@ namespace Flowframes.Os
 
         public static string compactOutput;
 
-        public static async Task CheckCompression ()
+        public static async Task CheckCompression()
         {
-            if(HasEmbeddedPyFolder() && (Config.Get(Config.Key.compressedPyVersion) != Updater.GetInstalledVer().ToString()))
+            if (HasEmbeddedPyFolder() && (Config.Get(Config.Key.compressedPyVersion) != Updater.GetInstalledVer().ToString()))
             {
                 Program.mainForm.SetWorking(true, false);
                 Stopwatch sw = new Stopwatch();
@@ -41,7 +38,7 @@ namespace Flowframes.Os
                     while (!compact.HasExited)
                     {
                         await Task.Delay(500);
-                        if(sw.ElapsedMilliseconds > 10000)
+                        if (sw.ElapsedMilliseconds > 10000)
                         {
                             Logger.Log($"This can take up to a few minutes, but only needs to be done once. (Elapsed: {FormatUtils.Time(sw.Elapsed)})", false, shownPatienceMsg);
                             shownPatienceMsg = true;
@@ -58,7 +55,7 @@ namespace Flowframes.Os
             }
         }
 
-        static void CompactOutputHandler (object sendingProcess, DataReceivedEventArgs outLine)
+        static void CompactOutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
         {
             if (outLine == null || outLine.Data == null)
                 return;
@@ -66,7 +63,7 @@ namespace Flowframes.Os
             compactOutput = compactOutput + line + "\n";
         }
 
-        public static string GetPyCmd (bool unbufferedStdOut = true, bool quiet = false)
+        public static string GetPyCmd(bool unbufferedStdOut = true, bool quiet = false)
         {
             if (HasEmbeddedPyFolder())
             {
@@ -92,12 +89,12 @@ namespace Flowframes.Os
             return "";
         }
 
-        public static bool HasEmbeddedPyFolder ()
+        public static bool HasEmbeddedPyFolder()
         {
             return (Directory.Exists(GetPyFolder()) && IoUtils.GetDirSize(GetPyFolder(), false) > 1024 * 1024 * 5);
         }
 
-        public static string GetPyFolder ()
+        public static string GetPyFolder()
         {
             if (Directory.Exists(Path.Combine(Paths.GetPkgPath(), "py-amp")))
                 return Path.Combine(Paths.GetPkgPath(), "py-amp");
@@ -109,21 +106,18 @@ namespace Flowframes.Os
         }
 
         private static bool? pytorchReadyCached = null;
-        
-        public static async Task<bool> IsPytorchReadyAsync (bool clearCachedValue = false)
+
+        public static async Task<bool> IsPytorchReadyAsync(bool clearCachedValue = false)
         {
             if (clearCachedValue)
                 pytorchReadyCached = null;
 
             if (pytorchReadyCached != null)
                 return (bool)pytorchReadyCached;
-
-            bool pytorchReady = false;
-
             bool hasPyFolder = HasEmbeddedPyFolder();
             string torchVer = await GetPytorchVerAsync();
 
-            pytorchReady = hasPyFolder || (!string.IsNullOrWhiteSpace(torchVer) && torchVer.Length <= 35 && !torchVer.Contains("ModuleNotFoundError"));
+            bool pytorchReady = hasPyFolder || !string.IsNullOrWhiteSpace(torchVer) && torchVer.Length <= 35 && !torchVer.Contains("ModuleNotFoundError");
             pytorchReadyCached = pytorchReady;
             return pytorchReady;
         }
@@ -149,7 +143,7 @@ namespace Flowframes.Os
             }
         }
 
-        public static bool IsSysPyInstalled ()
+        public static bool IsSysPyInstalled()
         {
             if (hasCheckedSysPy)
                 return sysPyInstalled;

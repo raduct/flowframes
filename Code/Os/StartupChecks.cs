@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Flowframes.Extensions;
+using Flowframes.IO;
+using Flowframes.Ui;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Flowframes.Extensions;
-using Flowframes.IO;
-using Flowframes.Ui;
 
 namespace Flowframes.Os
 {
@@ -127,7 +126,7 @@ namespace Flowframes.Os
             }
         }
 
-        public static async Task DetectHwEncoders ()
+        public static async Task DetectHwEncoders()
         {
             if (Config.GetBool(Config.Key.PerformedHwEncCheck))
                 return;
@@ -136,7 +135,7 @@ namespace Flowframes.Os
             var encoders = new[] { "h264_nvenc", "hevc_nvenc", "av1_nvenc", "h264_amf", "hevc_amf" };
             var compatEncoders = new List<string>();
 
-            foreach(string e in encoders)
+            foreach (string e in encoders)
             {
                 bool compat = await FfmpegCommands.IsEncoderCompatible(e);
 

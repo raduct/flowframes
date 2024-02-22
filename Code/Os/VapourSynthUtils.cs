@@ -45,7 +45,7 @@ namespace Flowframes.Os
             long srcTrimStartFrame = trim ? (long)(Math.Round(FormatUtils.TimestampToMs(QuickSettingsTab.trimStart) / 1000f * s.InterpSettings.inFps.GetFloat())) : 0;
             long srcTrimEndFrame = trim && QuickSettingsTab.doTrimEnd ? (long)(Math.Round(FormatUtils.TimestampToMs(QuickSettingsTab.trimEnd) / 1000f * s.InterpSettings.inFps.GetFloat())) - 1 : frameCount - 1;
 
-            if(trim)
+            if (trim)
                 frameCount = srcTrimEndFrame - srcTrimStartFrame;
 
             int endDupeCount = s.Factor.RoundToInt() - 1;
@@ -120,10 +120,10 @@ namespace Flowframes.Os
                 }
             }
 
-            if(s.Realtime && s.Loop)
+            if (s.Realtime && s.Loop)
                 l.AddRange(new List<string> { $"clip = clip.std.Loop(0)", "" }); // Can't loop piped video so we loop it before piping it to ffplay
 
-            if(s.Realtime && s.Osd)
+            if (s.Realtime && s.Osd)
                 l.Add(GetOsdLines());
 
             l.Add($"clip.set_output()"); // Set output
@@ -273,9 +273,9 @@ namespace Flowframes.Os
         {
             int seekStep = 10;
 
-            if(videoLengthSeconds >  2 * 60) seekStep = 20;
-            if(videoLengthSeconds >  5 * 60) seekStep = 30;
-            if(videoLengthSeconds > 15 * 60) seekStep = 60;
+            if (videoLengthSeconds > 2 * 60) seekStep = 20;
+            if (videoLengthSeconds > 5 * 60) seekStep = 30;
+            if (videoLengthSeconds > 15 * 60) seekStep = 60;
 
             return seekStep;
         }

@@ -151,7 +151,7 @@ namespace Flowframes
 
             if (!show)
             {
-                string[] ignore = new string[0];
+                string[] ignore = Array.Empty<string>();
                 ffprobe.OutputDataReceived += (sender, outLine) => { processOutput += outLine + Environment.NewLine; };
                 ffprobe.ErrorDataReceived += (sender, outLine) => { processOutput += outLine + Environment.NewLine; };
             }

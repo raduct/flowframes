@@ -23,7 +23,7 @@ namespace Flowframes.Utilities
                 threads = Environment.ProcessorCount - 4; // 4 threads are used by load & save
             }
             if (Interpolate.currentSettings.is3D)
-                threads = threads / 2;
+                threads /= 2;
             Logger.Log($"Using {threads}/{maxThreads} compute threads on GPU with ID {gpuId}.", true, false, ai.LogFilename);
 
             return threads;

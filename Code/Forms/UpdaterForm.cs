@@ -1,10 +1,10 @@
-﻿using Flowframes.Data;
-using Flowframes.Os;
+﻿using Flowframes.Os;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
+#pragma warning disable IDE1006
 
 namespace Flowframes.Forms
 {
@@ -58,7 +58,7 @@ namespace Flowframes.Forms
         }
 
         float lastProg = -1f;
-        public void SetProgLabel (float prog, string str)
+        public void SetProgLabel(float prog, string str)
         {
             if (prog == lastProg) return;
             lastProg = prog;
@@ -68,7 +68,7 @@ namespace Flowframes.Forms
         private void updatePatreonBtn_Click(object sender, EventArgs e)
         {
             string link = Updater.GetLatestVerLink(true);
-            if(!string.IsNullOrWhiteSpace(link))
+            if (!string.IsNullOrWhiteSpace(link))
                 Process.Start(link);
         }
 

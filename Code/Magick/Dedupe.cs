@@ -31,7 +31,7 @@ namespace Flowframes.Magick
             Logger.Log("Running accurate frame de-duplication...");
 
             if (currentMode == Mode.Enabled || currentMode == Mode.Auto)
-                await RemoveDupeFrames(path, currentThreshold, "*", testRun, false, (currentMode == Mode.Auto));
+                await RemoveDupeFrames(path, currentThreshold, "*", testRun, false);
         }
 
         static MagickImage GetImage(string path)
@@ -39,7 +39,7 @@ namespace Flowframes.Magick
             return new MagickImage(path);
         }
 
-        public static async Task RemoveDupeFrames(string path, float threshold, string ext, bool testRun = false, bool debugLog = false, bool skipIfNoDupes = false)
+        public static async Task RemoveDupeFrames(string path, float threshold, string ext, bool testRun = false, bool debugLog = false)
         {
             Stopwatch sw = new Stopwatch();
             sw.Restart();
@@ -284,9 +284,10 @@ namespace Flowframes.Magick
 
                 if (!drop)
                 {
-                    if (!frames.ContainsKey(frameIdx) || frames[frameIdx] == null)
+                    if (!frames.TryGetValue(frameIdx, out List<int> value) || value == null)
                     {
-                        frames[frameIdx] = new List<int>();
+                        value = new List<int>();
+                        frames[frameIdx] = value;
                     }
 
                     lastKeepFrameNum = frameIdx;

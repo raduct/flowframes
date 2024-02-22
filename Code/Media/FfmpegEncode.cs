@@ -50,7 +50,7 @@ namespace Flowframes.Media
         {
             var args = new List<string>();
 
-            fps = fps / new Fraction(itsScale);
+            fps /= new Fraction(itsScale);
             args.Add($"-r {fps}");
 
             return string.Join(" ", args);
@@ -146,7 +146,7 @@ namespace Flowframes.Media
             string fpsFilter = (resampleFps.GetFloat() <= 0) ? "" : $"fps=fps={resampleFps}";
             string vf = FormatUtils.ConcatStrings(new string[] { paletteFilter, fpsFilter });
             string extraArgs = Config.Get(Config.Key.ffEncArgs);
-            rate = rate / new Fraction(itsScale);
+            rate /= new Fraction(itsScale);
             string args = $"-f concat -r {rate} -i {framesFilename.Wrap()} -gifflags -offsetting {vf} {extraArgs} {outPath.Wrap()}";
             await RunFfmpeg(args, framesFile.GetParentDir(), LogMode.OnlyLastLine, "error");
         }

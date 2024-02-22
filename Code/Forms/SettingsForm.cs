@@ -8,6 +8,8 @@ using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+#pragma warning disable IDE1006
+
 namespace Flowframes.Forms
 {
     public partial class SettingsForm : Form

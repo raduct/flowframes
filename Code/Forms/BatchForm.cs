@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Flowframes.Data;
 
+#pragma warning disable IDE1006
+
 namespace Flowframes.Forms
 {
     public partial class BatchForm : Form

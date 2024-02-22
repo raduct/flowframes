@@ -1,15 +1,6 @@
-﻿using Flowframes.Media;
-using Flowframes.IO;
-using Flowframes.Magick;
-using Flowframes.Main;
+﻿using Flowframes.MiscUtils;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Flowframes.MiscUtils;
 
 namespace Flowframes.Ui
 {
@@ -22,7 +13,7 @@ namespace Flowframes.Ui
         public static long trimStartSecs;
         public static long trimEndSecs;
 
-        public static void UpdateTrim (TextBox trimStartBox, TextBox trimEndBox)
+        public static void UpdateTrim(TextBox trimStartBox, TextBox trimEndBox)
         {
             trimStart = trimStartBox.Text.Trim();
             trimEnd = trimEndBox.Text.Trim();
@@ -39,7 +30,7 @@ namespace Flowframes.Ui
             doTrimEnd = FormatUtils.TimestampToMs(trimEnd) != FormatUtils.TimestampToMs(FormatUtils.MsToTimestamp(Program.mainForm.currInDuration));
         }
 
-        public static string GetTrimEndMinusOne ()
+        public static string GetTrimEndMinusOne()
         {
             TimeSpan minusOne = TimeSpan.Parse(trimEnd).Subtract(new TimeSpan(0, 0, 1));
             Logger.Log($"returning {minusOne}", true, false, "ffmpeg");

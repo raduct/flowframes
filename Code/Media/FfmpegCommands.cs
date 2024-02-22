@@ -192,14 +192,14 @@ namespace Flowframes
             return 0;
         }
 
-        static int ReadFrameCountFromDuration(string inputFile, long durationMs, float fps)
-        {
-            float durationSeconds = durationMs / 1000f;
-            float frameCount = durationSeconds * fps;
-            int frameCountRounded = frameCount.RoundToInt();
-            Logger.Log($"ReadFrameCountFromDuration: Got frame count of {frameCount}, rounded to {frameCountRounded}");
-            return frameCountRounded;
-        }
+        //static int ReadFrameCountFromDuration(string inputFile, long durationMs, float fps)
+        //{
+        //    float durationSeconds = durationMs / 1000f;
+        //    float frameCount = durationSeconds * fps;
+        //    int frameCountRounded = frameCount.RoundToInt();
+        //    Logger.Log($"ReadFrameCountFromDuration: Got frame count of {frameCount}, rounded to {frameCountRounded}");
+        //    return frameCountRounded;
+        //}
 
         public static async Task<int> ReadFrameCountFfprobePacketCount(string filePath)
         {

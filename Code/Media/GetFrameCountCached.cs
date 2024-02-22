@@ -1,16 +1,14 @@
-﻿using System;
+﻿using Flowframes.Data;
+using Flowframes.IO;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
-using Flowframes.Data;
-using Flowframes.IO;
 
 namespace Flowframes.Media
 {
     class GetFrameCountCached
     {
-        private static Dictionary<QueryInfo, int> cache = new Dictionary<QueryInfo, int>();
+        private static readonly Dictionary<QueryInfo, int> cache = new Dictionary<QueryInfo, int>();
 
         public static async Task<int> GetFrameCountAsync(MediaFile mf, int retryCount = 3)
         {

@@ -50,8 +50,7 @@ namespace Flowframes.Os
             }
             finally
             {
-                if (user != null)
-                    user.Dispose();
+                user?.Dispose();
             }
             return isAdmin;
         }
@@ -72,7 +71,7 @@ namespace Flowframes.Os
 
             try
             {
-                if(proc == null)
+                if (proc == null)
                 {
                     Logger.Log($"IsProcessHidden was called but proc is null, defaulting to {defaultVal}", true);
                     return defaultVal;
@@ -91,7 +90,7 @@ namespace Flowframes.Os
             {
                 Logger.Log($"IsProcessHidden errored, defaulting to {defaultVal}: {e.Message}", true);
                 return defaultVal;
-            } 
+            }
         }
 
         public static Process NewProcess(bool hidden, string filename = "cmd.exe")
@@ -119,7 +118,7 @@ namespace Flowframes.Os
 
             if (processCollection != null)
             {
-                foreach (ManagementObject mo in processCollection)
+                foreach (ManagementObject mo in processCollection.Cast<ManagementObject>())
                 {
                     // Recursively kill child processes
                     KillProcessTree(Convert.ToInt32(mo["ProcessID"]));
@@ -195,7 +194,7 @@ namespace Flowframes.Os
 
                     if (information != null)
                     {
-                        foreach (ManagementObject obj in information)
+                        foreach (ManagementObject obj in information.Cast<ManagementObject>())
                             info = $"{obj["Caption"]} | {obj["OSArchitecture"]}";
                     }
 
@@ -215,7 +214,7 @@ namespace Flowframes.Os
             List<Process> children = new List<Process>();
             ManagementObjectSearcher mos = new ManagementObjectSearcher(String.Format("Select * From Win32_Process Where ParentProcessID={0}", process.Id));
 
-            foreach (ManagementObject mo in mos.Get())
+            foreach (ManagementObject mo in mos.Get().Cast<ManagementObject>())
             {
                 children.Add(Process.GetProcessById(Convert.ToInt32(mo["ProcessID"])));
             }
@@ -246,11 +245,11 @@ namespace Flowframes.Os
 
             if (onlyLastLine)
                 output = output.SplitIntoLines().LastOrDefault();
-            
+
             return output;
         }
 
-        public static void Shutdown ()
+        public static void Shutdown()
         {
             Process proc = NewProcess(true);
             proc.StartInfo.Arguments = "/C shutdown -s -t 0";
@@ -277,7 +276,7 @@ namespace Flowframes.Os
             popupNotifier.Popup();
         }
 
-        public static void ShowNotificationIfInBackground (string title, string text)
+        public static void ShowNotificationIfInBackground(string title, string text)
         {
             if (Program.mainForm.IsInFocus())
                 return;
@@ -285,32 +284,32 @@ namespace Flowframes.Os
             ShowNotification(title, text);
         }
 
-        public static string GetGpus ()
+        public static string GetGpus()
         {
             List<string> gpusVk = new List<string>();
             List<string> gpusNv = new List<string>();
 
-            if(VulkanUtils.VkDevices != null)
+            if (VulkanUtils.VkDevices != null)
             {
                 gpusVk.AddRange(VulkanUtils.VkDevices.Select(d => $"{d.Name.Remove("NVIDIA ").Remove("GeForce ").Remove("AMD ").Remove("Intel ").Remove("(TM)")} ({d.Id})"));
             }
 
-            if(NvApi.gpuList != null && NvApi.gpuList.Any())
+            if (NvApi.gpuList != null && NvApi.gpuList.Count != 0)
             {
                 gpusNv.AddRange(NvApi.gpuList.Select(d => $"{d.FullName.Remove("NVIDIA ").Remove("GeForce ")} ({NvApi.gpuList.IndexOf(d)})"));
             }
 
-            if (!gpusVk.Any() && !gpusNv.Any())
+            if (gpusVk.Count == 0 && gpusNv.Count == 0)
                 return "No GPUs detected.";
 
             string s = "";
 
-            if (gpusVk.Any())
+            if (gpusVk.Count != 0)
             {
                 s += $"Vulkan GPUs: {string.Join(", ", gpusVk)}";
             }
 
-            if (gpusNv.Any())
+            if (gpusNv.Count != 0)
             {
                 s += $" - CUDA GPUs: {string.Join(", ", gpusNv)}";
             }

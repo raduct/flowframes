@@ -20,7 +20,7 @@ namespace Flowframes.IO
 {
     class IoUtils
     {
-        public static Image GetImage(string path, bool allowMagickFallback = true, bool log = true)
+        public static Image GetImage(string path, bool log = true)
         {
             try
             {
@@ -52,7 +52,7 @@ namespace Flowframes.IO
         public static string[] ReadLines(string path)
         {
             if (!File.Exists(path))
-                return new string[0];
+                return Array.Empty<string>();
 
             List<string> lines = new List<string>();
             using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 0x1000, FileOptions.SequentialScan))
@@ -70,7 +70,7 @@ namespace Flowframes.IO
         public static bool IsPathDirectory(string path)
         {
             if (path == null)
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
 
             path = path.Trim();
 
@@ -511,7 +511,7 @@ namespace Flowframes.IO
                     string renamedPath = path;
 
                     while (Directory.Exists(renamedPath))
-                        renamedPath = renamedPath + ".old";
+                        renamedPath += ".old";
 
                     Directory.Move(path, renamedPath);
                 }
@@ -841,7 +841,7 @@ namespace Flowframes.IO
         public static FileInfo[] GetFileInfosSorted(string path, bool recursive = false, string pattern = "*")
         {
             if (!Directory.Exists(path))
-                return new FileInfo[0];
+                return Array.Empty<FileInfo>();
 
             SearchOption opt = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
             DirectoryInfo dir = new DirectoryInfo(path);

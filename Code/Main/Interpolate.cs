@@ -26,7 +26,7 @@ namespace Flowframes
         public static MediaFile currentMediaFile;
         public static bool canceled = false;
         public static float InterpProgressMultiplier = 1f;
-        static Stopwatch sw = new Stopwatch();
+        static readonly Stopwatch sw = new Stopwatch();
 
         public static async Task Start()
         {
@@ -213,7 +213,7 @@ namespace Flowframes
             if (!ai.Piped || (ai.Piped && dedupe))
                 await Task.Run(() => FrameOrder.CreateFrameOrderFile(currentSettings.tempFolder, Config.GetBool(Config.Key.enableLoop), currentSettings.interpFactor));
 
-            if (currentSettings.model.FixedFactors.Count() > 0 && (currentSettings.interpFactor != (int)currentSettings.interpFactor || !currentSettings.model.FixedFactors.Contains(currentSettings.interpFactor.RoundToInt())))
+            if (currentSettings.model.FixedFactors.Length > 0 && (currentSettings.interpFactor != (int)currentSettings.interpFactor || !currentSettings.model.FixedFactors.Contains(currentSettings.interpFactor.RoundToInt())))
                 Cancel($"The selected model does not support {currentSettings.interpFactor}x interpolation.\n\nSupported Factors: {currentSettings.model.GetFactorsString()}");
 
             if (canceled) return;
@@ -224,9 +224,6 @@ namespace Flowframes
             if (canceled) return;
 
             currentlyUsingAutoEnc = Utils.CanUseAutoEnc(stepByStep, currentSettings);
-            //            IoUtils.CreateDir(outpath);
-            //            if (Interpolate.currentSettings.is3D)
-            //                IoUtils.CreateDir(Paths.GetOtherDir(outpath));
 
             List<Task> tasks = new List<Task>();
             AiProcess.lastAiProcess = AiProcess.lastAiProcessOther = null;

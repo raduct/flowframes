@@ -80,7 +80,7 @@ namespace Flowframes
                 return 0f;
 
             string num = str.Replace(",", ".").TrimNotNumbers(true);
-            float.TryParse(num, out float value);
+            _ = float.TryParse(num, out float value);
             return value;
         }
 
@@ -92,7 +92,7 @@ namespace Flowframes
                 s = " " + s;
 
             if (addSpaceEnd)
-                s = s + " ";
+                s += " ";
 
             return s;
         }
@@ -132,7 +132,7 @@ namespace Flowframes
         public static string[] SplitIntoLines(this string str)
         {
             if (string.IsNullOrWhiteSpace(str))
-                return new string[0];
+                return Array.Empty<string>();
 
             return Regex.Split(str, "\r\n|\r|\n");
         }
@@ -231,13 +231,6 @@ namespace Flowframes
         {
             WildcardPattern pattern = new WildcardPattern(wildcard);
             return pattern.IsMatch(str);
-        }
-
-        public static int RoundMod(this int n, int mod = 2)     // Round to a number that's divisible by 2 (for h264 etc)
-        {
-            int a = (n / 2) * 2;    // Smaller multiple
-            int b = a + 2;   // Larger multiple
-            return (n - a > b - n) ? b : a; // Return of closest of two
         }
 
         public static string ToTitleCase(this string s)

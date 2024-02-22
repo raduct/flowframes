@@ -42,7 +42,7 @@ namespace Flowframes.Extensions
 
         internal class SafeThreadHandle : SafeHandleZeroOrMinusOneIsInvalid
         {
-            private SafeThreadHandle() : base(true)
+            protected SafeThreadHandle() : base(true)
             {
             }
 
@@ -60,7 +60,7 @@ namespace Flowframes.Extensions
                 SafeThreadHandle pOpenThread = NativeMethods.OpenThread(NativeMethods.ThreadAccess.SUSPEND_RESUME, false, (uint)thread.Id);
 
                 if (!pOpenThread.IsInvalid)
-                    NativeMethods.SuspendThread(pOpenThread);
+                    _ = NativeMethods.SuspendThread(pOpenThread);
             }
         }
 
@@ -71,7 +71,7 @@ namespace Flowframes.Extensions
                 SafeThreadHandle pOpenThread = NativeMethods.OpenThread(NativeMethods.ThreadAccess.SUSPEND_RESUME, false, (uint)thread.Id);
 
                 if (!pOpenThread.IsInvalid)
-                    NativeMethods.ResumeThread(pOpenThread);
+                    _ = NativeMethods.ResumeThread(pOpenThread);
             }
         }
 

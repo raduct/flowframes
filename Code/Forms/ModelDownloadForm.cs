@@ -3,6 +3,8 @@ using Microsoft.WindowsAPICodePack.Taskbar;
 using System;
 using System.Windows.Forms;
 
+#pragma warning disable IDE1006
+
 namespace Flowframes.Forms
 {
     public partial class ModelDownloadForm : Form
@@ -17,7 +19,7 @@ namespace Flowframes.Forms
 
         }
 
-        public void SetWorking(bool state, bool allowCancel = true)
+        public void SetWorking(bool state)
         {
             Logger.Log($"ModelDownloadForm SetWorking({state})", true);
             SetProgress(-1);

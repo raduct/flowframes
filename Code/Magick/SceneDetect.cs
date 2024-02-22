@@ -44,7 +44,7 @@ namespace Flowframes.Magick
             imageCache.Clear();
         }
 
-        static async Task ProcessFrame (FileInfo frame, FileInfo lastFrame, string outFolder)
+        static async Task ProcessFrame(FileInfo frame, FileInfo lastFrame, string outFolder)
         {
             MagickImage prevFrame = GetImage(lastFrame.FullName, false);
             MagickImage currFrame = GetImage(frame.FullName, false);
@@ -58,12 +58,9 @@ namespace Flowframes.Magick
             double errRootMeanSquared = currFrame.Compare(prevFrame, ErrorMetric.RootMeanSquared);
 
             string str = $"\nMetrics of {frame.Name.Split('.')[0]} against {lastFrame.Name.Split('.')[0]}:\n";
-            str += $"NormalizedCrossCorrelation: {errNormalizedCrossCorrelation.ToString("0.000")}\n";
-            str += $"RootMeanSquared: {errRootMeanSquared.ToString("0.000")}\n";
+            str += $"NormalizedCrossCorrelation: {errNormalizedCrossCorrelation:0.000}\n";
+            str += $"RootMeanSquared: {errRootMeanSquared:0.000}\n";
             str += "\n\n";
-
-            bool nccTrigger = errNormalizedCrossCorrelation < 0.45f;
-            bool rMeanSqrTrigger = errRootMeanSquared > 0.18f;
             bool rmsNccTrigger = errRootMeanSquared > 0.18f && errNormalizedCrossCorrelation < 0.6f;
             bool nccRmsTrigger = errNormalizedCrossCorrelation < 0.45f && errRootMeanSquared > 0.11f;
 

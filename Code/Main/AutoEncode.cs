@@ -18,8 +18,8 @@ namespace Flowframes.Main
         public static int chunkSize;    // Encode every n frames
         public static int safetyBufferFrames;      // Ignore latest n frames to avoid using images that haven't been fully encoded yet
         static string[] interpFramesLines;
-        static List<int> encodedFrameLines = new List<int>();
-        static List<int> unencodedFrameLines = new List<int>();
+        static readonly List<int> encodedFrameLines = new List<int>();
+        static readonly List<int> unencodedFrameLines = new List<int>();
 
         static bool debug;
         public static bool busy;
@@ -51,7 +51,6 @@ namespace Flowframes.Main
                 UpdateChunkAndBufferSizes();
 
                 bool imgSeq = Interpolate.currentSettings.outSettings.Encoder.GetInfo().IsImageSequence;
-                //interpFramesFolder = interpFramesPath;
                 string videoChunksFolder = Path.Combine(interpFramesPath.GetParentDir(), Paths.chunksDir);
 
                 if (Interpolate.currentlyUsingAutoEnc)
@@ -73,10 +72,6 @@ namespace Flowframes.Main
                     interpFramesLines = singleInterpFramesLines;
                 }
 
-                //while (!Interpolate.canceled && GetInterpFramesAmount() < 2)
-                //    await Task.Delay(1000);
-
-                //int lastEncodedFrameNum = 0;
                 int maxUnbalance = chunkSize / 10; // Maximum ahead interpolated frames per 3D eye AI process
                 int maxFrames = chunkSize + (0.5f * chunkSize).RoundToInt() + safetyBufferFrames;
                 Task currentMuxTask = null;
@@ -91,8 +86,6 @@ namespace Flowframes.Main
                         await Task.Delay(200);
                         continue;
                     }
-
-                    //unencodedFrameLines.Clear();
 
                     bool aiRunning = AiProcess.IsRunning();
 
@@ -156,7 +149,6 @@ namespace Flowframes.Main
                             string lastFile = Path.GetFileName(interpFramesLines[frameLinesToEncode.Last()].Trim());
                             Logger.Log($"[AE] Encoding Chunk #{chunkNo} to using line {frameLinesToEncode.First()} ({firstFile}) through {frameLinesToEncode.Last()} ({lastFile}) - {unencodedFrameLines.Count} unencoded frames left in total", true, false, "ffmpeg");
 
-                            //await Export.EncodeChunk(outpath, Interpolate.currentSettings.interpFolder, chunkNo, Interpolate.currentSettings.outSettings, frameLinesToEncode.First(), frameLinesToEncode.Count);
                             int currentChunkNo = chunkNo; // capture value
                             int firstLineToEncode = frameLinesToEncode.First(); // capture value
                             int noLinesToEncode = frameLinesToEncode.Count; // capture value
@@ -177,7 +169,6 @@ namespace Flowframes.Main
 
                             encodedFrameLines.AddRange(frameLinesToEncode);
                             unencodedFrameLines.RemoveRange(0, frameLinesToEncode.Count);
-                            //lastEncodedFrameNum = (frameLinesToEncode.Last() + 1);
                             chunkNo++;
                             AutoEncodeResume.Save();
 
@@ -188,8 +179,6 @@ namespace Flowframes.Main
                                 else
                                     Logger.Log($"[AE] Skipping backup because {(!aiRunning ? "this is the final chunk" : "previous mux task has not finished yet")}!", true, false, "ffmpeg");
                             }
-
-                            //busy = false;
                         }
                         catch (Exception e)
                         {
@@ -255,7 +244,6 @@ namespace Flowframes.Main
 
         public static bool HasWorkToDo()
         {
-            //if (Interpolate.canceled || interpFramesFolder == null) return false;
             if (Interpolate.canceled) return false;
             bool aiRunning = AiProcess.IsRunning();
             if (debug)
@@ -266,21 +254,10 @@ namespace Flowframes.Main
 
         static int GetChunkSize(int targetFramesAmount)
         {
-            /*if (targetFramesAmount > 100000) return 4800;
-            if (targetFramesAmount > 50000) return 2400;
-            if (targetFramesAmount > 20000) return 1200;
-            if (targetFramesAmount > 5000) return 600;
-            if (targetFramesAmount > 1000) return 300;
-            return 150;*/
             int round = (int)Math.Floor(targetFramesAmount / 2400f);
             if (round == 0)
                 round = 1;
             return Math.Min(round * 600, 6000);
         }
-
-        //static int GetInterpFramesAmount()
-        //{
-        //    return IoUtils.GetAmountOfFiles(interpFramesFolder, false, "*" + Interpolate.currentSettings.interpExt);
-        //}
     }
 }

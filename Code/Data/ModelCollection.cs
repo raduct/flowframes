@@ -21,16 +21,16 @@ namespace Flowframes.Data
             public bool SupportsAlpha { get; set; } = false;
             public bool IsDefault { get; set; } = false;
             private int[] _fixedFactors = null;
-            public int[] FixedFactors { get { return _fixedFactors == null ? new int[0] : _fixedFactors; } set { _fixedFactors = value; } }
+            public int[] FixedFactors { get { return _fixedFactors ?? (System.Array.Empty<int>()); } set { _fixedFactors = value; } }
 
             public ModelInfo() { }
 
             public string GetUiString()
             {
-                return $"{Name} - {Desc}{(SupportsAlpha ? " (Supports Transparency)" : "")}{(FixedFactors.Count() > 0 ? $" ({GetFactorsString()})" : "")}{(IsDefault ? " (Recommended)" : "")}";
+                return $"{Name} - {Desc}{(SupportsAlpha ? " (Supports Transparency)" : "")}{(FixedFactors.Length > 0 ? $" ({GetFactorsString()})" : "")}{(IsDefault ? " (Recommended)" : "")}";
             }
 
-            public string GetFactorsString ()
+            public string GetFactorsString()
             {
                 return string.Join(", ", FixedFactors.Select(x => $"{x}x"));
             }
@@ -53,11 +53,9 @@ namespace Flowframes.Data
 
             foreach (var item in data)
             {
-                bool alpha = false;
-                bool.TryParse((string)item.supportsAlpha, out alpha);
+                _ = bool.TryParse((string)item.supportsAlpha, out bool alpha);
 
-                bool def = false;
-                bool.TryParse((string)item.isDefault, out def);
+                _ = bool.TryParse((string)item.isDefault, out bool def);
 
                 ModelInfo modelInfo = new ModelInfo()
                 {

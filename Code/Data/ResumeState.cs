@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Flowframes.Data
 {
@@ -11,7 +7,7 @@ namespace Flowframes.Data
         public bool autoEncode;
         public int interpolatedInputFrames;
 
-        public ResumeState (bool autoEncArg, int lastInterpInFrameArg)
+        public ResumeState(bool autoEncArg, int lastInterpInFrameArg)
         {
             autoEncode = autoEncArg;
             interpolatedInputFrames = lastInterpInFrameArg;
@@ -41,7 +37,7 @@ namespace Flowframes.Data
             }
         }
 
-        public override string ToString ()
+        public override string ToString()
         {
             string s = $"AUTOENC|{autoEncode}\n";
 

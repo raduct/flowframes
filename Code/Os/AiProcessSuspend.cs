@@ -9,7 +9,7 @@ namespace Flowframes.Os
         public enum ProcessType { Main, Other, Both };
 
         public static bool aiProcFrozen;
-        static List<Process> suspendedProcesses = new List<Process>();
+        static readonly List<Process> suspendedProcesses = new List<Process>();
 
         public static void Reset()
         {

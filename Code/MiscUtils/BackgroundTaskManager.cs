@@ -5,7 +5,7 @@ namespace Flowframes.MiscUtils
     class BackgroundTaskManager
     {
         private static ulong currentId = 0;
-        private static List<RunningTask> runningTasks = new List<RunningTask>();
+        private static readonly List<RunningTask> runningTasks = new List<RunningTask>();
 
         public class RunningTask
         {

@@ -2,15 +2,17 @@
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+#pragma warning disable IDE1006
+
 namespace Flowframes.Forms
 {
     public partial class TimeoutForm : Form
     {
-        string actionName = "";
-        int waitSeconds;
+        private readonly string actionName = "";
+        private readonly int waitSeconds;
 
         public delegate void ActionCallback();
-        public static ActionCallback actionCallback;
+        private static ActionCallback actionCallback;
 
         bool cancelCountdown = false;
 

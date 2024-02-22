@@ -1,18 +1,14 @@
 ﻿using Flowframes.Data;
 using Flowframes.IO;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Flowframes.Main
 {
     class AiModels
     {
-        public static ModelCollection GetModels (AI ai)
+        public static ModelCollection GetModels(AI ai)
         {
             string pkgPath = Path.Combine(Paths.GetPkgPath(), ai.PkgDir);
             string modelsFile = Path.Combine(pkgPath, "models.json");
@@ -54,7 +50,7 @@ namespace Flowframes.Main
         {
             ModelCollection modelCollection = GetModels(ai);
 
-            foreach(ModelCollection.ModelInfo model in modelCollection.Models)
+            foreach (ModelCollection.ModelInfo model in modelCollection.Models)
             {
                 if (model.Name == modelName)
                     return model;

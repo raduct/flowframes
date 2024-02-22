@@ -277,7 +277,7 @@ namespace Flowframes.IO
             foreach (string line in lines)
             {
                 if (line.Length < 3) continue;
-                string[] keyValuePair = line.Split(':');
+                string[] keyValuePair = line.Split(sep);
                 dict.Add(keyValuePair[0], keyValuePair[1]);
             }
 

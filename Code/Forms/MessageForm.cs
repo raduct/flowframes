@@ -1,20 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+
+#pragma warning disable IDE1006
 
 namespace Flowframes.Forms
 {
     public partial class MessageForm : Form
     {
-        private string _text = "";
-        private string _title = "";
-        private MessageBoxButtons _btns;
+        private readonly string _text = "";
+        private readonly string _title = "";
+        private readonly MessageBoxButtons _btns;
 
         private bool _dialogResultSet = false;
 
@@ -32,13 +28,13 @@ namespace Flowframes.Forms
             Text = _title;
             textLabel.Text = _text;
 
-            if(_btns == MessageBoxButtons.OK)
+            if (_btns == MessageBoxButtons.OK)
             {
                 SetButtons(true, false, false);
                 btn1.Text = "OK";
                 AcceptButton = btn1;
             }
-            else if(_btns == MessageBoxButtons.YesNo)
+            else if (_btns == MessageBoxButtons.YesNo)
             {
                 SetButtons(true, true, false);
                 btn1.Text = "No";
@@ -62,7 +58,7 @@ namespace Flowframes.Forms
             CenterToScreen();
         }
 
-        private Size GetLabelSize(Label label)
+        private static Size GetLabelSize(Label label)
         {
             return TextRenderer.MeasureText(label.Text, label.Font, label.ClientSize, TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl);
         }
