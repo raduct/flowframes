@@ -33,7 +33,7 @@ namespace Flowframes
             }
         }
 
-        public struct LogEntry
+        public class LogEntry
         {
             public string logMessage;
             public bool hidden;
@@ -51,11 +51,20 @@ namespace Flowframes
             }
         }
 
-        private static readonly BlockingCollection<LogEntry> logQueue = new BlockingCollection<LogEntry>();
+        private static readonly BlockingCollection<LogEntry> fileLogQueue = new BlockingCollection<LogEntry>();
 
         public static void Log(string msg, bool hidden = false, bool replaceLastLine = false, string filename = "")
         {
-            logQueue.Add(new LogEntry(msg, hidden, replaceLastLine, filename));
+            if (string.IsNullOrWhiteSpace(msg))
+                return;
+
+            LogEntry logEntry = new LogEntry(msg, hidden, replaceLastLine, filename);
+
+            Show(logEntry); // Show entry synch
+
+            WriteSessionLog(logEntry); // Save into in-memory log
+
+            fileLogQueue.Add(logEntry); // Write to file asynch
         }
 
         public static void StartLogging()
@@ -66,11 +75,11 @@ namespace Flowframes
                 try
                 {
                     while (true)
-                        Show(logQueue.Take());
+                        LogToFile(fileLogQueue.Take());
                 }
                 catch (InvalidOperationException)
                 {
-                    logQueue.Dispose();
+                    fileLogQueue.Dispose();
                     Console.WriteLine("Finished logging");
                 }
             });
@@ -78,83 +87,64 @@ namespace Flowframes
 
         public static void StopLogging()
         {
-            logQueue.CompleteAdding();
+            fileLogQueue.CompleteAdding();
         }
+
+        private static readonly object lockShow = new object();
 
         private static void Show(LogEntry entry)
         {
-            if (string.IsNullOrWhiteSpace(entry.logMessage))
-                return;
-
-            string msg = entry.logMessage;
-
-            if (msg == LastUiLine)
-                entry.hidden = true; // Never show the same line twice in UI, but log it to file
-
-            _lastLog = msg;
-
-            if (!entry.hidden)
-                _lastUi = msg;
-
-            Console.WriteLine(msg);
-
-            try
+            lock (lockShow)
             {
-                if (!entry.hidden && entry.replaceLastLine)
+                if (entry.logMessage == LastUiLine)
+                    entry.hidden = true; // Never show the same line twice in UI, but log it to file
+
+                _lastLog = entry.logMessage;
+
+                if (!entry.hidden)
+                    _lastUi = entry.logMessage;
+
+                Console.WriteLine(entry.logMessage);
+
+                try
                 {
-                    textbox.Suspend();
-                    string[] lines = textbox.Text.SplitIntoLines();
-                    textbox.Text = string.Join(Environment.NewLine, lines.Take(lines.Length - 1).ToArray());
+                    if (!entry.hidden && entry.replaceLastLine)
+                    {
+                        textbox.Suspend();
+                        string[] lines = textbox.Text.SplitIntoLines();
+                        textbox.Text = string.Join(Environment.NewLine, lines.Take(lines.Length - 1).ToArray());
+                    }
                 }
+                catch { }
+
+                entry.logMessage = entry.logMessage.Replace("\n", Environment.NewLine);
+
+                if (!entry.hidden && textbox != null)
+                    textbox.AppendText((textbox.Text.Length > 1 ? Environment.NewLine : "") + entry.logMessage);
+
+                if (entry.replaceLastLine)
+                {
+                    textbox.Resume();
+                    entry.logMessage = "[REPL] " + entry.logMessage;
+                }
+
+                if (!entry.hidden)
+                    entry.logMessage = "[UI] " + entry.logMessage;
             }
-            catch { }
-
-            msg = msg.Replace("\n", Environment.NewLine);
-
-            if (!entry.hidden && textbox != null)
-                textbox.AppendText((textbox.Text.Length > 1 ? Environment.NewLine : "") + msg);
-
-            if (entry.replaceLastLine)
-            {
-                textbox.Resume();
-                msg = "[REPL] " + msg;
-            }
-
-            if (!entry.hidden)
-                msg = "[UI] " + msg;
-
-            LogToFile(entry.time, msg, false, entry.filename);
         }
 
-        private static void LogToFile(DateTime time, string logStr, bool noLineBreak, string filename)
+        private static void LogToFile(LogEntry entry)
         {
-            if (string.IsNullOrWhiteSpace(filename))
-                filename = defaultLogName;
+            LogToFile(entry.logMessage, entry.filename);
+        }
 
-            if (Path.GetExtension(filename) != ".txt")
-                filename = Path.ChangeExtension(filename, "txt");
-
-            string file = Path.Combine(Paths.GetLogPath(), filename);
-            logStr = logStr.Replace(Environment.NewLine, " ").TrimWhitespaces();
+        private static void LogToFile(string logStr, string filename)
+        {
+            string filePath = Path.Combine(Paths.GetLogPath(), filename);
 
             try
             {
-                string appendStr = noLineBreak ? $" {logStr}" : $"{Environment.NewLine}[{id.ToString().PadLeft(8, '0')}] [{time:yyyy-MM-dd HH:mm:ss}]: {logStr}";
-
-                if (sessionLogs.TryGetValue(filename, out ConcurrentQueueL<string> sessionLog))
-                {
-                    if (sessionLog.Count > 9)
-                        sessionLog.TryDequeue(out _);
-                }
-                else
-                {
-                    sessionLog = new ConcurrentQueueL<string>();
-                    sessionLogs[filename] = sessionLog;
-                }
-                sessionLog.Enqueue(appendStr);
-
-                File.AppendAllText(file, appendStr);
-                id++;
+                File.AppendAllText(filePath, logStr);
             }
             catch
             {
@@ -162,9 +152,34 @@ namespace Flowframes
             }
         }
 
+        private static void WriteSessionLog(LogEntry entry)
+        {
+            // Prepare for log
+            if (string.IsNullOrWhiteSpace(entry.filename))
+                entry.filename = defaultLogName;
+            if (Path.GetExtension(entry.filename) != ".txt")
+                entry.filename = Path.ChangeExtension(entry.filename, "txt");
+
+            entry.logMessage = entry.logMessage.Replace(Environment.NewLine, " ").TrimWhitespaces();
+            entry.logMessage = $"{Environment.NewLine}[{id.ToString().PadLeft(8, '0')}] [{entry.time:yyyy-MM-dd HH:mm:ss}]: {entry.logMessage}";
+            id++;
+
+            if (sessionLogs.TryGetValue(entry.filename, out ConcurrentQueueL<string> sessionLog))
+            {
+                if (sessionLog.Count >= 10)
+                    sessionLog.TryDequeue(out _);
+            }
+            else
+            {
+                sessionLog = new ConcurrentQueueL<string>();
+                sessionLogs[entry.filename] = sessionLog;
+            }
+            sessionLog.Enqueue(entry.logMessage);
+        }
+
         private static ConcurrentQueueL<string> GetSessionLog(string filename)
         {
-            if (!filename.Contains(".txt"))
+            if (Path.GetExtension(filename) != ".txt")
                 filename = Path.ChangeExtension(filename, "txt");
 
             sessionLogs.TryGetValue(filename, out ConcurrentQueueL<string> logQ);

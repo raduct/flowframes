@@ -48,7 +48,7 @@ namespace Flowframes
             {
                 await GetFrames();
                 if (canceled) return;
-                await PostProcessFrames(false);
+                await PostProcessFrames();
             }
 
             if (canceled) return;
@@ -145,7 +145,7 @@ namespace Flowframes
                 int framesLeft = IoUtils.GetAmountOfFiles(outPath, false, "*" + currentSettings.framesExt);
                 int framesDeleted = currentMediaFile.FrameCount - framesLeft;
                 float percentDeleted = ((float)framesDeleted / currentMediaFile.FrameCount) * 100f;
-                string keptPercent = $"{(100f - percentDeleted).ToString("0.0")}%";
+                string keptPercent = $"{100f - percentDeleted:0.0}%";
 
                 if (framesDeleted > 0)
                 {
@@ -160,7 +160,7 @@ namespace Flowframes
                 Utils.FixConsecutiveSceneFrames(Path.Combine(currentSettings.tempFolder, Paths.scenesDir), currentSettings.framesFolder);
         }
 
-        public static async Task PostProcessFrames(bool stepByStep)
+        public static async Task PostProcessFrames()
         {
             if (canceled) return;
 

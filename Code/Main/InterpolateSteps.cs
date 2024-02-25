@@ -61,7 +61,7 @@ namespace Flowframes.Main
             }
 
             await GetFrames();
-            await PostProcessFrames(true);
+            await PostProcessFrames();
         }
 
         public static async Task InterpolateStep()
