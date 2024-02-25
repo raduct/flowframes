@@ -141,6 +141,7 @@ namespace Flowframes.Ui
         public static float peakFpsOut;
 
         static readonly int previewUpdateRateMs = 200;
+        private static readonly Regex EOLRegex = new Regex("\r\n|\r|\n");
 
         public static void UpdateInterpProgress(int frames, int target, string latestFramePath = "")
         {
@@ -165,7 +166,7 @@ namespace Flowframes.Ui
             float eta = framesLeft * secondsPerFrame;
             string etaStr = FormatUtils.Time(new TimeSpan(0, 0, eta.RoundToInt()), false);
 
-            bool replaceLine = Regex.Split(Logger.textbox.Text, "\r\n|\r|\n").Last().Contains("Average Speed: ");
+            bool replaceLine = EOLRegex.Split(Logger.textbox.Text).Last().Contains("Average Speed: ");
 
             string logStr = $"Interpolated {frames}/{target} Frames ({percent}%) - Average Speed: {fpsIn} FPS In / {fpsOut} FPS Out - ";
             logStr += $"Time: {FormatUtils.Time(AiProcess.processTime.Elapsed)} - ETA: {etaStr}";

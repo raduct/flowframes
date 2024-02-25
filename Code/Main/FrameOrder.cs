@@ -202,7 +202,7 @@ namespace Flowframes.Main
             }
 
             if (loop)
-                fileContent = fileContent.Remove(fileContent.LastIndexOf("\n"));
+                fileContent = fileContent.Remove(fileContent.LastIndexOf('\n'));
 
             File.WriteAllText(framesFile, fileContent);
             List<string> allInputFilenames = new List<string>();

@@ -203,7 +203,7 @@ namespace Flowframes
             if (!ai.Piped || (ai.Piped && currentSettings.inputIsFrames))
             {
                 await Task.Run(() => Dedupe.CreateDupesFile(currentSettings.framesFolder, currentSettings.framesExt));
-                await Task.Run(() => { return FrameRename.Rename(); });
+                await Task.Run(FrameRename.Rename);
             }
             else if (ai.Piped && dedupe)
             {

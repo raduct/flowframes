@@ -485,7 +485,7 @@ namespace Flowframes.Forms.Main
 
         public void UpdateUiFps()
         {
-            if (fpsInTbox.Text.Contains("/"))   // Parse fraction
+            if (fpsInTbox.Text.Contains('/'))   // Parse fraction
             {
                 string[] split = fpsInTbox.Text.Split('/');
                 Fraction frac = new Fraction(split[0].GetInt(), split[1].GetInt());

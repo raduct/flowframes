@@ -120,7 +120,7 @@ namespace Flowframes.Main
                                     AiProcessSuspend.Suspend(AiProcessSuspend.ProcessType.Main);
                                 else if (unbalance < -maxUnbalance)
                                     AiProcessSuspend.Suspend(AiProcessSuspend.ProcessType.Other);
-                                else if ((unbalance < -maxUnbalance / 5) && !AiProcessSuspend.IsMainRunning() || (unbalance > maxUnbalance / 5) && !AiProcessSuspend.IsOtherRunning())
+                                else if ((unbalance <= 0) && !AiProcessSuspend.IsMainRunning() || (unbalance >= 0) && !AiProcessSuspend.IsOtherRunning())
                                     AiProcessSuspend.Resume();
                             }
                         }

@@ -15,7 +15,7 @@ namespace Flowframes.IO
     {
         public static bool canceled = false;
 
-        static string GetMdlUrl (string ai, string relPath)
+        static string GetMdlUrl(string ai, string relPath)
         {
             string custServer = Config.Get(Config.Key.customServer);
             string server = custServer.Trim().Length > 3 ? custServer : Servers.GetServer().GetUrl();
@@ -33,7 +33,7 @@ namespace Flowframes.IO
             return Path.Combine(Paths.GetPkgPath(), ai, model);
         }
 
-        static async Task DownloadTo (string url, string saveDirOrPath, bool log = true, int retries = 3)
+        static async Task DownloadTo(string url, string saveDirOrPath, bool log = true, int retries = 3)
         {
             canceled = false;
             string savePath = saveDirOrPath;
@@ -80,7 +80,7 @@ namespace Flowframes.IO
                 if (sw.ElapsedMilliseconds > 6000)
                 {
                     client.CancelAsync();
-                    if(retries > 0)
+                    if (retries > 0)
                     {
                         await DownloadTo(url, saveDirOrPath, log, retries--);
                     }
@@ -105,7 +105,7 @@ namespace Flowframes.IO
             public string crc32;
         }
 
-        static List<ModelFile> GetModelFilesFromJson (string json)
+        static List<ModelFile> GetModelFilesFromJson(string json)
         {
             List<ModelFile> modelFiles = new List<ModelFile>();
 
@@ -127,12 +127,12 @@ namespace Flowframes.IO
             catch (Exception e)
             {
                 Logger.Log($"Failed to parse model file list from JSON: {e.Message}", true);
-            } 
+            }
 
             return modelFiles;
         }
 
-        public static async Task DownloadModelFiles (AI ai, string modelDir, bool log = true)
+        public static async Task DownloadModelFiles(AI ai, string modelDir, bool log = true)
         {
             string aiDir = ai.PkgDir;
 
@@ -184,9 +184,9 @@ namespace Flowframes.IO
             }
         }
 
-        public static void DeleteAllModels ()
+        public static void DeleteAllModels()
         {
-            foreach(string modelFolder in GetAllModelFolders())
+            foreach (string modelFolder in GetAllModelFolders())
             {
                 string size = FormatUtils.Bytes(IoUtils.GetDirSize(modelFolder, true));
                 if (IoUtils.TryDeleteIfExists(modelFolder))
@@ -203,7 +203,7 @@ namespace Flowframes.IO
                 string aiPkgFolder = Path.Combine(Paths.GetPkgPath(), ai.PkgDir);
                 ModelCollection aiModels = AiModels.GetModels(ai);
 
-                foreach(ModelCollection.ModelInfo model in aiModels.Models)
+                foreach (ModelCollection.ModelInfo model in aiModels.Models)
                 {
                     string mdlFolder = Path.Combine(aiPkgFolder, model.Dir);
 
@@ -215,7 +215,7 @@ namespace Flowframes.IO
             return modelPaths;
         }
 
-        public static async Task<bool> AreFilesValid (string ai, string model)
+        public static async Task<bool> AreFilesValid(string ai, string model)
         {
             string mdlDir = GetLocalPath(ai, model);
 
@@ -252,7 +252,7 @@ namespace Flowframes.IO
                     return false;
                 }
 
-                if(fileSize > 100 * 1024 * 1024)    // Skip hash calculation if file is very large, filesize check should be enough anyway
+                if (fileSize > 100 * 1024 * 1024)    // Skip hash calculation if file is very large, filesize check should be enough anyway
                 {
                     Logger.Log($"Skipped CRC32 check for {mf.filename} because it's too big ({fileSize / 1024 / 1024} MB)", true);
                     return true;
@@ -270,7 +270,7 @@ namespace Flowframes.IO
             return true;
         }
 
-        static Dictionary<string, string> GetDict (string[] lines, char sep = ':')
+        static Dictionary<string, string> GetDict(string[] lines, char sep = ':')
         {
             Dictionary<string, string> dict = new Dictionary<string, string>();
 

@@ -107,12 +107,12 @@ namespace Flowframes.Media
             }
 
             if (includePixFmt)
-                 args += $" -pix_fmt {pixFmt}";
+                args += $" -pix_fmt {pixFmt}";
 
             return args;
         }
 
-        private static string SimplifyPixFmt (string pixFmt)
+        private static string SimplifyPixFmt(string pixFmt)
         {
             pixFmt = pixFmt.Lower();
             pixFmt = pixFmt.Replace("yuvj", "yuv");
@@ -128,7 +128,7 @@ namespace Flowframes.Media
             IoUtils.CreateDir(framesDir);
             string mpStr = deDupe ? GetMpdecimate(true) : "";
             string rateFilter = rate.GetFloat() > 0 && !deDupe ? $"fps={rate}" : "";
-            string filters = FormatUtils.ConcatStrings(new[] { GetPadFilter(), mpStr, rateFilter});
+            string filters = FormatUtils.ConcatStrings(new[] { GetPadFilter(), mpStr, rateFilter });
             string vf = filters.Length > 2 ? $"-vf {filters}" : "";
             //string rateArg = (rate.GetFloat() > 0 && !deDupe) ? $" -fps_mode cfr -r {rate}" : "-fps_mode passthrough";
             //string args = $"{GetTrimArg(true)} -itsscale {Interpolate.currentMediaFile.VideoStreams.First().FpsInfo.VfrRatio} -i {inputFile.Wrap()} {GetImgArgs(format, true, alpha)} {rateArg} -frame_pts 1 {vf} {sizeStr} {GetTrimArg(false)} \"{framesDir}/%{Padding.inputFrames}d{format}\""; LogMode logMode = Interpolate.currentMediaFile.FrameCount > 50 ? LogMode.OnlyLastLine : LogMode.Hidden;
@@ -180,7 +180,7 @@ namespace Flowframes.Media
             else
             {
                 Logger.Log($"Symlink Import disabled, copying input frames...", true);
-                await Task.Run( () =>
+                await Task.Run(() =>
                 {
                     foreach (KeyValuePair<string, string> moveFromToPair in moveFromTo)
                         File.Copy(moveFromToPair.Key, moveFromToPair.Value);
@@ -219,7 +219,7 @@ namespace Flowframes.Media
             int sampleCount = Config.GetInt(Config.Key.imgSeqSampleCount, 10);
             Image[] randomSamples = files.OrderBy(arg => Guid.NewGuid()).Take(sampleCount).Select(x => IoUtils.GetImage(x.FullName)).ToArray();
 
-            if(files.All(f => f != null))
+            if (files.All(f => f != null))
             {
                 bool allSameSize = randomSamples.All(i => i.Size == randomSamples.First().Size);
 
@@ -331,7 +331,7 @@ namespace Flowframes.Media
         public static async Task ImportSingleImage(string inputFile, string outPath, Size size)
         {
             string sizeStr = (size.Width > 1 && size.Height > 1) ? $"-s {size.Width}x{size.Height}" : "";
-            bool isPng = (Path.GetExtension(outPath).ToLowerInvariant() == ".png");
+            bool isPng = Path.GetExtension(outPath).Equals(".png", StringComparison.InvariantCultureIgnoreCase);
             string comprArg = isPng ? pngCompr : "";
             string pixFmt = "-pix_fmt " + (isPng ? $"rgb24 {comprArg}" : "yuvj420p");
             string args = $"-i {inputFile.Wrap()} {comprArg} {sizeStr} {pixFmt} -vf {GetPadFilter()} {outPath.Wrap()}";
@@ -340,7 +340,7 @@ namespace Flowframes.Media
 
         public static async Task ExtractSingleFrame(string inputFile, string outputPath, int frameNum)
         {
-            bool isPng = (Path.GetExtension(outputPath).ToLowerInvariant() == ".png");
+            bool isPng = Path.GetExtension(outputPath).Equals(".png", StringComparison.InvariantCultureIgnoreCase);
             string comprArg = isPng ? pngCompr : "";
             string pixFmt = "-pix_fmt " + (isPng ? $"rgb24 {comprArg}" : "yuvj420p");
             string args = $"-i {inputFile.Wrap()} -vf \"select=eq(n\\,{frameNum})\" -vframes 1 {pixFmt} {outputPath.Wrap()}";
@@ -355,7 +355,7 @@ namespace Flowframes.Media
             if (IoUtils.IsPathDirectory(outputPath))
                 outputPath = Path.Combine(outputPath, "last.png");
 
-            bool isPng = (Path.GetExtension(outputPath).ToLowerInvariant() == ".png");
+            bool isPng = Path.GetExtension(outputPath).Equals(".png", StringComparison.InvariantCultureIgnoreCase);
             string comprArg = isPng ? pngCompr : "";
             string pixFmt = "-pix_fmt " + (isPng ? $"rgb24 {comprArg}" : "yuvj420p");
             string sizeStr = (size.Width > 1 && size.Height > 1) ? $"-s {size.Width}x{size.Height}" : "";

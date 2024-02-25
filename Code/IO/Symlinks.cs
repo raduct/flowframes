@@ -23,7 +23,7 @@ namespace Flowframes.IO
         public static bool SymlinksAllowed()
         {
             string origFile = Paths.GetExe();
-            string linkPath = Paths.GetExe() + "linktest";
+            string linkPath = origFile + "linktest";
             bool success = NativeMethods.CreateSymbolicLink(linkPath, origFile, NativeMethods.Flag.Unprivileged);
 
             if (success)

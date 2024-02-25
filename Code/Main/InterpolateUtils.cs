@@ -48,27 +48,6 @@ namespace Flowframes.Main
             }
         }
 
-        public static int GetProgressWaitTime(int numFrames)
-        {
-            float hddMultiplier = !Program.lastInputPathIsSsd ? 2f : 1f;
-
-            int waitMs = 200;
-
-            if (numFrames > 100)
-                waitMs = 500;
-
-            if (numFrames > 1000)
-                waitMs = 1000;
-
-            if (numFrames > 2500)
-                waitMs = 1500;
-
-            if (numFrames > 5000)
-                waitMs = 2500;
-
-            return (waitMs * hddMultiplier).RoundToInt();
-        }
-
         public static string GetTempFolderLoc(string inPath, string outPath)
         {
             string basePath = Path.Combine(Environment.GetEnvironmentVariable("LOCALAPPDATA"), "Temp", "Flowframes");
@@ -127,7 +106,7 @@ namespace Flowframes.Main
                 }
 
                 string fpsLimitValue = Config.Get(Config.Key.maxFps);
-                float fpsLimit = (fpsLimitValue.Contains("/") ? new Fraction(fpsLimitValue).GetFloat() : fpsLimitValue.GetFloat());
+                float fpsLimit = (fpsLimitValue.Contains('/') ? new Fraction(fpsLimitValue).GetFloat() : fpsLimitValue.GetFloat());
                 int maxFps = s.outSettings.Encoder.GetInfo().MaxFramerate;
 
                 if (passes && s.outFps.GetFloat() < 1f || (s.outFps.GetFloat() > maxFps && !(fpsLimit > 0 && fpsLimit <= maxFps)))
@@ -172,7 +151,7 @@ namespace Flowframes.Main
                 return false;
             }
 
-            if (I.currentSettings.ai.NameInternal.ToUpper().Contains("CUDA") && NvApi.gpuList.Count < 1)
+            if (I.currentSettings.ai.NameInternal.Contains("CUDA", StringComparison.CurrentCultureIgnoreCase) && NvApi.gpuList.Count < 1)
             {
                 UiUtils.ShowMessageBox("Warning: No Nvidia GPU was detected. CUDA might fall back to CPU!\n\nTry an NCNN implementation instead if you don't have an Nvidia GPU.", UiUtils.MessageType.Error);
 
@@ -236,7 +215,7 @@ namespace Flowframes.Main
         {
             string enc = I.currentSettings.outSettings.Encoder.GetInfo().Name;
 
-            if (enc.ToLowerInvariant().Contains("nvenc") && !(await FfmpegCommands.IsEncoderCompatible(enc)))
+            if (enc.Contains("nvenc", StringComparison.InvariantCultureIgnoreCase) && !(await FfmpegCommands.IsEncoderCompatible(enc)))
             {
                 UiUtils.ShowMessageBox("NVENC encoding is not available on your hardware!\nPlease use a different encoder.", UiUtils.MessageType.Error);
                 I.Cancel();

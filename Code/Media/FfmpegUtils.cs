@@ -81,7 +81,7 @@ namespace Flowframes.Media
                             string title = await GetFfprobeInfoAsync(path, showStreams, "TAG:title", idx);
                             string codec = await GetFfprobeInfoAsync(path, showStreams, "codec_name", idx);
                             string profile = await GetFfprobeInfoAsync(path, showStreams, "profile", idx);
-                            if (codec.ToLowerInvariant() == "dts" && profile != "unknown") codec = profile;
+                            if (codec.Equals("dts", StringComparison.InvariantCultureIgnoreCase) && profile != "unknown") codec = profile;
                             string codecLong = await GetFfprobeInfoAsync(path, showStreams, "codec_long_name", idx);
                             int kbits = (await GetFfprobeInfoAsync(path, showStreams, "bit_rate", idx)).GetInt() / 1024;
                             int sampleRate = (await GetFfprobeInfoAsync(path, showStreams, "sample_rate", idx)).GetInt();

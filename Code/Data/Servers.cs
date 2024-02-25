@@ -64,7 +64,7 @@ namespace Flowframes.Data
             }
         }
 
-        public static Server GetServer ()
+        public static Server GetServer()
         {
             int server = Config.GetInt("serverCombox");
 

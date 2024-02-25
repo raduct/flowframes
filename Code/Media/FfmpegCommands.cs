@@ -18,8 +18,8 @@ namespace Flowframes
         public static string pngCompr = "-compression_level 3";
 
         public enum MpDecSensitivity { Normal = 4, High = 20, VeryHigh = 32, Extreme = 40 }
-        
-        public static string GetMpdecimate (int sensitivity = 4, bool wrap = true)
+
+        public static string GetMpdecimate(int sensitivity = 4, bool wrap = true)
         {
             string mpd = $"mpdecimate=hi=64*1024:lo=64*{sensitivity}:frac=1.0";
             return wrap ? mpd.Wrap() : mpd;
@@ -33,7 +33,7 @@ namespace Flowframes
             return wrap ? mpd.Wrap() : mpd;
         }
 
-        public static int GetModulo ()
+        public static int GetModulo()
         {
             if (Interpolate.currentSettings.ai.NameInternal == Implementations.flavrCuda.NameInternal)
                 return 8;
@@ -41,7 +41,7 @@ namespace Flowframes
             return Interpolate.currentSettings.outSettings.Encoder.GetInfo().Modulo;
         }
 
-        public static string GetPadFilter ()
+        public static string GetPadFilter()
         {
             int mod = GetModulo();
 
@@ -55,7 +55,7 @@ namespace Flowframes
         {
             Logger.Log($"ConcatVideos('{Path.GetFileName(concatFile)}', '{outPath}', {looptimes})", true, false, "ffmpeg");
 
-            if(showLog)
+            if (showLog)
                 Logger.Log($"Merging videos...", false, Logger.GetLastLine().Contains("frame"));
 
             IoUtils.RenameExistingFileOrDir(outPath);
@@ -135,7 +135,7 @@ namespace Flowframes
                     }
                 }
             }
-            catch(Exception ffmpegEx)
+            catch (Exception ffmpegEx)
             {
                 Logger.Log("GetFramerate ffmpeg Error: " + ffmpegEx.Message, true, false);
             }
@@ -162,9 +162,9 @@ namespace Flowframes
             string args = $" -v panic -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 {inputFile.Wrap()}";
             string[] outputLines = GetFfprobeOutput(args).SplitIntoLines();
 
-            foreach(string line in outputLines)
+            foreach (string line in outputLines)
             {
-                if (!line.Contains("x") || line.Trim().Length < 3)
+                if (!line.Contains('x') || line.Trim().Length < 3)
                     continue;
 
                 string[] numbers = line.Split('x');

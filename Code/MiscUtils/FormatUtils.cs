@@ -97,7 +97,7 @@ namespace Flowframes.MiscUtils
                 int seconds = int.Parse(values[2].Split('.')[0]);
                 long ms = 0;
 
-                if (timestamp.Contains("."))
+                if (timestamp.Contains('.'))
                 {
                     int milliseconds = int.Parse(values[2].Split('.')[1].Substring(0, 2)) * 10;
                     ms = hours * 3600000 + minutes * 60000 + seconds * 1000 + milliseconds;

@@ -8,7 +8,8 @@ namespace Flowframes.Media
 {
     class AvOutputHandler
     {
-        public static readonly string prefix = "[ffmpeg]";
+        public const string prefix = "[ffmpeg]";
+        private static readonly Regex timeRegex = new Regex("(?<=Time:).*(?= )");
 
         public static void LogOutput(string line, ref string appendStr, string logFilename, LogMode logMode, bool showProgressBar)
         {
@@ -29,11 +30,7 @@ namespace Flowframes.Media
             Logger.Log($"{prefix} {line}", hidden, replaceLastLine, logFilename);
 
             if (!hidden && showProgressBar && line.Contains("Time:"))
-            {
-                Regex timeRegex = new Regex("(?<=Time:).*(?= )");
                 UpdateFfmpegProgress(timeRegex.Match(line).Value);
-            }
-
 
             if (line.Contains("Unable to"))
             {

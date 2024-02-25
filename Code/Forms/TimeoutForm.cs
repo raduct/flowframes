@@ -36,7 +36,7 @@ namespace Flowframes.Forms
             _ = WaitAndRun();
         }
 
-        async Task WaitAndRun ()
+        async Task WaitAndRun()
         {
             Show();
             WindowState = FormWindowState.Normal;
@@ -68,6 +68,6 @@ namespace Flowframes.Forms
             Close();
         }
 
-        
+
     }
 }

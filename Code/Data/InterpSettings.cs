@@ -61,7 +61,7 @@ namespace Flowframes
             InitArgs();
         }
 
-        public void InitArgs ()
+        public void InitArgs()
         {
             outFps = inFps * (double)interpFactor;
 
@@ -92,7 +92,7 @@ namespace Flowframes
             RefreshExtensions();
         }
 
-        public InterpSettings (string serializedData)
+        public InterpSettings(string serializedData)
         {
             inPath = "";
             outPath = "";
@@ -111,7 +111,7 @@ namespace Flowframes
 
             Dictionary<string, string> entries = new Dictionary<string, string>();
 
-            foreach(string line in serializedData.SplitIntoLines())
+            foreach (string line in serializedData.SplitIntoLines())
             {
                 if (line.Length < 3) continue;
                 string[] keyValuePair = line.Split('|');
@@ -159,7 +159,7 @@ namespace Flowframes
             RefreshExtensions();
         }
 
-        public void UpdatePaths (string inPathArg, string outPathArg)
+        public void UpdatePaths(string inPathArg, string outPathArg)
         {
             inPath = inPathArg;
             outPath = outPathArg;
@@ -169,13 +169,13 @@ namespace Flowframes
             inputIsFrames = IoUtils.IsPathDirectory(inPath);
         }
 
-        async Task RefreshInputRes ()
+        async Task RefreshInputRes()
         {
             if (_inputResolution.IsEmpty)
                 _inputResolution = await GetMediaResolutionCached.GetSizeAsync(inPath);
         }
 
-        public void RefreshAlpha ()
+        public void RefreshAlpha()
         {
             try
             {
@@ -228,7 +228,7 @@ namespace Flowframes
             Logger.Log($"RefreshExtensions - Using '{framesExt}' for imported frames, using '{interpExt}' for interpolated frames", true);
         }
 
-        public string Serialize ()
+        public string Serialize()
         {
             string s = $"INPATH|{inPath}\n";
             s += $"OUTPATH|{outPath}\n";

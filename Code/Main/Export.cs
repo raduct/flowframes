@@ -19,8 +19,6 @@ namespace Flowframes.Main
 {
     class Export
     {
-
-
         public static async Task ExportFrames(string path, string outFolder, OutputSettings exportSettings, bool stepByStep)
         {
             if (Config.GetInt(Config.Key.sceneChangeFillMode) == 1)
@@ -55,7 +53,7 @@ namespace Flowframes.Main
             try
             {
                 string max = Config.Get(Config.Key.maxFps);
-                Fraction maxFps = max.Contains("/") ? new Fraction(max) : new Fraction(max.GetFloat());
+                Fraction maxFps = max.Contains('/') ? new Fraction(max) : new Fraction(max.GetFloat());
                 bool fpsLimit = maxFps.GetFloat() > 0f && I.currentSettings.outFps.GetFloat() > maxFps.GetFloat();
                 bool dontEncodeFullFpsVid = fpsLimit && Config.GetInt(Config.Key.maxFpsMode) == 0;
 
@@ -78,7 +76,7 @@ namespace Flowframes.Main
             string encArgs = FfmpegUtils.GetEncArgs(s.outSettings, (s.ScaledResolution.IsEmpty ? s.InputResolution : s.ScaledResolution), s.outFps.GetFloat(), true).FirstOrDefault();
 
             string max = Config.Get(Config.Key.maxFps);
-            Fraction maxFps = max.Contains("/") ? new Fraction(max) : new Fraction(max.GetFloat());
+            Fraction maxFps = max.Contains('/') ? new Fraction(max) : new Fraction(max.GetFloat());
             bool fpsLimit = maxFps.GetFloat() > 0f && s.outFps.GetFloat() > maxFps.GetFloat();
 
             // Logger.Log($"VFR Ratio: {I.currentMediaFile.VideoStreams.First().FpsInfo.VfrRatio} ({I.currentMediaFile.VideoStreams.First().FpsInfo.Fps} FPS Specified, {I.currentMediaFile.VideoStreams.First().FpsInfo.SpecifiedFps} FPS Avg)");
@@ -88,7 +86,7 @@ namespace Flowframes.Main
             string extraArgsIn = FfmpegEncode.GetFfmpegExportArgsIn(s.outFps, s.outItsScale);
             string extraArgsOut = await FfmpegEncode.GetFfmpegExportArgsOut(fpsLimit ? maxFps : new Fraction(), extraData, s.outSettings);
 
-            if(s.outSettings.Encoder == Enums.Encoding.Encoder.Exr)
+            if (s.outSettings.Encoder == Enums.Encoding.Encoder.Exr)
             {
                 extraArgsIn += " -color_trc bt709 -color_primaries bt709 -colorspace bt709";
             }
@@ -127,7 +125,7 @@ namespace Flowframes.Main
             Enums.Encoding.Encoder desiredFormat = I.currentSettings.outSettings.Encoder;
             string availableFormat = Path.GetExtension(IoUtils.GetFilesSorted(framesPath, "*.*")[0]).Remove(".").ToUpper();
             string max = Config.Get(Config.Key.maxFps);
-            Fraction maxFps = max.Contains("/") ? new Fraction(max) : new Fraction(max.GetFloat());
+            Fraction maxFps = max.Contains('/') ? new Fraction(max) : new Fraction(max.GetFloat());
             bool fpsLimit = maxFps.GetFloat() > 0f && I.currentSettings.outFps.GetFloat() > maxFps.GetFloat();
             bool dontEncodeFullFpsSeq = fpsLimit && Config.GetInt(Config.Key.maxFpsMode) == 0;
             string framesFile = Path.Combine(framesPath.GetParentDir(), Paths.GetFrameOrderFilename(I.currentSettings.interpFactor));
@@ -138,7 +136,7 @@ namespace Flowframes.Main
                 IoUtils.RenameExistingFolder(outputFolderPath);
                 Logger.Log($"Exporting {desiredFormat.ToString().Upper()} frames to '{Path.GetFileName(outputFolderPath)}'...");
 
-                if (desiredFormat.GetInfo().OverideExtension.ToUpper() == availableFormat.ToUpper())   // Move if frames are already in the desired format
+                if (desiredFormat.GetInfo().OverideExtension.Equals(availableFormat, StringComparison.CurrentCultureIgnoreCase))   // Move if frames are already in the desired format
                     await CopyOutputFrames(framesPath, framesFile, outputFolderPath, 1, fpsLimit, false);
                 else    // Encode if frames are not in desired format
                     await FfmpegEncode.FramesToFrames(framesFile, outputFolderPath, 1, I.currentSettings.outFps, new Fraction(), desiredFormat, OutputUtils.GetImgSeqQ(I.currentSettings.outSettings));
@@ -292,7 +290,7 @@ namespace Flowframes.Main
                 await Blend.BlendSceneChanges(concatFile, false);
 
             string max = Config.Get(Config.Key.maxFps);
-            Fraction maxFps = max.Contains("/") ? new Fraction(max) : new Fraction(max.GetFloat());
+            Fraction maxFps = max.Contains('/') ? new Fraction(max) : new Fraction(max.GetFloat());
             bool fpsLimit = maxFps.GetFloat() != 0 && I.currentSettings.outFps.GetFloat() > maxFps.GetFloat();
             VidExtraData extraData = await FfmpegCommands.GetVidExtraInfo(I.currentSettings.inPath);
 
@@ -311,7 +309,7 @@ namespace Flowframes.Main
                     if (chunkNo == 1)    // Only check for existing folder on first chunk, otherwise each chunk makes a new folder
                         IoUtils.RenameExistingFolder(outFolderPath);
 
-                    if (desiredFormat.ToUpper() == availableFormat.ToUpper())   // Move if frames are already in the desired format
+                    if (desiredFormat.Equals(availableFormat, StringComparison.CurrentCultureIgnoreCase))   // Move if frames are already in the desired format
                         await CopyOutputFrames(interpDir, concatFile, outFolderPath, startNo, fpsLimit, true);
                     else    // Encode if frames are not in desired format
                         await FfmpegEncode.FramesToFrames(concatFile, outFolderPath, startNo, I.currentSettings.outFps, new Fraction(), settings.Encoder, OutputUtils.GetImgSeqQ(settings), logMode);

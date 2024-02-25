@@ -73,7 +73,7 @@ namespace Flowframes.Ui
             {
                 for (int i = 0; i < combox.Items.Count; i++)
                 {
-                    if (((string)combox.Items[i]).ToUpper().Contains("NCNN"))
+                    if (((string)combox.Items[i]).Contains("NCNN", StringComparison.CurrentCultureIgnoreCase))
                         combox.SelectedIndex = i;
                 }
             }

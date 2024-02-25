@@ -67,6 +67,8 @@ namespace Flowframes.IO
             return lines.ToArray();
         }
 
+        internal static readonly string[] sourceArray = new string[2] { "\\", "/" };
+
         public static bool IsPathDirectory(string path)
         {
             if (path == null)
@@ -80,7 +82,7 @@ namespace Flowframes.IO
             if (File.Exists(path))
                 return false;
 
-            if (new string[2] { "\\", "/" }.Any((string x) => path.EndsWith(x)))
+            if (sourceArray.Any((string x) => path.EndsWith(x)))
                 return true;
 
             return string.IsNullOrWhiteSpace(Path.GetExtension(path));
@@ -573,7 +575,7 @@ namespace Flowframes.IO
         {
             InterpSettings curr = Interpolate.currentSettings;
             string max = Config.Get(Config.Key.maxFps);
-            Fraction maxFps = max.Contains("/") ? new Fraction(max) : new Fraction(max.GetFloat());
+            Fraction maxFps = max.Contains('/') ? new Fraction(max) : new Fraction(max.GetFloat());
             float fps = fpsLimit ? maxFps.GetFloat() : curr.outFps.GetFloat();
 
             Size outRes = await InterpolateUtils.GetOutputResolution(curr.inPath, true);

@@ -1,6 +1,4 @@
-﻿using DiskDetector;
-using DiskDetector.Models;
-using Flowframes.Extensions;
+﻿using Flowframes.Extensions;
 using Flowframes.IO;
 using Flowframes.MiscUtils;
 using System;
@@ -144,25 +142,7 @@ namespace Flowframes.Os
 
         public static bool DriveIsSSD(string path)
         {
-            try
-            {
-                var detectedDrives = Detector.DetectFixedDrives(QueryType.SeekPenalty);
-                if (detectedDrives.Count != 0)
-                {
-                    char pathDriveLetter = (path[0].ToString().ToUpper())[0];
-                    foreach (var detectedDrive in detectedDrives)
-                    {
-                        if (detectedDrive.DriveLetter == pathDriveLetter && detectedDrive.HardwareType.ToString().ToLowerInvariant().Trim() == "ssd")
-                            return true;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.Log("Failed to detect drive type: " + e.Message, true);
-                return true;    // Default to SSD on fail
-            }
-            return false;
+            return true;
         }
 
         public static bool HasNonAsciiChars(string str)
@@ -184,7 +164,7 @@ namespace Flowframes.Os
 
         public static string TryGetOs()
         {
-            string info = "";
+            string info = string.Empty;
 
             try
             {
@@ -230,7 +210,7 @@ namespace Flowframes.Os
             Stopwatch timeSinceLastOutput = new Stopwatch();
             timeSinceLastOutput.Restart();
 
-            string output = "";
+            string output = string.Empty;
 
             process.OutputDataReceived += (object sender, DataReceivedEventArgs e) => output += $"{e.Data}\n";
             process.ErrorDataReceived += (object sender, DataReceivedEventArgs e) => output += $"{e.Data}\n";
@@ -302,7 +282,7 @@ namespace Flowframes.Os
             if (gpusVk.Count == 0 && gpusNv.Count == 0)
                 return "No GPUs detected.";
 
-            string s = "";
+            string s = string.Empty;
 
             if (gpusVk.Count != 0)
             {

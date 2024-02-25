@@ -8,7 +8,6 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Management.Automation;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -17,12 +16,15 @@ namespace Flowframes
 {
     public static class ExtensionMethods
     {
+        private static readonly Regex NotSignedDigitsOrComma = new Regex("[^\\-,0-9]");
+        private static readonly Regex NotSignedDigitsOrCommaOrDot = new Regex("[^.,\\-,0-9]");
+
         public static string TrimNotNumbers(this string s, bool allowDotComma = false)
         {
             if (!allowDotComma)
-                s = Regex.Replace(s, "[^\\-,0-9]", "");
+                s = NotSignedDigitsOrComma.Replace(s, string.Empty);
             else
-                s = Regex.Replace(s, "[^.,\\-,0-9]", "");
+                s = NotSignedDigitsOrCommaOrDot.Replace(s, string.Empty);
             return s.Trim();
         }
 
@@ -38,7 +40,7 @@ namespace Flowframes
 
         public static int GetInt(this string str)
         {
-            if (str == null || str.Length < 1 || str.Contains("\n") || str == "N/A" || !str.Any(char.IsDigit))
+            if (str == null || str.Length < 1 || str.Contains('\n') || str == "N/A" || !str.Any(char.IsDigit))
                 return 0;
 
             try
@@ -129,12 +131,13 @@ namespace Flowframes
             return i;
         }
 
+        private static readonly Regex EOLRegex = new Regex("\r\n|\r|\n");
         public static string[] SplitIntoLines(this string str)
         {
             if (string.IsNullOrWhiteSpace(str))
                 return Array.Empty<string>();
 
-            return Regex.Split(str, "\r\n|\r|\n");
+            return EOLRegex.Split(str);
         }
 
         public static string Trunc(this string inStr, int maxChars, bool addEllipsis = true)
@@ -145,9 +148,10 @@ namespace Flowframes
             return str;
         }
 
+        private static readonly Regex BadCharsRegex = new Regex(@"[^\u0020-\u007E]");
         public static string StripBadChars(this string str)
         {
-            string outStr = Regex.Replace(str, @"[^\u0020-\u007E]", string.Empty);
+            string outStr = BadCharsRegex.Replace(str, string.Empty);
             outStr = outStr.Remove("(").Remove(")").Remove("[").Remove("]").Remove("{").Remove("}").Remove("%").Remove("'").Remove("~");
             return outStr;
         }
@@ -160,14 +164,14 @@ namespace Flowframes
         public static string Remove(this string str, string stringToRemove)
         {
             if (str == null || stringToRemove == null)
-                return "";
+                return string.Empty;
 
-            return str.Replace(stringToRemove, "");
+            return str.Replace(stringToRemove, string.Empty);
         }
 
         public static string TrimWhitespaces(this string str)
         {
-            if (str == null) return "";
+            if (str == null) return string.Empty;
             var newString = new StringBuilder();
             bool previousIsWhitespace = false;
             for (int i = 0; i < str.Length; i++)
@@ -229,8 +233,8 @@ namespace Flowframes
 
         public static bool MatchesWildcard(this string str, string wildcard)
         {
-            WildcardPattern pattern = new WildcardPattern(wildcard);
-            return pattern.IsMatch(str);
+            string pattern = Regex.Escape(wildcard).Replace("\\*", ".*?");
+            return Regex.IsMatch(str, pattern);
         }
 
         public static string ToTitleCase(this string s)
@@ -257,19 +261,19 @@ namespace Flowframes
 
         public static string GetConcStr(this string filePath, int rate = -1)
         {
-            string rateStr = rate >= 0 ? $"-r {rate} " : "";
-            return filePath.IsConcatFile() ? $"{rateStr}-safe 0 -f concat " : "";
+            string rateStr = rate >= 0 ? $"-r {rate} " : string.Empty;
+            return filePath.IsConcatFile() ? $"{rateStr}-safe 0 -f concat " : string.Empty;
         }
 
         public static string GetFfmpegInputArg(this string filePath)
         {
-            return $"{(filePath.IsConcatFile() ? filePath.GetConcStr() : "")} -i {filePath.Wrap()}";
+            return $"{(filePath.IsConcatFile() ? filePath.GetConcStr() : string.Empty)} -i {filePath.Wrap()}";
         }
 
         public static string Get(this Dictionary<string, string> dict, string key, bool returnKeyInsteadOfEmptyString = false, bool ignoreCase = false)
         {
             if (key == null)
-                key = "";
+                key = string.Empty;
 
             for (int i = 0; i < dict.Count; i++)
             {
@@ -288,7 +292,7 @@ namespace Flowframes
             if (returnKeyInsteadOfEmptyString)
                 return key;
             else
-                return "";
+                return string.Empty;
         }
 
         public static void FillFromEnum<TEnum>(this ComboBox comboBox, Dictionary<string, string> stringMap = null, int defaultIndex = -1, List<TEnum> exclusionList = null) where TEnum : Enum
@@ -389,6 +393,12 @@ namespace Flowframes
         public static bool IsNotEmpty(this string s)
         {
             return !string.IsNullOrWhiteSpace(s);
+        }
+
+        public static bool Contains(this string s, string toCheck, StringComparison comp)
+        {
+            if (s == null) return false;
+            return s.IndexOf(toCheck, comp) >= 0;
         }
 
         public static string ToJson(this object o, bool indent = false, bool ignoreErrors = true)

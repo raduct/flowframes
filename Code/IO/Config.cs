@@ -34,7 +34,7 @@ namespace Flowframes.IO
                 if (settingsForm != null)
                     settingsForm.Enabled = true;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 retries -= 1;
                 Logger.Log($"Failed to reset config: {e.Message}. Retrying ({retries} attempts left).", true);
@@ -59,7 +59,7 @@ namespace Flowframes.IO
         {
             Reload();
 
-            foreach(KeyValuePair<string, string> entry in keyValuePairs)
+            foreach (KeyValuePair<string, string> entry in keyValuePairs)
                 cachedValues[entry.Key] = entry.Value;
 
             WriteConfig();
@@ -202,7 +202,7 @@ namespace Flowframes.IO
             return Get(key, Type.Float).GetFloat();
         }
 
-        public static string GetFloatString (Key key)
+        public static string GetFloatString(Key key)
         {
             return Get(key, Type.Float).Replace(",", ".");
         }
@@ -214,7 +214,7 @@ namespace Flowframes.IO
 
         #endregion
 
-        static void WriteIfDoesntExist (string key, string val)
+        static void WriteIfDoesntExist(string key, string val)
         {
             if (cachedValues.ContainsKey(key.ToString()))
                 return;
@@ -236,38 +236,38 @@ namespace Flowframes.IO
                 return WriteDefault(keyStr, "");
             }
 
-            if (key == Key.disablePreview)        return WriteDefault(key, "True");
-            if (key == Key.maxVidHeight)          return WriteDefault(key, "2160");
-            if (key == Key.clearLogOnInput)       return WriteDefault(key, "True");
-            if (key == Key.tempDirCustom)         return WriteDefault(key, "D:/");
-            if (key == Key.exportNamePattern)     return WriteDefault(key, "[NAME]-[FACTOR]x-[AI]-[MODEL]-[FPS]fps");
+            if (key == Key.disablePreview) return WriteDefault(key, "True");
+            if (key == Key.maxVidHeight) return WriteDefault(key, "2160");
+            if (key == Key.clearLogOnInput) return WriteDefault(key, "True");
+            if (key == Key.tempDirCustom) return WriteDefault(key, "D:/");
+            if (key == Key.exportNamePattern) return WriteDefault(key, "[NAME]-[FACTOR]x-[AI]-[MODEL]-[FPS]fps");
             if (key == Key.exportNamePatternLoop) return WriteDefault(key, "-Loop[LOOPS]");
             // Interpolation
-            if (key == Key.dedupThresh)           return WriteDefault(key, "2");
-            if (key == Key.keepAudio)             return WriteDefault(key, "True");
-            if (key == Key.keepSubs)              return WriteDefault(key, "True");
-            if (key == Key.keepMeta)              return WriteDefault(key, "True");
-            if (key == Key.scnDetect)             return WriteDefault(key, "True");
-            if (key == Key.scnDetectValue)        return WriteDefault(key, "0.2");
-            if (key == Key.sceneChangeFillMode)   return WriteDefault(key, "1");
-            if (key == Key.autoEncMode)           return WriteDefault(key, "2");
-            if (key == Key.framesFormat)          return WriteDefault(key, "jpg");
-            if (key == Key.interpFormat)          return WriteDefault(key, "png");
+            if (key == Key.dedupThresh) return WriteDefault(key, "2");
+            if (key == Key.keepAudio) return WriteDefault(key, "True");
+            if (key == Key.keepSubs) return WriteDefault(key, "True");
+            if (key == Key.keepMeta) return WriteDefault(key, "True");
+            if (key == Key.scnDetect) return WriteDefault(key, "True");
+            if (key == Key.scnDetectValue) return WriteDefault(key, "0.2");
+            if (key == Key.sceneChangeFillMode) return WriteDefault(key, "1");
+            if (key == Key.autoEncMode) return WriteDefault(key, "2");
+            if (key == Key.framesFormat) return WriteDefault(key, "jpg");
+            if (key == Key.interpFormat) return WriteDefault(key, "png");
             // Video Export
-            if (key == Key.minOutVidLength)   return WriteDefault(key, "5");
-            if (key == Key.gifDitherType)     return WriteDefault(key, "bayer");
-            if (key == Key.minVidLength)      return WriteDefault(key, "5");
+            if (key == Key.minOutVidLength) return WriteDefault(key, "5");
+            if (key == Key.gifDitherType) return WriteDefault(key, "bayer");
+            if (key == Key.minVidLength) return WriteDefault(key, "5");
             // AI
-            if (key == Key.uhdThresh)         return WriteDefault(key, "1600");
-            if (key == Key.torchGpus)         return WriteDefault(key, "0");
-            if (key == Key.ncnnGpus)          return WriteDefault(key, "0");
-            if (key == Key.ncnnThreads)       return WriteDefault(key, "4");
-            if (key == Key.dainNcnnTilesize)  return WriteDefault(key, "768");
+            if (key == Key.uhdThresh) return WriteDefault(key, "1600");
+            if (key == Key.torchGpus) return WriteDefault(key, "0");
+            if (key == Key.ncnnGpus) return WriteDefault(key, "0");
+            if (key == Key.ncnnThreads) return WriteDefault(key, "4");
+            if (key == Key.dainNcnnTilesize) return WriteDefault(key, "768");
             // Debug / Other / Experimental
-            if (key == Key.ffEncPreset)   return WriteDefault(key, "slow");
+            if (key == Key.ffEncPreset) return WriteDefault(key, "slow");
             if (key == Key.sbsRunPreviousStepIfNeeded) return WriteDefault(key, "True");
             if (type == Type.Int || type == Type.Float) return WriteDefault(key, "0");     // Write default int/float (0)
-            if (type == Type.Bool)                      return WriteDefault(key, "False");     // Write default bool (False)
+            if (type == Type.Bool) return WriteDefault(key, "False");     // Write default bool (False)
             return WriteDefault(key, "");
         }
 
