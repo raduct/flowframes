@@ -405,11 +405,11 @@ namespace Flowframes.Main
             string duration = $"duration {1f / Interpolate.currentSettings.outFps.GetFloat()}";
             for (int writtenDupes = -1; writtenDupes < dupesAmount; writtenDupes++)      // Write duplicates
             {
-                fileContent += $"file '{Paths.interpDir}/{frameNum.ToString().PadLeft(Padding.interpFrames, '0')}{ext}' # {(debug ? ($"Dupe {(writtenDupes + 1).ToString("000")} {debugNote}").Replace("Dupe 000", "        ") : "")}{forcedNote}\n";
+                fileContent += $"file '{Paths.interpDir}/{frameNum.ToString().PadLeft(Padding.interpFrames, '0')}{ext}' # {(debug ? ($"Dupe {writtenDupes + 1:000} {debugNote}").Replace("Dupe 000", "        ") : "")}{forcedNote}\n";
                 fileContent += $"{duration}\n";
                 if (Interpolate.currentSettings.is3D)
                 {
-                    fileContent += $"file '{Paths.GetOtherDir(Paths.interpDir)}/{frameNum.ToString().PadLeft(Padding.interpFrames, '0')}{ext}' # {(debug ? ($"Dupe {(writtenDupes + 1).ToString("000")} {debugNote}").Replace("Dupe 000", "        ") : "")}{forcedNote}\n";
+                    fileContent += $"file '{Paths.GetOtherDir(Paths.interpDir)}/{frameNum.ToString().PadLeft(Padding.interpFrames, '0')}{ext}' # {(debug ? ($"Dupe {writtenDupes + 1:000} {debugNote}").Replace("Dupe 000", "        ") : "")}{forcedNote}\n";
                     fileContent += $"{duration}\n";
                 }
             }

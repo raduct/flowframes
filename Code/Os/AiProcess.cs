@@ -124,8 +124,7 @@ namespace Flowframes.Os
                     return;
                 }
 
-                string[] logLines = File.ReadAllLines(Path.Combine(Paths.GetLogPath(), lastLogName + ".txt"));
-                string log = string.Join("\n", logLines.Reverse().Take(10).Reverse().Select(x => x.Split("]: ").Last()).ToList());
+                string log = string.Join("\n", Logger.GetSessionLogLastLines(lastLogName, 10).Select(x => x.Split("]: ").Last()).ToList());
                 Interpolate.Cancel($"Interpolation failed - {amount} interpolated frames were created.\n\n\nLast 10 log lines:\n{log}\n\nCheck the log '{lastLogName}' for more details.");
                 return;
             }

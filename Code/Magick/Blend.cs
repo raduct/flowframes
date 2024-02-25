@@ -96,7 +96,7 @@ namespace Flowframes.Magick
 
             await Task.WhenAll(runningTasks);
 
-            Logger.Log($"Created {totalFrames} blend frames in {FormatUtils.TimeSw(sw)} ({(totalFrames / (sw.ElapsedMilliseconds / 1000f)).ToString("0.00")} FPS)", true);
+            Logger.Log($"Created {totalFrames} blend frames in {FormatUtils.TimeSw(sw)} ({totalFrames / (sw.ElapsedMilliseconds / 1000f):0.00} FPS)", true);
 
             if (setStatus)
                 Program.mainForm.SetStatus(oldStatus);

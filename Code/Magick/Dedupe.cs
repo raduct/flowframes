@@ -137,8 +137,8 @@ namespace Flowframes.Magick
             Action lamUpdateInfoBox = () =>
             {
                 int framesProcessed = statsFramesKept + statsFramesDeleted;
-                Logger.Log($"Deduplication: Running de-duplication ({framesProcessed}/{framePaths.Length}), deleted {statsFramesDeleted} ({(((float)statsFramesDeleted / framePaths.Length) * 100f).ToString("0")}%) duplicate frames so far...", false, true);
-                Program.mainForm.SetProgress((int)Math.Round(((float)framesProcessed / framePaths.Length) * 100f));
+                Logger.Log($"Deduplication: Running de-duplication ({framesProcessed}/{framePaths.Length}), deleted {statsFramesDeleted} ({(float)statsFramesDeleted / framePaths.Length * 100f:0}%) duplicate frames so far...", false, true);
+                Program.mainForm.SetProgress((int)Math.Round((float)framesProcessed / framePaths.Length * 100f));
             };
 
             // start the worker threads
@@ -197,7 +197,7 @@ namespace Flowframes.Magick
             int framesLeft = IoUtils.GetAmountOfFiles(path, false, "*" + Interpolate.currentSettings.framesExt);
             int framesDeleted = framePaths.Length - framesLeft;
             float percentDeleted = ((float)framesDeleted / framePaths.Length) * 100f;
-            string keptPercent = $"{(100f - percentDeleted).ToString("0.0")}%";
+            string keptPercent = $"{100f - percentDeleted:0.0}%";
 
             if (framesDeleted <= 0)
             {
