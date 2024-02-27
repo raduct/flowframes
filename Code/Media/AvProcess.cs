@@ -16,7 +16,7 @@ namespace Flowframes
         public static Process lastAvProcess;
         public enum LogMode { Visible, OnlyLastLine, Hidden }
 
-        static readonly string defLogLevel = "warning";
+        private const string defLogLevel = "warning";
         public static void Kill()
         {
             if (lastAvProcess == null) return;

@@ -140,7 +140,7 @@ namespace Flowframes.Ui
         //public static int interpolatedInputFramesCount;
         public static float peakFpsOut;
 
-        static readonly int previewUpdateRateMs = 200;
+        private const int previewUpdateRateMs = 200;
         private static readonly Regex EOLRegex = new Regex("\r\n|\r|\n");
 
         public static void UpdateInterpProgress(int frames, int target, string latestFramePath = "")

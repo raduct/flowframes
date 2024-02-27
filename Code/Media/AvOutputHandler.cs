@@ -8,7 +8,7 @@ namespace Flowframes.Media
 {
     class AvOutputHandler
     {
-        public const string prefix = "[ffmpeg]";
+        private const string prefix = "[ffmpeg]";
         private static readonly Regex timeRegex = new Regex("(?<=Time:).*(?= )");
 
         public static void LogOutput(string line, ref string appendStr, string logFilename, LogMode logMode, bool showProgressBar)
