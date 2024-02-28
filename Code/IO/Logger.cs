@@ -189,7 +189,7 @@ namespace Flowframes
         public static List<string> GetSessionLogLastLines(string filename, int linesCount)
         {
             ConcurrentQueueL<string> logQ = GetSessionLog(filename);
-            List<string> log = logQ != null ? logQ.ToList() : new List<string>();
+            List<string> log = logQ?.ToList() ?? new List<string>();
             return log.Count > linesCount ? log.GetRange(log.Count - linesCount, linesCount) : log;
         }
 

@@ -286,8 +286,7 @@ namespace Flowframes.Magick
                 {
                     if (!frames.TryGetValue(frameIdx, out List<int> value) || value == null)
                     {
-                        value = new List<int>();
-                        frames[frameIdx] = value;
+                        frames[frameIdx] = new List<int>();
                     }
 
                     lastKeepFrameNum = frameIdx;

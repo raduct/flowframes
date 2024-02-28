@@ -137,7 +137,6 @@ namespace Flowframes.Main
             Logger.Log($"Generating frame order information for {interpFactor}x...", false, true);
 
             bool sceneDetection = true;
-            //string ext = Interpolate.currentSettings.interpExt;
 
             frameFileContents.Clear();
 
@@ -260,7 +259,6 @@ namespace Flowframes.Main
 
         static void GenerateFrameLinesFloat(int sourceFrameCount, int targetFrameCount, float factor, bool sceneDetection, bool debug)
         {
-            //int totalFileCount = 0;
             bool blendSceneChances = Config.GetInt(Config.Key.sceneChangeFillMode) > 0;
             string ext = Interpolate.currentSettings.interpExt;
             Fraction step = new Fraction(sourceFrameCount, targetFrameCount + InterpolateUtils.GetRoundedInterpFramesPerInputFrame(factor));

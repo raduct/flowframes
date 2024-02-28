@@ -131,7 +131,7 @@ namespace Flowframes.Magick
             img1.Write(imgOutPath);
         }
 
-        public static async Task BlendImages(string img1Path, string img2Path, string[] imgOutPaths)
+        public static void BlendImages(string img1Path, string img2Path, string[] imgOutPaths)
         {
             try
             {
@@ -140,7 +140,6 @@ namespace Flowframes.Magick
                     float alphaFraction = 100f / (imgOutPaths.Length + 1);   // Alpha percentage per image
                     float currentAlpha = alphaFraction;
 
-                    await Task.CompletedTask;
                     foreach (string imgOutPath in imgOutPaths)
                     {
                         string outPath = imgOutPath.Trim();
