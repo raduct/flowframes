@@ -52,8 +52,8 @@ namespace Flowframes.Ui
                         Program.mainForm.SetTab(Program.mainForm.previewTab.Name);
 
                     firstProgUpd = false;
-                    int lastFrameNo = Interpolate.currentSettings.is3D ? Math.Min(InterpolationProgress.lastFrame, InterpolationProgress.lastOtherFrame) : InterpolationProgress.lastFrame;
-                    string lastFramePath = currentOutdir + "\\" + lastFrameNo.ToString().PadLeft(Flowframes.Data.Padding.interpFrames, '0') + I.currentSettings.interpExt;
+                    int lastFrameNo = I.currentSettings.is3D ? Math.Min(lastFrame, lastOtherFrame) : lastFrame;
+                    string lastFramePath = currentOutdir + "\\" + lastFrameNo.ToString().PadLeft(Data.Padding.interpFrames, '0') + I.currentSettings.interpExt;
 
                     if (lastFrameNo > 1)
                         UpdateInterpProgress(lastFrameNo, targetFrames, lastFramePath);
@@ -85,7 +85,7 @@ namespace Flowframes.Ui
                 if (result.Success)
                 {
                     int frame = int.Parse(result.Value);
-                    if (Interpolate.currentSettings.is3D)
+                    if (I.currentSettings.is3D)
                     {
                         Regex interpRegex = new Regex($@"{Paths.interpDir}/(?=\d*{I.currentSettings.interpExt}{ncnnStr})");
                         if (interpRegex.IsMatch(output))
@@ -148,12 +148,12 @@ namespace Flowframes.Ui
             if (I.canceled) return;
             //interpolatedInputFramesCount = ((frames / I.currentSettings.interpFactor).RoundToInt() - 1);
             //ResumeUtils.Save();
-            target = (target / Interpolate.InterpProgressMultiplier).RoundToInt();
+            target = (target / I.InterpProgressMultiplier).RoundToInt();
             frames = frames.Clamp(0, target);
-            int percent = (int)Math.Round(((float)frames / target) * 100f);
+            int percent = (int)Math.Round((float)frames / target * 100f);
             Program.mainForm.SetProgress(percent);
 
-            float generousTime = ((AiProcess.processTime.ElapsedMilliseconds - AiProcess.lastStartupTimeMs) / 1000f);
+            float generousTime = (AiProcess.processTime.ElapsedMilliseconds - AiProcess.lastStartupTimeMs) / 1000f;
             float fps = ((float)frames / generousTime).Clamp(0, 9999);
             string fpsIn = (fps / currentFactor).ToString("0.00");
             string fpsOut = fps.ToString("0.00");
@@ -161,7 +161,7 @@ namespace Flowframes.Ui
             if (fps > peakFpsOut)
                 peakFpsOut = fps;
 
-            float secondsPerFrame = generousTime / (float)frames;
+            float secondsPerFrame = generousTime / frames;
             int framesLeft = target - frames;
             float eta = framesLeft * secondsPerFrame;
             string etaStr = FormatUtils.Time(new TimeSpan(0, 0, eta.RoundToInt()), false);

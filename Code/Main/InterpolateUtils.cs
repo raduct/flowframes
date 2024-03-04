@@ -119,9 +119,9 @@ namespace Flowframes.Main
                 float fpsLimitFloat = fpsLimitValue.GetFloat();
 
                 if (fpsLimitFloat > 0 && fpsLimitFloat < s.outFps.GetFloat())
-                    Interpolate.InterpProgressMultiplier = s.outFps.GetFloat() / fpsLimitFloat;
+                    I.InterpProgressMultiplier = s.outFps.GetFloat() / fpsLimitFloat;
                 else
-                    Interpolate.InterpProgressMultiplier = 1f;
+                    I.InterpProgressMultiplier = 1f;
 
                 if (!passes)
                     I.Cancel("Invalid settings detected.", true);
@@ -244,7 +244,7 @@ namespace Flowframes.Main
             int maxHeight = Config.GetInt(Config.Key.maxVidHeight);
             int mod = pad ? FfmpegCommands.GetModulo() : 1;
             float factor = res.Height > maxHeight ? (float)maxHeight / res.Height : 1f; // Calculate downscale factor if bigger than max, otherwise just use 1x
-            Logger.Log($"Un-rounded downscaled size: {(res.Width * factor).ToString("0.###")}x{(res.Height * factor).ToString("0.###")}", true);
+            Logger.Log($"Un-rounded downscaled size: {res.Width * factor:0.###}x{res.Height * factor:0.###}", true);
             int width = RoundDivisibleBy((res.Width * factor).RoundToInt(), mod);
             int height = RoundDivisibleBy((res.Height * factor).RoundToInt(), mod);
             res = new Size(width, height);

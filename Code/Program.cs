@@ -150,7 +150,7 @@ namespace Flowframes
                         string drivePath = Interpolate.currentSettings.tempFolder.Substring(0, 2);
                         long mb = IoUtils.GetDiskSpace(Interpolate.currentSettings.tempFolder);
 
-                        Logger.Log($"Disk space check for '{drivePath}/': {(mb / 1024f).ToString("0.0")} GB free.", true);
+                        Logger.Log($"Disk space check for '{drivePath}/': {mb / 1024f:0.0} GB free.", true);
 
                         bool lowDiskSpace = mb < (Config.GetInt(Config.Key.lowDiskSpacePauseGb, 5) * 1024);
                         bool tooLowDiskSpace = mb < (Config.GetInt(Config.Key.lowDiskSpaceCancelGb, 2) * 1024);
