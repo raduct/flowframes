@@ -122,7 +122,7 @@ namespace Flowframes
             {
                 Program.mainForm.SetStatus("Extracting scenes from video...");
                 await FfmpegExtract.ExtractSceneChanges(currentSettings.inPath, Path.Combine(currentSettings.tempFolder, Paths.scenesDir), currentSettings.inFps, currentSettings.inputIsFrames, currentSettings.framesExt);
-                Utils.RemoveConsecutiveFrames(Path.Combine(currentSettings.tempFolder, Paths.scenesDir), Path.Combine(currentSettings.tempFolder, InterpolateUtils.sceneScoresFile), currentSettings.inFps);
+                Utils.RemoveCloseSceneChanges(Path.Combine(currentSettings.tempFolder, Paths.scenesDir), Path.Combine(currentSettings.tempFolder, Utils.sceneScoresFile), currentSettings.inFps);
             }
 
             if (!currentSettings.inputIsFrames)        // Extract if input is video, import if image sequence
@@ -144,7 +144,7 @@ namespace Flowframes
             {
                 int framesLeft = IoUtils.GetAmountOfFiles(outPath, false, "*" + currentSettings.framesExt);
                 int framesDeleted = currentMediaFile.FrameCount - framesLeft;
-                float percentDeleted = ((float)framesDeleted / currentMediaFile.FrameCount) * 100f;
+                float percentDeleted = (float)framesDeleted / currentMediaFile.FrameCount * 100f;
                 string keptPercent = $"{100f - percentDeleted:0.0}%";
 
                 if (framesDeleted > 0)

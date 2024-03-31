@@ -44,7 +44,7 @@ namespace Flowframes.Media
                 return;
             }
 
-            if (line.Contains("No NVENC capable devices found") || line.MatchesWildcard("*nvcuda.dll*"))
+            if (line.Contains("No NVENC capable devices found") || line.Contains("nvcuda.dll"))
             {
                 Interpolate.Cancel($"Error: {line}\n\nMake sure you have an NVENC-capable Nvidia GPU.");
                 return;
@@ -68,7 +68,7 @@ namespace Flowframes.Media
                 return;
             }
 
-            if (line.MatchesWildcard("*codec*not supported*"))
+            if (line.Contains("codec") && line.Contains("not supported"))
             {
                 Interpolate.Cancel($"Error: {line}\n\nTry using a different codec.");
                 return;
@@ -116,7 +116,7 @@ namespace Flowframes.Media
             string[] hiddenMsgs = new string[] { "can produce invalid output", "pixel format", "provided invalid", "Non-monotonous", "not enough frames to estimate rate", "invalid dropping", "message repeated" };
 
             foreach (string str in hiddenMsgs)
-                if (msg.MatchesWildcard($"*{str}*"))
+                if (msg.Contains(str))
                     return true;
 
             return false;

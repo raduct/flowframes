@@ -17,7 +17,7 @@ namespace Flowframes.Main
 {
     class InterpolateUtils
     {
-        public static string sceneScoresFile = "scenescores.txt";
+        public const string sceneScoresFile = "scenescores.txt";
 
         public static async Task CopyLastFrame(int lastFrameNum)
         {
@@ -102,6 +102,13 @@ namespace Flowframes.Main
                 if (passes && s.tempFolder.StartsWith(@"\\"))
                 {
                     UiUtils.ShowMessageBox("Flowframes does not support UNC/Network paths as a temp folder!\nPlease use a local path instead.");
+                    passes = false;
+                }
+
+                bool mpdecimate = Config.GetInt(Config.Key.dedupMode) == 2;
+                if (mpdecimate && I.currentSettings.is3D)
+                {
+                    UiUtils.ShowMessageBox("De-Duplication is not supported during frame extraction of 3D video!", UiUtils.MessageType.Error);
                     passes = false;
                 }
 
@@ -346,7 +353,7 @@ namespace Flowframes.Main
                 IoUtils.TryDeleteIfExists(Path.Combine(sceneFramesPath, frame + I.currentSettings.framesExt));
         }
 
-        public static void RemoveConsecutiveFrames(string scenesPath, string sceneScoresFilePath, Fraction fps)
+        public static void RemoveCloseSceneChanges(string scenesPath, string sceneScoresFilePath, Fraction fps)
         {
             Logger.Log("Remove consecutive scene changes...");
 

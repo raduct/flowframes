@@ -71,7 +71,7 @@ namespace Flowframes.Media
                 extraArgs.Add($"-colorspace {extraData.colorSpace} -color_primaries {extraData.colorPrimaries} -color_trc {extraData.colorTransfer} -color_range:v {extraData.colorRange.Wrap()}");
             }
 
-            if (!string.IsNullOrWhiteSpace(extraData.displayRatio) && !extraData.displayRatio.MatchesWildcard("*N/A*"))
+            if (!string.IsNullOrWhiteSpace(extraData.displayRatio) && !extraData.displayRatio.Contains("N/A"))
                 extraArgs.Add($"-aspect {extraData.displayRatio}");
 
             if (!isChunk && settings.Format == Enums.Output.Format.Mp4 || settings.Format == Enums.Output.Format.Mov)

@@ -123,7 +123,7 @@ namespace Flowframes.Main
         {
             Program.mainForm.SetStatus("Copying output frames...");
             Enums.Encoding.Encoder desiredFormat = I.currentSettings.outSettings.Encoder;
-            string availableFormat = Path.GetExtension(IoUtils.GetFilesSorted(framesPath, "*.*")[0]).Remove(".").ToUpper();
+            string availableFormat = Path.GetExtension(IoUtils.GetFilesSorted(framesPath, "*.*")[0]).Remove(".");
             string max = Config.Get(Config.Key.maxFps);
             Fraction maxFps = max.Contains('/') ? new Fraction(max) : new Fraction(max.GetFloat());
             bool fpsLimit = maxFps.GetFloat() > 0f && I.currentSettings.outFps.GetFloat() > maxFps.GetFloat();
@@ -164,6 +164,8 @@ namespace Flowframes.Main
             for (int idx = 1; idx <= framesLines.Length; idx++)
             {
                 string line = framesLines[idx - 1];
+                if (!line.StartsWith("file "))
+                    continue;
                 string inFilename = line.RemoveComments().Split('/').Last().Remove("'").Trim();
                 string framePath = Path.Combine(framesPath, inFilename);
                 string outFilename = Path.Combine(outputFolderPath, startNo.ToString().PadLeft(Padding.interpFrames, '0')) + Path.GetExtension(framePath);
@@ -281,7 +283,7 @@ namespace Flowframes.Main
         {
             string framesFileFull = Path.Combine(I.currentSettings.tempFolder, Paths.GetFrameOrderFilename(I.currentSettings.interpFactor));
             string concatFile = Path.Combine(I.currentSettings.tempFolder, Paths.GetFrameOrderFilenameChunk(firstFrameNum, firstFrameNum + framesAmount));
-            int multiplier = Interpolate.currentSettings.is3D ? 4 : 2;
+            int multiplier = I.currentSettings.is3D ? 4 : 2;
             File.WriteAllLines(concatFile, IoUtils.ReadLines(framesFileFull).Skip(firstFrameNum * multiplier).Take(framesAmount * multiplier));
 
             List<string> inputFrames = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(framesFileFull + ".inputframes.json")).Skip(firstFrameNum).Take(framesAmount).ToList();
@@ -299,7 +301,7 @@ namespace Flowframes.Main
             if (settings.Encoder.GetInfo().IsImageSequence)    // Image Sequence output mode, not video
             {
                 string desiredFormat = settings.Encoder.GetInfo().OverideExtension;
-                string availableFormat = Path.GetExtension(IoUtils.GetFilesSorted(interpDir)[0]).Remove(".").ToUpper();
+                string availableFormat = I.currentSettings.interpExt;
 
                 if (!dontEncodeFullFpsVid)
                 {

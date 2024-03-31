@@ -201,14 +201,9 @@ namespace Flowframes
             return str.Remove(place, stringToReplace.Length).Insert(place, replaceWith);
         }
 
-        public static string[] SplitBy(this string str, string splitBy)
-        {
-            return str.Split(new string[] { splitBy }, StringSplitOptions.None);
-        }
-
         public static string RemoveComments(this string str)
         {
-            return str.Split('#')[0].SplitBy("//")[0];
+            return str.Split('#')[0].Split("//")[0];
         }
 
         public static string FilenameSuffix(this string path, string suffix)

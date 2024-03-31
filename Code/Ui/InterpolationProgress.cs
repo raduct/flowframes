@@ -27,6 +27,9 @@ namespace Flowframes.Ui
         public static PictureBox preview;
         public static BigPreviewForm bigPreviewForm;
 
+        static Regex frameRegex;
+        static Regex interpRegex;
+
         public static void Restart()
         {
             progCheckRunning = true;
@@ -34,6 +37,10 @@ namespace Flowframes.Ui
             lastFrame = lastOtherFrame = 0;
             peakFpsOut = 0f;
             Program.mainForm.SetProgress(0);
+
+            string ncnnStr = I.currentSettings.ai.NameInternal.Contains("NCNN") ? " done" : "";
+            frameRegex = new Regex($@"\d*(?={I.currentSettings.interpExt}{ncnnStr})");
+            interpRegex = new Regex($@"{Paths.interpDir}/(?=\d*{I.currentSettings.interpExt}{ncnnStr})");
         }
 
         public static async void GetProgressByFrameAmount(string outdir, int target)
@@ -79,20 +86,12 @@ namespace Flowframes.Ui
         {
             try
             {
-                string ncnnStr = I.currentSettings.ai.NameInternal.Contains("NCNN") ? " done" : "";
-                Regex frameRegex = new Regex($@"\d*(?={I.currentSettings.interpExt}{ncnnStr})");
                 Match result = frameRegex.Match(output);
                 if (result.Success)
                 {
                     int frame = int.Parse(result.Value);
-                    if (I.currentSettings.is3D)
-                    {
-                        Regex interpRegex = new Regex($@"{Paths.interpDir}/(?=\d*{I.currentSettings.interpExt}{ncnnStr})");
-                        if (interpRegex.IsMatch(output))
-                            lastFrame = Math.Max(int.Parse(result.Value), lastFrame);
-                        else
-                            lastOtherFrame = Math.Max(int.Parse(result.Value), lastOtherFrame);
-                    }
+                    if (I.currentSettings.is3D && !interpRegex.IsMatch(output))
+                        lastOtherFrame = Math.Max(frame, lastOtherFrame);
                     else
                         lastFrame = Math.Max(frame, lastFrame);
                 }

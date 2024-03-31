@@ -320,7 +320,7 @@ namespace Flowframes.Os
         {
             Directory.CreateDirectory(outPath);
             Process rifeNcnn = OsUtils.NewProcess(!OsUtils.ShowHiddenCmd());
-            int targetFrames = ((IoUtils.GetAmountOfFiles(inPath, false, "*.*") * factor).RoundToInt()); // TODO: Maybe won't work with fractional factors ??
+            int targetFrames = (IoUtils.GetAmountOfFiles(inPath, false, "*.*") * factor).RoundToInt(); // TODO: Maybe won't work with fractional factors ??
 
             string frames = mdl.Contains("v4") ? $"-n {targetFrames}" : "";
             string uhdStr = await InterpolateUtils.UseUhd() ? "-u" : "";
@@ -657,7 +657,7 @@ namespace Flowframes.Os
 
             if (ai.Backend == AI.AiBackend.Ncnn) // NCNN specific
             {
-                if (!hasShownError && err && line.MatchesWildcard("vk*Instance* failed"))
+                if (!hasShownError && err && line.StartsWith("vk") && line.Contains("Instance") && line.EndsWith("failed"))
                 {
                     hasShownError = true;
                     UiUtils.ShowMessageBox($"Vulkan failed to start up!\n\n{line}\n\nThis most likely means your GPU is not compatible.", UiUtils.MessageType.Error);
@@ -677,7 +677,7 @@ namespace Flowframes.Os
                     UiUtils.ShowMessageBox($"A Vulkan error occured during interpolation!\n\n{line}\n\nAre your GPU IDs set correctly?", UiUtils.MessageType.Error);
                 }
 
-                if (!hasShownError && err && line.MatchesWildcard("vk* failed"))
+                if (!hasShownError && err && line.StartsWith("vk") && line.EndsWith("failed"))
                 {
                     hasShownError = true;
                     string lastLogLines = string.Join("\n", Logger.GetSessionLogLastLines(lastLogName, 6).Select(x => $"[{x.Split("]: [").Skip(1).FirstOrDefault()}"));

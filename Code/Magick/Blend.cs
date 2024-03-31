@@ -40,6 +40,7 @@ namespace Flowframes.Magick
 
             List<Task> runningTasks = new List<Task>();
             int maxThreads = Environment.ProcessorCount / 2;
+            float alphaStep = 1f / Interpolate.currentSettings.interpFactor;
 
             foreach (string line in framesLines)
             {
@@ -48,23 +49,26 @@ namespace Flowframes.Magick
                     if (line.Contains(keyword))
                     {
                         string trimmedLine = line.Split(keyword).Last();
-                        string interpFolder = line.Split('/').First().Remove("file '");
-                        interpFolder = Path.Combine(Interpolate.currentSettings.tempFolder, interpFolder);
-                        bool isOther = !interpFolder.Equals(Interpolate.currentSettings.interpFolder);
-                        string framesFolder = !isOther ? Interpolate.currentSettings.framesFolder : Paths.GetOtherDir(Interpolate.currentSettings.framesFolder);
                         string[] values = trimmedLine.Split('>');
                         string frameFrom = FrameRename.framesAreRenamed ? values[0] : frames[values[0].GetInt()];
                         string frameTo = FrameRename.framesAreRenamed ? values[1] : frames[values[1].GetInt()];
                         int amountOfBlendFrames = values.Length == 3 ? values[2].GetInt() : (int)Interpolate.currentSettings.interpFactor - 1;
 
+                        string interpFolder = line.Split('/').First().Remove("file '");
+                        interpFolder = Path.Combine(Interpolate.currentSettings.tempFolder, interpFolder);
+                        bool isOther = !interpFolder.Equals(Interpolate.currentSettings.interpFolder);
+                        string framesFolder = !isOther ? Interpolate.currentSettings.framesFolder : Paths.GetOtherDir(Interpolate.currentSettings.framesFolder);
+
                         string img1 = Path.Combine(framesFolder, frameFrom);
                         string img2 = Path.Combine(framesFolder, frameTo);
 
-                        string firstOutputFrameName = line.Split('/').Last().Remove("'").Split('#').First();
+                        string firstOutputFrameName = line.Split('/').Last().Remove("' ").Split('#').First();
                         string ext = Path.GetExtension(firstOutputFrameName);
                         int firstOutputFrameNum = firstOutputFrameName.GetInt();
-                        List<string> outputFilenames = new List<string>();
+                        
+                        float timestep = line.Contains('@') ? line.Split('@').Last().Split(keyword).First().GetFloat() : 0;
 
+                        List<string> outputFilenames = new List<string>();
                         for (int blendFrameNum = 1; blendFrameNum <= amountOfBlendFrames; blendFrameNum++)
                         {
                             int outputNum = firstOutputFrameNum + blendFrameNum;
@@ -81,8 +85,7 @@ namespace Flowframes.Magick
 
                         Logger.Log($"Starting task for transition {values[0]} > {values[1]} ({runningTasks.Count}/{maxThreads} running)", true);
 
-                        string[] outFilenames = outputFilenames.ToArray(); // capture variable
-                        Task newTask = Task.Run(() => BlendImages(img1, img2, outFilenames));
+                        Task newTask = Task.Run(() => BlendImages(img1, img2, outputFilenames.ToArray(), timestep, alphaStep));
                         runningTasks.Add(newTask);
 
                         totalFrames += outputFilenames.Count;
@@ -131,24 +134,23 @@ namespace Flowframes.Magick
             img1.Write(imgOutPath);
         }
 
-        public static void BlendImages(string img1Path, string img2Path, string[] imgOutPaths)
+        public static void BlendImages(string img1Path, string img2Path, string[] imgOutPaths, float precedingAlpha, float alphaStep)
         {
             try
             {
                 using (MagickImage img1 = new MagickImage(img1Path), img2 = new MagickImage(img2Path))
                 {
-                    float alphaFraction = 100f / (imgOutPaths.Length + 1);   // Alpha percentage per image
-                    float currentAlpha = alphaFraction;
+                    float currentAlpha = precedingAlpha;
 
                     foreach (string imgOutPath in imgOutPaths)
                     {
-                        string outPath = imgOutPath.Trim();
-
                         using (MagickImage img1Inst = new MagickImage(img1), img2Inst = new MagickImage(img2))
                         {
+                            currentAlpha += alphaStep;
+                            if (currentAlpha >= 1f) currentAlpha -= 1f;
+
                             img2Inst.Alpha(AlphaOption.Opaque);
-                            img2Inst.Evaluate(Channels.Alpha, EvaluateOperator.Set, new Percentage(currentAlpha));
-                            currentAlpha += alphaFraction;
+                            img2Inst.Evaluate(Channels.Alpha, EvaluateOperator.Set, new Percentage(currentAlpha * 100f));
 
                             img1Inst.Composite(img2Inst, Gravity.Center, CompositeOperator.Over);
 
@@ -171,7 +173,7 @@ namespace Flowframes.Magick
                                     break;
                             }
                             img1Inst.Quality = 100;
-                            img1Inst.Write(outPath);
+                            img1Inst.Write(imgOutPath);
                         }
                     }
                 }

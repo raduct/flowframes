@@ -62,7 +62,7 @@ namespace Flowframes.Main
                 Logger.Log($"[AE] Starting AutoEncode MainLoop - Chunk Size: {chunkSize} Frames - Safety Buffer: {safetyBufferFrames} Frames", true);
                 int chunkNo = AutoEncodeResume.encodedChunks + 1;
                 string encFile = Path.Combine(interpFramesPath.GetParentDir(), Paths.GetFrameOrderFilename(Interpolate.currentSettings.interpFactor));
-                interpFramesLines = IoUtils.ReadLines(encFile).Where(x => x.StartsWith("file ")).Select(x => x.Split('/').Last().Remove("'").Split('#').First()).ToArray();     // Array with frame filenames
+                interpFramesLines = IoUtils.ReadLines(encFile).Where(x => x.StartsWith("file ")).Select(x => x.Split('/').Last().Remove("' ").Split('#').First()).ToArray();     // Array with frame filenames
                 if (Interpolate.currentSettings.is3D)
                 {
                     // Keep only main frame lines, discard other
@@ -73,7 +73,7 @@ namespace Flowframes.Main
                 }
 
                 int maxUnbalance = chunkSize / 10; // Maximum ahead interpolated frames per 3D eye AI process
-                int maxFrames = chunkSize + (0.5f * chunkSize).RoundToInt() + safetyBufferFrames;
+                int maxFrames = 3 * chunkSize + safetyBufferFrames;
                 Task currentMuxTask = null;
                 Task currentEncodingTask = null;
 
@@ -143,23 +143,22 @@ namespace Flowframes.Main
                                 continue;
                             }
 
-                            busy = true;
                             string outpath = Path.Combine(videoChunksFolder, "chunks", $"{chunkNo.ToString().PadLeft(4, '0')}{FfmpegUtils.GetExt(Interpolate.currentSettings.outSettings)}");
-                            string firstFile = Path.GetFileName(interpFramesLines[frameLinesToEncode.First()].Trim());
-                            string lastFile = Path.GetFileName(interpFramesLines[frameLinesToEncode.Last()].Trim());
+                            string firstFile = Path.GetFileName(interpFramesLines[frameLinesToEncode.First()]);
+                            string lastFile = Path.GetFileName(interpFramesLines[frameLinesToEncode.Last()]);
                             Logger.Log($"[AE] Encoding Chunk #{chunkNo} to using line {frameLinesToEncode.First()} ({firstFile}) through {frameLinesToEncode.Last()} ({lastFile}) - {unencodedFrameLines.Count} unencoded frames left in total", true, false, "ffmpeg");
 
+                            busy = true;
                             int currentChunkNo = chunkNo; // capture value
-                            int firstLineToEncode = frameLinesToEncode.First(); // capture value
-                            int noLinesToEncode = frameLinesToEncode.Count; // capture value
+                            int[] frameLinesToEncodeAr = frameLinesToEncode.ToArray(); // capture value
                             currentEncodingTask = Task.Run(async () =>
                             {
-                                await Export.EncodeChunk(outpath, Interpolate.currentSettings.interpFolder, currentChunkNo, Interpolate.currentSettings.outSettings, firstLineToEncode, noLinesToEncode, aiRunning ? AvProcess.LogMode.Hidden : AvProcess.LogMode.OnlyLastLine);
+                                await Export.EncodeChunk(outpath, Interpolate.currentSettings.interpFolder, currentChunkNo, Interpolate.currentSettings.outSettings, frameLinesToEncodeAr[0], frameLinesToEncodeAr.Length, aiRunning ? AvProcess.LogMode.Hidden : AvProcess.LogMode.OnlyLastLine);
 
                                 if (Interpolate.canceled) return;
 
                                 if (aiRunning && Config.GetInt(Config.Key.autoEncMode) == 2)
-                                    DeleteOldFrames(interpFramesPath, frameLinesToEncode);
+                                    DeleteOldFrames(interpFramesPath, frameLinesToEncodeAr);
 
                                 Logger.Log("[AE] Done Encoding Chunk #" + currentChunkNo, true, false, "ffmpeg");
                                 busy = false;
@@ -174,7 +173,7 @@ namespace Flowframes.Main
 
                             if (!imgSeq && Config.GetInt(Config.Key.autoEncBackupMode) > 0)
                             {
-                                if (aiRunning && (currentMuxTask == null || (currentMuxTask != null && currentMuxTask.IsCompleted)))
+                                if (aiRunning && (currentMuxTask == null || currentMuxTask.IsCompleted))
                                     currentMuxTask = Task.Run(() => Export.ChunksToVideo(Interpolate.currentSettings.tempFolder, videoChunksFolder, Interpolate.currentSettings.outPath, true));
                                 else
                                     Logger.Log($"[AE] Skipping backup because {(!aiRunning ? "this is the final chunk" : "previous mux task has not finished yet")}!", true, false, "ffmpeg");
@@ -210,13 +209,12 @@ namespace Flowframes.Main
             }
         }
 
-        static void DeleteOldFrames(string interpFramesPath, List<int> frameLinesToEncode)
+        static void DeleteOldFrames(string interpFramesPath, int[] frameLinesToEncode)
         {
             if (debug)
                 Logger.Log("[AE] Starting DeleteOldFramesAsync.", true, false, "ffmpeg");
 
-            Stopwatch sw = new Stopwatch();
-            sw.Restart();
+            Stopwatch sw = Stopwatch.StartNew();
 
             foreach (int frame in frameLinesToEncode)
             {

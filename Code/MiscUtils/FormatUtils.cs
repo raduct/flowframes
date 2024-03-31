@@ -32,6 +32,9 @@ namespace Flowframes.MiscUtils
 
         public static string Time(TimeSpan span, bool allowMs = true)
         {
+            if (span.TotalDays >= 1f)
+                return span.ToString(@"d\.hh\:mm\:ss");
+
             if (span.TotalHours >= 1f)
                 return span.ToString(@"hh\:mm\:ss");
 
