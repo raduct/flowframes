@@ -50,10 +50,11 @@ namespace Flowframes
                 if (canceled) return;
                 await PostProcessFrames();
             }
-
             if (canceled) return;
+
             bool skip = await AutoEncodeResume.PrepareResumedRun();
             if (skip || canceled) return;
+
             await RunAi(currentSettings.interpFolder, currentSettings.ai);
             if (canceled) return;
             Program.mainForm.SetProgress(100);
@@ -72,7 +73,7 @@ namespace Flowframes
             }
 
             if (!AutoEncodeResume.resumeNextRun && Config.GetBool(Config.Key.keepTempFolder) && IoUtils.GetAmountOfFiles(currentSettings.framesFolder, false) > 0)
-                await Task.Run(async () => { await FrameRename.UnRename(); });
+                await FrameRename.UnRename();
 
             IoUtils.DeleteIfSmallerThanKb(currentSettings.FullOutPath);
             await Done();
@@ -203,15 +204,16 @@ namespace Flowframes
             if (!ai.Piped || (ai.Piped && currentSettings.inputIsFrames))
             {
                 await Task.Run(() => Dedupe.CreateDupesFile(currentSettings.framesFolder, currentSettings.framesExt));
-                await Task.Run(FrameRename.Rename);
+                await FrameRename.Rename();
+                AutoEncodeResume.SaveGlobal(false);
             }
             else if (ai.Piped && dedupe)
             {
-                await Task.Run(() => Dedupe.CreateFramesFileVideo(currentSettings.inPath, Config.GetBool(Config.Key.enableLoop)));
+                await Dedupe.CreateFramesFileVideo(currentSettings.inPath, Config.GetBool(Config.Key.enableLoop));
             }
 
             if (!ai.Piped || (ai.Piped && dedupe))
-                await Task.Run(() => FrameOrder.CreateFrameOrderFile(currentSettings.tempFolder, Config.GetBool(Config.Key.enableLoop), currentSettings.interpFactor));
+                await FrameOrder.CreateFrameOrderFile(currentSettings.tempFolder, Config.GetBool(Config.Key.enableLoop), currentSettings.interpFactor);
 
             if (currentSettings.model.FixedFactors.Length > 0 && (currentSettings.interpFactor != (int)currentSettings.interpFactor || !currentSettings.model.FixedFactors.Contains(currentSettings.interpFactor.RoundToInt())))
                 Cancel($"The selected model does not support {currentSettings.interpFactor}x interpolation.\n\nSupported Factors: {currentSettings.model.GetFactorsString()}");
@@ -285,7 +287,6 @@ namespace Flowframes
                 }
             }
 
-            AutoEncode.busy = false;
             Program.mainForm.SetWorking(false);
             Program.mainForm.SetTab(Program.mainForm.interpOptsTab.Name);
             Logger.LogIfLastLineDoesNotContainMsg("Canceled interpolation.");

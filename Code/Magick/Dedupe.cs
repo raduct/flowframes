@@ -1,4 +1,5 @@
-﻿using Flowframes.IO;
+﻿using Flowframes.Data;
+using Flowframes.IO;
 using Flowframes.Os;
 using ImageMagick;
 using System;
@@ -14,6 +15,8 @@ namespace Flowframes.Magick
 {
     class Dedupe
     {
+        public const string dupesFileName = "dupes.json";
+
         public static async Task Run(string path, bool testRun = false, bool setStatus = true)
         {
             if (path == null || !Directory.Exists(path) || Interpolate.canceled)
@@ -175,29 +178,28 @@ namespace Flowframes.Magick
 
             Dictionary<string, List<string>> frames = new Dictionary<string, List<string>>();
 
-
             for (int i = 0; i < frameFiles.Length; i++)
             {
                 bool isLastItem = (i + 1) == frameFiles.Length;
 
-                String fnameCur = Path.GetFileNameWithoutExtension(frameFiles[i].Name);
+                string fnameCur = Path.GetFileNameWithoutExtension(frameFiles[i].Name);
                 int frameNumCur = fnameCur.GetInt();
 
                 frames[fnameCur] = new List<string>();
 
                 if (!isLastItem)
                 {
-                    String fnameNext = Path.GetFileNameWithoutExtension(frameFiles[i + 1].Name);
+                    string fnameNext = Path.GetFileNameWithoutExtension(frameFiles[i + 1].Name);
                     int frameNumNext = fnameNext.GetInt();
 
                     for (int j = frameNumCur + 1; j < frameNumNext; j++)
                     {
-                        frames[fnameCur].Add(j.ToString().PadLeft(9, '0'));
+                        frames[fnameCur].Add(j.ToString().PadLeft(Padding.inputFrames, '0'));
                     }
                 }
             }
 
-            File.WriteAllText(Path.Combine(framesPath.GetParentDir(), "dupes.json"), frames.ToJson(true));
+            File.WriteAllText(Path.Combine(framesPath.GetParentDir(), dupesFileName), frames.ToJson(true));
         }
 
         public static async Task CreateFramesFileVideo(string videoPath, bool loop)

@@ -267,6 +267,7 @@ namespace Flowframes.Forms.Main
         public void LoadBatchEntry(InterpSettings entry)
         {
             inputTbox.Text = entry.inPath;
+            is3D.Checked = entry.is3D;
             MainUiFunctions.SetOutPath(outputTbox, entry.outPath);
             fpsInTbox.Text = entry.inFps.ToString();
             interpFactorCombox.Text = entry.interpFactor.ToString();

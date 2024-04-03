@@ -1,4 +1,6 @@
-﻿using Flowframes.IO;
+﻿using Flowframes.Data;
+using Flowframes.IO;
+using Flowframes.MiscUtils;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -16,18 +18,20 @@ namespace Flowframes.Main
         public static int encodedFrames = 0;
 
         public static bool resumeNextRun;
-        public static string interpSettingsFilename = "settings.json";
-        public static string chunksFilename = "chunks.json";
-        public static string inputFramesFilename = "input-frames.json";
+        private const string interpSettingsFilename = "settings.json";
+        private const string chunksFilename = "chunks.json";
+        private const string inputFramesFilename = "input-frames.json";
+        private const string frameRenameFilename = "rename-frames.json";
 
         public static void Reset()
         {
             processedInputFrames = new List<string>();
             encodedChunks = 0;
             encodedFrames = 0;
+            SaveGlobal(true);
         }
 
-        public static void Save()
+        public static void SaveChunk()
         {
             string saveDir = Path.Combine(I.currentSettings.tempFolder, Paths.resumeDir);
             Directory.CreateDirectory(saveDir);
@@ -40,9 +44,28 @@ namespace Flowframes.Main
 
             string inputFramesJsonPath = Path.Combine(saveDir, inputFramesFilename);
             File.WriteAllText(inputFramesJsonPath, JsonConvert.SerializeObject(processedInputFrames, Formatting.Indented));
+        }
 
-            string settingsJsonPath = Path.Combine(saveDir, interpSettingsFilename);
-            File.WriteAllText(settingsJsonPath, JsonConvert.SerializeObject(I.currentSettings, Formatting.Indented));
+        public static void SaveGlobal(bool saveSettings = false)
+        {
+            string saveDir = Path.Combine(I.currentSettings.tempFolder, Paths.resumeDir);
+            Directory.CreateDirectory(saveDir);
+
+            if (saveSettings)
+            {
+                // Save current settings
+                string settingsJsonPath = Path.Combine(saveDir, interpSettingsFilename);
+                File.WriteAllText(settingsJsonPath, JsonConvert.SerializeObject(I.currentSettings, Formatting.Indented));
+
+                SaveChunk();
+            }
+
+            // Save input frames rename
+            string frameRenameFilenamePath = Path.Combine(saveDir, frameRenameFilename);
+            if (FrameRename.framesAreRenamed)
+                File.WriteAllText(frameRenameFilenamePath, JsonConvert.SerializeObject(FrameRename.importFilenames, Formatting.Indented));
+            else
+                IoUtils.TryDeleteIfExists(frameRenameFilenamePath);
         }
 
         public static void LoadTempFolder(string tempFolderPath)
@@ -53,6 +76,13 @@ namespace Flowframes.Main
                 string settingsJsonPath = Path.Combine(resumeFolderPath, interpSettingsFilename);
                 InterpSettings interpSettings = JsonConvert.DeserializeObject<InterpSettings>(File.ReadAllText(settingsJsonPath));
                 Program.mainForm.LoadBatchEntry(interpSettings);
+
+                string frameRenameFilenamePath = Path.Combine(resumeFolderPath, frameRenameFilename);
+                if (File.Exists(frameRenameFilenamePath))
+                {
+                    string[] importFilenames = JsonConvert.DeserializeObject<string[]>(File.ReadAllText(frameRenameFilenamePath));
+                    FrameRename.LoadFilenames(importFilenames);
+                }
             }
             catch (Exception e)
             {
@@ -61,34 +91,65 @@ namespace Flowframes.Main
             }
         }
 
-        public static async Task<bool> PrepareResumedRun() // Remove already interpolated frames, return true if interpolation should be skipped
+        // Remove already interpolated data, return true if interpolation should be skipped
+        public static async Task<bool> PrepareResumedRun()
         {
             if (!resumeNextRun) return false;
 
             try
             {
                 string chunkJsonPath = Path.Combine(I.currentSettings.tempFolder, Paths.resumeDir, chunksFilename);
-                string inFramesJsonPath = Path.Combine(I.currentSettings.tempFolder, Paths.resumeDir, inputFramesFilename);
+                // abort if no chunks saved
+                if (!File.Exists(chunkJsonPath))
+                    return false;
 
+                string videoChunksFolder = Path.Combine(I.currentSettings.tempFolder, Paths.chunksDir);
                 dynamic chunksData = JsonConvert.DeserializeObject(File.ReadAllText(chunkJsonPath));
                 encodedChunks = chunksData.encodedChunks;
                 encodedFrames = chunksData.encodedFrames;
 
-                List<string> processedInputFrames = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(inFramesJsonPath));
-                int uniqueInputFrames = processedInputFrames.Distinct().Count();
-
-                foreach (string inputFrameName in processedInputFrames)
-                {
-                    string inputFrameFullPath = Path.Combine(I.currentSettings.tempFolder, Paths.framesDir, inputFrameName);
-                    IoUtils.TryDeleteIfExists(inputFrameFullPath);
-                }
-
-                string videoChunksFolder = Path.Combine(I.currentSettings.tempFolder, Paths.chunksDir);
-
-                FileInfo[] invalidChunks = IoUtils.GetFileInfosSorted(videoChunksFolder, true, "????.*").Skip(encodedChunks).ToArray();
-
+                // remove unfinished chunks
+                IEnumerable<FileInfo> invalidChunks = IoUtils.GetFileInfosSorted(videoChunksFolder, true, "????.*").Skip(encodedChunks);
                 foreach (FileInfo chunk in invalidChunks)
                     chunk.Delete();
+
+                await FrameRename.UnRename();
+
+                string inFramesJsonPath = Path.Combine(I.currentSettings.tempFolder, Paths.resumeDir, inputFramesFilename);
+                if (File.Exists(inFramesJsonPath))
+                {
+                    processedInputFrames = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(inFramesJsonPath));
+                    IEnumerable<string> uniqueProcessedInputFrames = processedInputFrames.Distinct();
+                    int uniqueInputFrames = uniqueProcessedInputFrames.Count();
+
+                    // Remove complete frames and scene changes
+                    string sceneDir = Path.Combine(I.currentSettings.tempFolder, Paths.scenesDir);
+                    string framesDir = Path.Combine(I.currentSettings.tempFolder, Paths.framesDir);
+                    string framesOtherDir = Paths.GetOtherDir(framesDir);
+                    int i = 0;
+                    foreach (string inputFrameName in uniqueProcessedInputFrames)
+                    {
+                        IoUtils.TryDeleteIfExists(Path.Combine(sceneDir, FrameRename.GetSceneChangeFileName(i) + I.currentSettings.framesExt));
+                        IoUtils.TryDeleteIfExists(FrameRename.GetOriginalFileName(i));
+                        if (I.currentSettings.is3D)
+                            IoUtils.TryDeleteIfExists(FrameRename.GetOriginalFileName(i, true));
+                        i++;
+                    }
+                    FrameRename.TrimFirst(uniqueInputFrames);
+
+                    // Shift scene change file names in synch with the input frames
+                    string[] remainingScenes = IoUtils.GetFilesSorted(sceneDir);
+                    foreach (string sceneFullFileName in remainingScenes)
+                    {
+                        string sceneFilename = Path.GetFileNameWithoutExtension(sceneFullFileName);
+                        int fileNo = int.Parse(sceneFilename);
+                        string newFilename = (fileNo - uniqueInputFrames).ToString().PadLeft(Padding.inputFrames, '0');
+                        string targetPath = Path.Combine(Path.GetDirectoryName(sceneFullFileName), newFilename + Path.GetExtension(sceneFullFileName));
+                        File.Move(sceneFullFileName, targetPath);
+                    }
+                }
+                processedInputFrames = new List<string>();
+                SaveGlobal(true);
 
                 int inputFramesLeft = IoUtils.GetAmountOfFiles(Path.Combine(I.currentSettings.tempFolder, Paths.framesDir), false);
 

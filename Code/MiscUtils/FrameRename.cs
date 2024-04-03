@@ -3,17 +3,20 @@ using Flowframes.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Flowframes.MiscUtils
 {
     class FrameRename
     {
-        public static bool framesAreRenamed;
-        public static string[] importFilenames;   // index=renamed, value=original TODO: Store on disk instead for crashes?
+        public static bool framesAreRenamed = false;
+        public static string[] importFilenames; // index=renamed, value=original
 
         public static async Task Rename()
         {
+            if (framesAreRenamed) return;
+
             importFilenames = IoUtils.GetFilesSorted(Interpolate.currentSettings.framesFolder);
 
             Logger.Log($"Renaming {importFilenames.Length} frames...");
@@ -31,6 +34,7 @@ namespace Flowframes.MiscUtils
             await Task.WhenAll(tasks);
 
             Logger.Log($"Renamed {importFilenames.Length} frames in {benchmark.ElapsedMilliseconds} ms", false, true);
+
             framesAreRenamed = true;
         }
 
@@ -103,6 +107,48 @@ namespace Flowframes.MiscUtils
             {
                 string movePath = Path.Combine(Interpolate.currentSettings.framesFolder, importFilenames[i * multiplier + offset]);
                 File.Move(files[i], movePath);
+            }
+        }
+
+        public static void LoadFilenames(string[] savedImportFilenames)
+        {
+            importFilenames = savedImportFilenames;
+            framesAreRenamed = importFilenames != null && importFilenames.Length > 0 && !File.Exists(importFilenames[0]);
+        }
+
+        public static string GetOriginalFileName(int renamedIndex, bool otherOffset = false)
+        {
+            if (renamedIndex < 0)
+                return null;
+            if (Interpolate.currentSettings.is3D)
+            {
+                return renamedIndex * 2 < importFilenames.Length ? importFilenames[renamedIndex * 2 + (otherOffset ? 1 : 0)] : null;
+            }
+            else
+            {
+                return renamedIndex < importFilenames.Length ? importFilenames[renamedIndex] : null;
+            }
+        }
+
+        // The scene frame no. is indexed in synch with the renamed frames
+        public static string GetSceneChangeFileName(int renamedIndex)
+        {
+            if (renamedIndex < 0)
+                return null;
+            return renamedIndex.ToString().PadLeft(Padding.inputFrames, '0');
+        }
+
+        public static void TrimFirst(int renamedNo)
+        {
+            if (Interpolate.currentSettings.is3D)
+            {
+                if (renamedNo > 0 && renamedNo * 2 <= importFilenames.Length)
+                    importFilenames = importFilenames.Skip(renamedNo * 2).ToArray();
+            }
+            else
+            {
+                if (renamedNo > 0 && renamedNo <= importFilenames.Length)
+                    importFilenames = importFilenames.Skip(renamedNo).ToArray();
             }
         }
     }

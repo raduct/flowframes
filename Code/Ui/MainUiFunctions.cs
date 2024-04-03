@@ -17,7 +17,6 @@ namespace Flowframes.Ui
     {
         public static async Task InitInput(TextBox outputTbox, TextBox inputTbox, TextBox fpsInTbox, bool start = false)
         {
-
             Program.mainForm.SetTab(Program.mainForm.interpOptsTab.Name);
             Program.mainForm.ResetInputInfo();
             string path = inputTbox.Text.Trim();
@@ -51,9 +50,7 @@ namespace Flowframes.Ui
             Program.mainForm.currInFrames = Interpolate.currentMediaFile.FrameCount;
             Program.mainForm.UpdateInputInfo();
             CheckExistingFolder(path, outputTbox.Text.Trim());
-            await Task.CompletedTask;
             await PrintResolution(path);
-            await Task.CompletedTask;
             InterpolationProgress.SetPreviewImg(await GetThumbnail(path));
 
             if (AutoEncodeResume.resumeNextRun)
@@ -61,7 +58,6 @@ namespace Flowframes.Ui
 
             if (start)
                 Program.mainForm.runBtn_Click(null, null);
-
         }
 
         public static bool SetOutPath(TextBox outputTbox, string outPath)
@@ -179,7 +175,7 @@ namespace Flowframes.Ui
 
             if (ai.FactorSupport == AI.InterpFactorSupport.AnyFloat)
             {
-                return factor.Clamp(2, 128);
+                return factor.Clamp(1, 128);
             }
 
             return factor;

@@ -4,6 +4,7 @@ using Flowframes.Media;
 using Flowframes.MiscUtils;
 using Flowframes.Os;
 using Flowframes.Ui;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -51,7 +52,7 @@ namespace Flowframes.Main
                 UpdateChunkAndBufferSizes();
 
                 bool imgSeq = Interpolate.currentSettings.outSettings.Encoder.GetInfo().IsImageSequence;
-                string videoChunksFolder = Path.Combine(interpFramesPath.GetParentDir(), Paths.chunksDir);
+                string videoChunksFolder = Path.Combine(Interpolate.currentSettings.tempFolder, Paths.chunksDir);
 
                 if (Interpolate.currentlyUsingAutoEnc)
                     Directory.CreateDirectory(videoChunksFolder);
@@ -61,7 +62,7 @@ namespace Flowframes.Main
 
                 Logger.Log($"[AE] Starting AutoEncode MainLoop - Chunk Size: {chunkSize} Frames - Safety Buffer: {safetyBufferFrames} Frames", true);
                 int chunkNo = AutoEncodeResume.encodedChunks + 1;
-                string encFile = Path.Combine(interpFramesPath.GetParentDir(), Paths.GetFrameOrderFilename(Interpolate.currentSettings.interpFactor));
+                string encFile = Path.Combine(Interpolate.currentSettings.tempFolder, Paths.GetFrameOrderFilename(Interpolate.currentSettings.interpFactor));
                 interpFramesLines = IoUtils.ReadLines(encFile).Where(x => x.StartsWith("file ")).Select(x => x.Split('/').Last().Remove("' ").Split('#').First()).ToArray();     // Array with frame filenames
                 if (Interpolate.currentSettings.is3D)
                 {
@@ -155,9 +156,15 @@ namespace Flowframes.Main
                             {
                                 await Export.EncodeChunk(outpath, Interpolate.currentSettings.interpFolder, currentChunkNo, Interpolate.currentSettings.outSettings, frameLinesToEncodeAr[0], frameLinesToEncodeAr.Length, aiRunning ? AvProcess.LogMode.Hidden : AvProcess.LogMode.OnlyLastLine);
 
+                                IEnumerable<string> inputFrames = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(encFile + FrameOrder.inputFramesJson)).Skip(frameLinesToEncodeAr[0]).Take(frameLinesToEncodeAr.Length);
+                                AutoEncodeResume.encodedChunks++;
+                                AutoEncodeResume.encodedFrames += frameLinesToEncodeAr.Length;
+                                AutoEncodeResume.processedInputFrames.AddRange(inputFrames);
+                                AutoEncodeResume.SaveChunk();
+
                                 if (Interpolate.canceled) return;
 
-                                if (aiRunning && Config.GetInt(Config.Key.autoEncMode) == 2)
+                                if (Config.GetInt(Config.Key.autoEncMode) == 2)
                                     DeleteOldFrames(interpFramesPath, frameLinesToEncodeAr);
 
                                 Logger.Log("[AE] Done Encoding Chunk #" + currentChunkNo, true, false, "ffmpeg");
@@ -169,7 +176,6 @@ namespace Flowframes.Main
                             encodedFrameLines.AddRange(frameLinesToEncode);
                             unencodedFrameLines.RemoveRange(0, frameLinesToEncode.Count);
                             chunkNo++;
-                            AutoEncodeResume.Save();
 
                             if (!imgSeq && Config.GetInt(Config.Key.autoEncBackupMode) > 0)
                             {

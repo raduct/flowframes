@@ -26,7 +26,7 @@ namespace Flowframes
         public float interpFactor;
         public OutputSettings outSettings;
         public ModelCollection.ModelInfo model;
-        public bool is3D;
+        public bool is3D = false;
 
         public string tempFolder;
         public string framesFolder;
@@ -137,6 +137,7 @@ namespace Flowframes
                     case "STEPBYSTEP": stepByStep = bool.Parse(entry.Value); break;
                     case "FRAMESEXT": framesExt = entry.Value; break;
                     case "INTERPEXT": interpExt = entry.Value; break;
+                    case "3D": is3D = bool.Parse(entry.Value); break;
                 }
             }
 
@@ -245,6 +246,7 @@ namespace Flowframes
             s += $"STEPBYSTEP|{stepByStep}\n";
             s += $"FRAMESEXT|{framesExt}\n";
             s += $"INTERPEXT|{interpExt}\n";
+            s += $"3D|{is3D}\n";
 
             return s;
         }

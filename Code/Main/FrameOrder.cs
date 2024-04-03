@@ -1,5 +1,6 @@
 ﻿using Flowframes.Data;
 using Flowframes.IO;
+using Flowframes.Magick;
 using Flowframes.MiscUtils;
 using Newtonsoft.Json;
 using System;
@@ -14,6 +15,8 @@ namespace Flowframes.Main
 {
     class FrameOrder
     {
+        public const string inputFramesJson = ".inputframes.json";
+
         FileInfo[] frameFiles;
         readonly List<string> sceneFrames = new List<string>();
         readonly ConcurrentDictionary<int, string> frameFileContents = new ConcurrentDictionary<int, string>();
@@ -138,7 +141,7 @@ namespace Flowframes.Main
 
             frameFiles = new DirectoryInfo(Path.Combine(tempFolder, Paths.framesDir)).GetFiles("*" + Interpolate.currentSettings.framesExt);
             string framesFile = Path.Combine(tempFolder, Paths.GetFrameOrderFilename(interpFactor));
-            dupesDict = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(File.ReadAllText(Path.Combine(tempFolder, "dupes.json")));
+            dupesDict = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(File.ReadAllText(Path.Combine(tempFolder, Dedupe.dupesFileName)));
 
             string scnFramesPath = Path.Combine(tempFolder, Paths.scenesDir);
 
@@ -202,7 +205,7 @@ namespace Flowframes.Main
             for (int x = 0; x < inputFilenames.Count; x++)
                 allInputFilenames.AddRange(inputFilenames[x]);
 
-            File.WriteAllText(framesFile + ".inputframes.json", JsonConvert.SerializeObject(allInputFilenames, Formatting.Indented));
+            File.WriteAllText(framesFile + inputFramesJson, JsonConvert.SerializeObject(allInputFilenames, Formatting.Indented));
         }
 
         class FrameFileLine
@@ -268,11 +271,10 @@ namespace Flowframes.Main
                 float timestep = currentFrameTime - sourceFrameIdx;
 
                 bool sceneChangeNextFrame = false;
-                if (sceneDetection && (sourceFrameIdx + 1) < FrameRename.importFilenames.Length)
+                if (sceneDetection)
                 {
-                    // in 3D the scenes are half the total frames, so use the index in renamed frames
-                    string origNextFrameName = Interpolate.currentSettings.is3D ? (sourceFrameIdx + 1).ToString().PadLeft(Padding.inputFrames, '0') : Path.GetFileNameWithoutExtension(FrameRename.importFilenames[sourceFrameIdx + 1]);
-                    if (sceneFrames.Contains(origNextFrameName))
+                    string origNextFrameName = FrameRename.GetSceneChangeFileName(sourceFrameIdx + 1);
+                    if (origNextFrameName != null && sceneFrames.Contains(origNextFrameName))
                         sceneChangeNextFrame = true;
                 }
 
@@ -295,15 +297,13 @@ namespace Flowframes.Main
                 if (Interpolate.currentSettings.is3D)
                     lines.Add(new FrameFileLine($"{Paths.GetOtherDir(Paths.interpDir)}/{fname}", inputFilenameFrom, inputFilenameTo, inputFilenameToNext, timestep, sceneChangeNextFrame));
 
-                string inputFilenameNoExtRenamed = Path.GetFileNameWithoutExtension(FrameRename.importFilenames[Interpolate.currentSettings.is3D ? sourceFrameIdx * 2 : sourceFrameIdx]);
+                string inputFilenameNoExtRenamed = Path.GetFileNameWithoutExtension(FrameRename.GetOriginalFileName(sourceFrameIdx));
+                int dupesNo = inputFilenameNoExtRenamed != null && dupesDict.TryGetValue(inputFilenameNoExtRenamed, out List<string> value) ? value.Count : 0;
 
-                if (!dupesDict.ContainsKey(inputFilenameNoExtRenamed))
-                    continue;
-
-                foreach (string s in dupesDict[inputFilenameNoExtRenamed])
+                for (int j = 0; j < dupesNo; j++)
                 {
                     if (debug)
-                        Console.WriteLine($"Frame: Idx {sourceFrameIdx} - Dupe {dupesDict[inputFilenameNoExtRenamed].IndexOf(s)}/{dupesDict[inputFilenameNoExtRenamed].Count} {fname}");
+                        Console.WriteLine($"Frame: Idx {sourceFrameIdx} - Dupe {j}/{dupesNo} {fname}");
                     lines.Add(new FrameFileLine($"{Paths.interpDir}/{fname}", inputFilenameFrom, inputFilenameTo, inputFilenameToNext, timestep, sceneChangeNextFrame));
                     if (Interpolate.currentSettings.is3D)
                         lines.Add(new FrameFileLine($"{Paths.GetOtherDir(Paths.interpDir)}/{fname}", inputFilenameFrom, inputFilenameTo, inputFilenameToNext, timestep, sceneChangeNextFrame));
@@ -348,20 +348,20 @@ namespace Flowframes.Main
             List<string> currentinputFilenames = new List<string>();
             inputFilenames[number] = currentinputFilenames;
 
+            int savedTotalFileCount = totalFileCount;
             for (int i = startIndex; i < (startIndex + count); i++)
             {
                 if (Interpolate.canceled) return;
                 if (i >= frameFiles.Length) break;
 
                 string frameName = Path.GetFileNameWithoutExtension(frameFiles[i].Name);
-                string origFrameName = Path.GetFileNameWithoutExtension(FrameRename.importFilenames[Interpolate.currentSettings.is3D ? i * 2 : i]);
-                int dupesAmount = dupesDict.TryGetValue(origFrameName, out List<string> value) ? value.Count : 0;
+                string origFrameName = Path.GetFileNameWithoutExtension(FrameRename.GetOriginalFileName(i));
+                int dupesAmount = origFrameName != null && dupesDict.TryGetValue(origFrameName, out List<string> value) ? value.Count : 0;
                 bool sceneChangeNextFrame = false;
-                if (sceneDetection && (i + 1) < FrameRename.importFilenames.Length)
+                if (sceneDetection)
                 {
-                    // in 3D the scenes are half the total frames, so use the index in renamed frames
-                    string origNextFrameName = Interpolate.currentSettings.is3D ? (i + 1).ToString().PadLeft(Padding.inputFrames, '0') : Path.GetFileNameWithoutExtension(FrameRename.importFilenames[i + 1]);
-                    if (sceneFrames.Contains(origNextFrameName))
+                    string origNextFrameName = FrameRename.GetSceneChangeFileName(i + 1);
+                    if (origNextFrameName != null && sceneFrames.Contains(origNextFrameName))
                         sceneChangeNextFrame = true;
                 }
 
@@ -402,9 +402,11 @@ namespace Flowframes.Main
                         totalFileCount++;
                         fileContent = WriteFrameWithDupes(dupesAmount, fileContent, totalFileCount, ext, debug, $"[In: {frameName}] [{((frm == 0) ? " Source " : $"Interp {frm}")}]");
                     }
-
-                    currentinputFilenames.Add(frameFiles[i].Name);
                 }
+                // Keep same number of elements as interp frames
+                for (int j = savedTotalFileCount; j < totalFileCount; j++)
+                    currentinputFilenames.Add(frameFiles[i].Name);
+                savedTotalFileCount = totalFileCount;
             }
 
             frameFileContents[number] = fileContent;

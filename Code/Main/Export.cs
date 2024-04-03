@@ -5,9 +5,7 @@ using Flowframes.Media;
 using Flowframes.MiscUtils;
 using Flowframes.Os;
 using Flowframes.Ui;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -286,8 +284,6 @@ namespace Flowframes.Main
             int multiplier = I.currentSettings.is3D ? 4 : 2;
             File.WriteAllLines(concatFile, IoUtils.ReadLines(framesFileFull).Skip(firstFrameNum * multiplier).Take(framesAmount * multiplier));
 
-            List<string> inputFrames = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(framesFileFull + ".inputframes.json")).Skip(firstFrameNum).Take(framesAmount).ToList();
-
             if (Config.GetInt(Config.Key.sceneChangeFillMode) == 1)
                 await Blend.BlendSceneChanges(concatFile, false);
 
@@ -337,10 +333,6 @@ namespace Flowframes.Main
                     await FfmpegEncode.FramesToVideo(concatFile, outPath, settings, I.currentSettings.outFps, maxFps, I.currentSettings.outItsScale, extraData, logMode, true);     // Encode with limited fps
                 }
             }
-
-            AutoEncodeResume.encodedChunks += 1;
-            AutoEncodeResume.encodedFrames += framesAmount;
-            AutoEncodeResume.processedInputFrames.AddRange(inputFrames);
         }
 
         static async Task Loop(string outPath, int looptimes)

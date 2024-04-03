@@ -102,9 +102,13 @@ namespace Flowframes.Main
             if (Config.GetBool(Config.Key.sbsAllowAutoEnc) && !(await InterpolateUtils.CheckEncoderValid())) return;
 
             if (canceled) return;
+
+            bool skip = await AutoEncodeResume.PrepareResumedRun();
+            if (skip || canceled) return;
+
             Program.mainForm.SetStatus("Running AI...");
             await RunAi(currentSettings.interpFolder, currentSettings.ai, true);
-            await Task.Run(async () => { await FrameRename.UnRename(); });   // Get timestamps back
+            await FrameRename.UnRename(); // Get timestamps back
             Program.mainForm.SetProgress(0);
         }
 
