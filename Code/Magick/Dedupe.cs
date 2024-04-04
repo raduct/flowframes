@@ -178,18 +178,19 @@ namespace Flowframes.Magick
 
             Dictionary<string, List<string>> frames = new Dictionary<string, List<string>>();
 
-            for (int i = 0; i < frameFiles.Length; i++)
+            int increment = Interpolate.currentSettings.is3D ? 2 : 1;
+            for (int i = 0; i < frameFiles.Length; i += increment)
             {
                 string curFrameName = Path.GetFileNameWithoutExtension(frameFiles[i].Name);
                 int curFrameNo = curFrameName.GetInt();
 
                 List<string> dupes = new List<string>();
-                if ((i + 1) < frameFiles.Length)
+                if ((i + increment) < frameFiles.Length)
                 {
-                    string nextFrameName = Path.GetFileNameWithoutExtension(frameFiles[i + 1].Name);
+                    string nextFrameName = Path.GetFileNameWithoutExtension(frameFiles[i + increment].Name);
                     int nextFrameNo = nextFrameName.GetInt();
 
-                    for (int j = curFrameNo + 1; j < nextFrameNo; j++)
+                    for (int j = curFrameNo + increment; j < nextFrameNo; j += increment)
                     {
                         dupes.Add(j.ToString().PadLeft(Padding.inputFrames, '0'));
                     }
