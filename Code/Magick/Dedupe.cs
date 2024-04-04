@@ -102,7 +102,7 @@ namespace Flowframes.Magick
 
                         // this frame is different, stop testing agaisnt 'i'
                         // all the frames between i and j are dupes, we can skip them
-                        i = j - 1;
+                        i = j - increment;
                         // keep the currently loaded in img for the next iteration
                         img1 = img2;
                         break;
