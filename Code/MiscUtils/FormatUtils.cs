@@ -16,8 +16,8 @@ namespace Flowframes.MiscUtils
                     return "0" + suf[0];
                 long bytes = Math.Abs(sizeBytes);
                 int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
-                double num = Math.Round(bytes / Math.Pow(1024, place), 1);
-                return ($"{Math.Sign(sizeBytes) * num} {suf[place]}");
+                double num = Math.Round(bytes / Math.Pow(1024, place), 1, MidpointRounding.AwayFromZero);
+                return $"{Math.Sign(sizeBytes) * num} {suf[place]}";
             }
             catch
             {
@@ -126,25 +126,23 @@ namespace Flowframes.MiscUtils
 
         public static string MsToTimestamp(long milliseconds)
         {
-            return (new DateTime(1970, 1, 1)).AddMilliseconds(milliseconds).ToString("HH:mm:ss");
+            return new DateTime(1970, 1, 1).AddMilliseconds(milliseconds).ToString("HH:mm:ss");
         }
 
         public static string Ratio(long numFrom, long numTo)
         {
-            float ratio = ((float)numFrom / (float)numTo) * 100f;
+            float ratio = (float)numFrom / numTo * 100f;
             return ratio.ToString("0.00") + "%";
         }
 
         public static int RatioInt(long numFrom, long numTo)
         {
-            double ratio = Math.Round(((float)numFrom / (float)numTo) * 100f);
-            return (int)ratio;
+            return ((float)numFrom / numTo * 100f).RoundToInt();
         }
 
         public static string RatioIntStr(long numFrom, long numTo)
         {
-            double ratio = Math.Round(((float)numFrom / (float)numTo) * 100f);
-            return ratio + "%";
+            return RatioInt(numFrom, numTo) + "%";
         }
 
         public static string ConcatStrings(string[] strings, char delimiter = ',', bool distinct = false)

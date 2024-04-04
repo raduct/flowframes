@@ -1,4 +1,5 @@
 ﻿using Flowframes.IO;
+using Flowframes.MiscUtils;
 using ImageMagick;
 using System;
 using System.Diagnostics;
@@ -26,7 +27,7 @@ namespace Flowframes.Magick
                 img.Write(outpath);
                 counter++;
                 if (setProgress)
-                    Program.mainForm.SetProgress((int)Math.Round(((float)counter / files.Length) * 100f));
+                    Program.mainForm.SetProgress(FormatUtils.RatioInt(counter, files.Length));
                 await Task.CompletedTask;
             }
         }
@@ -54,7 +55,7 @@ namespace Flowframes.Magick
                     if (sw.ElapsedMilliseconds > 250)
                     {
                         if (setProgress)
-                            Program.mainForm.SetProgress((int)Math.Round(((float)counter / files.Length) * 100f));
+                            Program.mainForm.SetProgress(FormatUtils.RatioInt(counter, files.Length));
                         await Task.CompletedTask;
                         sw.Restart();
                     }
@@ -104,7 +105,7 @@ namespace Flowframes.Magick
                     if (sw.ElapsedMilliseconds > 250)
                     {
                         if (setProgress)
-                            Program.mainForm.SetProgress((int)Math.Round(((float)counter / files.Length) * 100f));
+                            Program.mainForm.SetProgress(FormatUtils.RatioInt(counter, files.Length));
                         await Task.CompletedTask;
                         sw.Restart();
                     }
@@ -132,7 +133,7 @@ namespace Flowframes.Magick
                 img.Quality = 10;
                 counter++;
                 if (setProgress)
-                    Program.mainForm.SetProgress((int)Math.Round(((float)counter / files.Length) * 100f));
+                    Program.mainForm.SetProgress(FormatUtils.RatioInt(counter, files.Length));
                 await Task.CompletedTask;
             }
         }

@@ -139,7 +139,7 @@ namespace Flowframes.Main
 
             frameFileContents.Clear();
 
-            frameFiles = new DirectoryInfo(Path.Combine(tempFolder, Paths.framesDir)).GetFiles("*" + Interpolate.currentSettings.framesExt);
+            frameFiles = new DirectoryInfo(Path.Combine(tempFolder, Paths.framesWorkDir)).GetFiles("*" + Interpolate.currentSettings.framesExt);
             string framesFile = Path.Combine(tempFolder, Paths.GetFrameOrderFilename(interpFactor));
             dupesDict = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(File.ReadAllText(Path.Combine(tempFolder, Dedupe.dupesFileName)));
 

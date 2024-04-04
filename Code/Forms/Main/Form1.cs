@@ -818,7 +818,8 @@ namespace Flowframes.Forms.Main
         {
             float inFps = fpsInTbox.GetFloat();
             float outFps = fpsOutTbox.GetFloat();
-            var targetFactorRounded = Math.Round((Decimal)(outFps / inFps), 3, MidpointRounding.AwayFromZero);
+            if (inFps == 0 || outFps == 0) return;
+            var targetFactorRounded = outFps / inFps;
             interpFactorCombox.Text = $"{targetFactorRounded}";
             ValidateFactor();
             fpsOutTbox.Text = $"{inFps * interpFactorCombox.GetFloat()} FPS";

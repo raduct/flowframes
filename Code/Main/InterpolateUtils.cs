@@ -19,34 +19,34 @@ namespace Flowframes.Main
     {
         public const string sceneScoresFile = "scenescores.txt";
 
-        public static async Task CopyLastFrame(int lastFrameNum)
-        {
-            if (I.canceled) return;
+        //public static async Task CopyLastFrame(int lastFrameNum)
+        //{
+        //    if (I.canceled) return;
 
-            try
-            {
-                lastFrameNum--; // We have to do this as extracted frames start at 0, not 1
-                bool frameFolderInput = IoUtils.IsPathDirectory(I.currentSettings.inPath);
-                string targetPath = Path.Combine(I.currentSettings.framesFolder, lastFrameNum.ToString().PadLeft(Padding.inputFrames, '0') + I.currentSettings.framesExt);
-                if (File.Exists(targetPath)) return;
+        //    try
+        //    {
+        //        lastFrameNum--; // We have to do this as extracted frames start at 0, not 1
+        //        bool frameFolderInput = IoUtils.IsPathDirectory(I.currentSettings.inPath);
+        //        string targetPath = Path.Combine(I.currentSettings.framesFolder, lastFrameNum.ToString().PadLeft(Padding.inputFrames, '0') + I.currentSettings.framesExt);
+        //        if (File.Exists(targetPath)) return;
 
-                Size res = IoUtils.GetImage(IoUtils.GetFilesSorted(I.currentSettings.framesFolder, false).First()).Size;
+        //        Size res = IoUtils.GetImage(IoUtils.GetFilesSorted(I.currentSettings.framesFolder, false).First()).Size;
 
-                if (frameFolderInput)
-                {
-                    string lastFramePath = IoUtils.GetFilesSorted(I.currentSettings.inPath, false).Last();
-                    await FfmpegExtract.ExtractLastFrame(lastFramePath, targetPath, res);
-                }
-                else
-                {
-                    await FfmpegExtract.ExtractLastFrame(I.currentSettings.inPath, targetPath, res);
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.Log("CopyLastFrame Error: " + e.Message);
-            }
-        }
+        //        if (frameFolderInput)
+        //        {
+        //            string lastFramePath = IoUtils.GetFilesSorted(I.currentSettings.inPath, false).Last();
+        //            await FfmpegExtract.ExtractLastFrame(lastFramePath, targetPath, res);
+        //        }
+        //        else
+        //        {
+        //            await FfmpegExtract.ExtractLastFrame(I.currentSettings.inPath, targetPath, res);
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Logger.Log("CopyLastFrame Error: " + e.Message);
+        //    }
+        //}
 
         public static string GetTempFolderLoc(string inPath, string outPath)
         {
@@ -306,12 +306,12 @@ namespace Flowframes.Main
                 return false;
             }
 
-            int inFrames = IoUtils.GetAmountOfFiles(current.framesFolder, false);
-            if (inFrames * current.interpFactor < (AutoEncode.chunkSize + AutoEncode.safetyBufferFrames) * 1.2f)
-            {
-                Logger.Log($"Not Using AutoEnc: Input frames ({inFrames}) * factor ({current.interpFactor}) is smaller than (chunkSize ({AutoEncode.chunkSize}) + safetyBufferFrames ({AutoEncode.safetyBufferFrames}) * 1.2f)", true);
-                return false;
-            }
+            //int inFrames = IoUtils.GetAmountOfFiles(current.framesFolder, false);
+            //if (inFrames * current.interpFactor < (AutoEncode.chunkSize + AutoEncode.safetyBufferFrames) * 1.2f)
+            //{
+            //    Logger.Log($"Not Using AutoEnc: Input frames ({inFrames}) * factor ({current.interpFactor}) is smaller than (chunkSize ({AutoEncode.chunkSize}) + safetyBufferFrames ({AutoEncode.safetyBufferFrames}) * 1.2f)", true);
+            //    return false;
+            //}
 
             return true;
         }

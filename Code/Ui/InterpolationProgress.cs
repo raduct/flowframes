@@ -28,7 +28,6 @@ namespace Flowframes.Ui
         public static BigPreviewForm bigPreviewForm;
 
         static Regex frameRegex;
-        static Regex interpRegex;
 
         public static void Restart()
         {
@@ -40,7 +39,6 @@ namespace Flowframes.Ui
 
             string ncnnStr = I.currentSettings.ai.NameInternal.Contains("NCNN") ? " done" : "";
             frameRegex = new Regex($@"\d*(?={I.currentSettings.interpExt}{ncnnStr})");
-            interpRegex = new Regex($@"{Paths.interpDir}/(?=\d*{I.currentSettings.interpExt}{ncnnStr})");
         }
 
         public static async void GetProgressByFrameAmount(string outdir, int target)
@@ -82,7 +80,7 @@ namespace Flowframes.Ui
                 Program.mainForm.SetProgress(0);
         }
 
-        public static void UpdateLastFrameFromInterpOutput(string output)
+        public static void UpdateLastFrameFromInterpOutput(string output, bool main)
         {
             try
             {
@@ -90,7 +88,7 @@ namespace Flowframes.Ui
                 if (result.Success)
                 {
                     int frame = int.Parse(result.Value);
-                    if (I.currentSettings.is3D && !interpRegex.IsMatch(output))
+                    if (!main)
                         lastOtherFrame = Math.Max(frame, lastOtherFrame);
                     else
                         lastFrame = Math.Max(frame, lastFrame);
@@ -149,11 +147,11 @@ namespace Flowframes.Ui
             //ResumeUtils.Save();
             target = (target / I.InterpProgressMultiplier).RoundToInt();
             frames = frames.Clamp(0, target);
-            int percent = (int)Math.Round((float)frames / target * 100f);
+            int percent = FormatUtils.RatioInt(frames, target);
             Program.mainForm.SetProgress(percent);
 
             float generousTime = (AiProcess.processTime.ElapsedMilliseconds - AiProcess.lastStartupTimeMs) / 1000f;
-            float fps = ((float)frames / generousTime).Clamp(0, 9999);
+            float fps = (frames / generousTime).Clamp(0, 9999);
             string fpsIn = (fps / currentFactor).ToString("0.00");
             string fpsOut = fps.ToString("0.00");
 

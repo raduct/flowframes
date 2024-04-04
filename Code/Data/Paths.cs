@@ -10,6 +10,7 @@ namespace Flowframes.IO
         public const string chunksDir = "vchunks";
         public const string resumeDir = "resumedata";
         public const string scenesDir = "scenes";
+        public const string framesWorkDir = "framesWork";
 
         public const string symlinksSuffix = "-symlinks";
         public const string alphaSuffix = "-a";
@@ -94,7 +95,7 @@ namespace Flowframes.IO
 
         public static string GetFrameSeqPath(bool noSession = false)
         {
-            string path = Path.Combine((noSession ? GetDataPath() : GetSessionDataPath()), "frameSequences");
+            string path = Path.Combine(noSession ? GetDataPath() : GetSessionDataPath(), "frameSequences");
             Directory.CreateDirectory(path);
             return path;
         }

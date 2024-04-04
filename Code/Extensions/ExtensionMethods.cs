@@ -106,7 +106,7 @@ namespace Flowframes
 
         public static int RoundToInt(this float f)
         {
-            return (int)Math.Round(f);
+            return (int)Math.Round(f, MidpointRounding.AwayFromZero);
         }
 
         public static int Clamp(this int i, int min, int max)

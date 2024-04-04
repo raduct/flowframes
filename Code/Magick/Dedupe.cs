@@ -114,7 +114,7 @@ namespace Flowframes.Magick
             {
                 int framesProcessed = statsFramesKept + statsFramesDeleted;
                 Logger.Log($"Deduplication: Running de-duplication ({framesProcessed}/{framePaths.Length / increment}), deleted {statsFramesDeleted} ({(float)statsFramesDeleted / framePaths.Length / increment * 100f:0}%) duplicate frames so far...", false, true);
-                Program.mainForm.SetProgress((int)Math.Round((float)framesProcessed / framePaths.Length / increment * 100f));
+                Program.mainForm.SetProgress(((float)framesProcessed / framePaths.Length / increment * 100f).RoundToInt());
             }
 
             // start the worker threads
@@ -180,23 +180,21 @@ namespace Flowframes.Magick
 
             for (int i = 0; i < frameFiles.Length; i++)
             {
-                bool isLastItem = (i + 1) == frameFiles.Length;
+                string curFrameName = Path.GetFileNameWithoutExtension(frameFiles[i].Name);
+                int curFrameNo = curFrameName.GetInt();
 
-                string fnameCur = Path.GetFileNameWithoutExtension(frameFiles[i].Name);
-                int frameNumCur = fnameCur.GetInt();
-
-                frames[fnameCur] = new List<string>();
-
-                if (!isLastItem)
+                List<string> dupes = new List<string>();
+                if ((i + 1) < frameFiles.Length)
                 {
-                    string fnameNext = Path.GetFileNameWithoutExtension(frameFiles[i + 1].Name);
-                    int frameNumNext = fnameNext.GetInt();
+                    string nextFrameName = Path.GetFileNameWithoutExtension(frameFiles[i + 1].Name);
+                    int nextFrameNo = nextFrameName.GetInt();
 
-                    for (int j = frameNumCur + 1; j < frameNumNext; j++)
+                    for (int j = curFrameNo + 1; j < nextFrameNo; j++)
                     {
-                        frames[fnameCur].Add(j.ToString().PadLeft(Padding.inputFrames, '0'));
+                        dupes.Add(j.ToString().PadLeft(Padding.inputFrames, '0'));
                     }
                 }
+                frames[curFrameName] = dupes;
             }
 
             File.WriteAllText(Path.Combine(framesPath.GetParentDir(), dupesFileName), frames.ToJson(true));

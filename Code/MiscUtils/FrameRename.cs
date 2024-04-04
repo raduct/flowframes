@@ -1,5 +1,6 @@
 ﻿using Flowframes.Data;
 using Flowframes.IO;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -12,15 +13,39 @@ namespace Flowframes.MiscUtils
     {
         public static bool framesAreRenamed = false;
         public static string[] importFilenames; // index=renamed, value=original
+        public static int originalFrameSkipped = 0;
 
-        public static async Task Rename()
+        public static async Task Rename(string lastEncodedOriginalInputFrame)
         {
             if (framesAreRenamed) return;
 
             importFilenames = IoUtils.GetFilesSorted(Interpolate.currentSettings.framesFolder);
-
             Logger.Log($"Renaming {importFilenames.Length} frames...");
             Stopwatch benchmark = Stopwatch.StartNew();
+
+            int indexLast = string.IsNullOrEmpty(lastEncodedOriginalInputFrame) ? -1 : Array.IndexOf(importFilenames, lastEncodedOriginalInputFrame);
+            if (indexLast != -1)
+            {
+                originalFrameSkipped = indexLast + (Interpolate.currentSettings.is3D ? 2 : 1);
+                importFilenames = importFilenames.Skip(originalFrameSkipped).ToArray();
+
+                // Shift scene change file names in synch with the input frames
+                string sceneDir = Path.Combine(Interpolate.currentSettings.tempFolder, Paths.scenesDir);
+                string[] scenes = IoUtils.GetFilesSorted(sceneDir);
+                int skippedOffset = Interpolate.currentSettings.is3D ? originalFrameSkipped / 2 : originalFrameSkipped;
+                foreach (string sceneFullFileName in scenes)
+                {
+                    string sceneFilename = Path.GetFileNameWithoutExtension(sceneFullFileName);
+                    int fileNo = int.Parse(sceneFilename);
+                    string newFilename = (fileNo - skippedOffset).ToString();
+                    if (fileNo >= skippedOffset)
+                        newFilename = newFilename.PadLeft(Padding.inputFrames, '0');
+                    string targetPath = Path.Combine(Path.GetDirectoryName(sceneFullFileName), newFilename + Path.GetExtension(sceneFullFileName));
+                    File.Move(sceneFullFileName, targetPath);
+                }
+            }
+            else
+                originalFrameSkipped = 0;
 
             //int chunkSize = 2* (int)Math.Ceiling((double)importFilenames.Length / 4);// 2 * (int)Math.Ceiling((double)importFilenames.Length / 2 / Environment.ProcessorCount); // Make sure is even for 3D double frames
             int chunkSize = importFilenames.Length;
@@ -41,7 +66,8 @@ namespace Flowframes.MiscUtils
         public static void RenameCounterDirWorker(string[] files, int from, int count)
         {
             int counter = Interpolate.currentSettings.is3D ? from / 2 : from;
-            string dirA = Interpolate.currentSettings.framesFolder;
+            string dirA = Path.Combine(Interpolate.currentSettings.tempFolder, Paths.framesWorkDir);
+            IoUtils.CreateDir(dirA);
             string dirB = Paths.GetOtherDir(dirA);
             if (Interpolate.currentSettings.is3D)
                 IoUtils.CreateDir(dirB);
@@ -71,7 +97,24 @@ namespace Flowframes.MiscUtils
             Logger.Log($"Unrenaming {importFilenames.Length} frames ...");
             Stopwatch benchmark = Stopwatch.StartNew();
 
-            string[] files = IoUtils.GetFilesSorted(Interpolate.currentSettings.framesFolder);
+            if (originalFrameSkipped != 0)
+            {
+                // Shift back scene change file names in synch with the input frames
+                string sceneDir = Path.Combine(Interpolate.currentSettings.tempFolder, Paths.scenesDir);
+                string[] scenes = IoUtils.GetFilesSorted(sceneDir);
+                int skippedOffset = Interpolate.currentSettings.is3D ? originalFrameSkipped / 2 : originalFrameSkipped;
+                foreach (string sceneFullFileName in scenes.Reverse())
+                {
+                    string sceneFilename = Path.GetFileNameWithoutExtension(sceneFullFileName);
+                    int fileNo = int.Parse(sceneFilename);
+                    string newFilename = (fileNo + skippedOffset).ToString().PadLeft(Padding.inputFrames, '0');
+                    string targetPath = Path.Combine(Path.GetDirectoryName(sceneFullFileName), newFilename + Path.GetExtension(sceneFullFileName));
+                    File.Move(sceneFullFileName, targetPath);
+                }
+            }
+
+            string dirA = Path.Combine(Interpolate.currentSettings.tempFolder, Paths.framesWorkDir);
+            string[] files = IoUtils.GetFilesSorted(dirA);
             int chunkSize = files.Length;// (int)Math.Ceiling((double)files.Length / Environment.ProcessorCount * (Interpolate.currentSettings.is3D ? 2 : 1));
             List<Task> tasks = new List<Task>();
 
@@ -84,7 +127,7 @@ namespace Flowframes.MiscUtils
 
             if (Interpolate.currentSettings.is3D)
             {
-                string[] filesB = IoUtils.GetFilesSorted(Paths.GetOtherDir(Interpolate.currentSettings.framesFolder));
+                string[] filesB = IoUtils.GetFilesSorted(Paths.GetOtherDir(dirA));
 
                 for (int i = 0; i < filesB.Length; i += chunkSize)
                 {
@@ -105,8 +148,7 @@ namespace Flowframes.MiscUtils
             int offset = isOther ? 1 : 0;
             for (int i = from; i < from + count && i < files.Length; i++)
             {
-                string movePath = Path.Combine(Interpolate.currentSettings.framesFolder, importFilenames[i * multiplier + offset]);
-                File.Move(files[i], movePath);
+                File.Move(files[i], importFilenames[i * multiplier + offset]);
             }
         }
 
@@ -136,20 +178,6 @@ namespace Flowframes.MiscUtils
             if (renamedIndex < 0)
                 return null;
             return renamedIndex.ToString().PadLeft(Padding.inputFrames, '0');
-        }
-
-        public static void TrimFirst(int renamedNo)
-        {
-            if (Interpolate.currentSettings.is3D)
-            {
-                if (renamedNo > 0 && renamedNo * 2 <= importFilenames.Length)
-                    importFilenames = importFilenames.Skip(renamedNo * 2).ToArray();
-            }
-            else
-            {
-                if (renamedNo > 0 && renamedNo <= importFilenames.Length)
-                    importFilenames = importFilenames.Skip(renamedNo).ToArray();
-            }
         }
     }
 }

@@ -356,7 +356,7 @@ namespace Flowframes.MiscUtils
             };
 
             float multiplier = encoderMultipliers.TryGetValue(encoder, out float value) ? value : 1.0f;
-            return (int)Math.Round(Crfs[qualityLevel] * multiplier);
+            return (Crfs[qualityLevel] * multiplier).RoundToInt();
         }
 
         public static int GetGifColors(Quality.GifColors qualityLevel)

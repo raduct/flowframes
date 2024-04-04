@@ -57,7 +57,8 @@ namespace Flowframes.Magick
                         string interpFolder = line.Split('/').First().Remove("file '");
                         interpFolder = Path.Combine(Interpolate.currentSettings.tempFolder, interpFolder);
                         bool isOther = !interpFolder.Equals(Interpolate.currentSettings.interpFolder);
-                        string framesFolder = !isOther ? Interpolate.currentSettings.framesFolder : Paths.GetOtherDir(Interpolate.currentSettings.framesFolder);
+                        string framesFolder = Path.Combine(Interpolate.currentSettings.tempFolder, Paths.framesWorkDir);
+                        if (isOther) framesFolder = Paths.GetOtherDir(framesFolder);
 
                         string img1 = Path.Combine(framesFolder, frameFrom);
                         string img2 = Path.Combine(framesFolder, frameTo);

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace Flowframes.Main
@@ -28,7 +29,7 @@ namespace Flowframes.Main
 
         public static void UpdateChunkAndBufferSizes()
         {
-            chunkSize = GetChunkSize((IoUtils.GetAmountOfFiles(Interpolate.currentSettings.framesFolder, false, "*" + Interpolate.currentSettings.framesExt) * Interpolate.currentSettings.interpFactor).RoundToInt());
+            chunkSize = GetChunkSize(IoUtils.GetAmountOfFiles(Path.Combine(Interpolate.currentSettings.tempFolder, Paths.framesWorkDir), false, "*" + Interpolate.currentSettings.framesExt), Interpolate.currentSettings.interpFactor);
 
             safetyBufferFrames = 90;
 
@@ -41,9 +42,6 @@ namespace Flowframes.Main
 
         public static async Task MainLoop(string interpFramesPath)
         {
-            if (!AutoEncodeResume.resumeNextRun)
-                AutoEncodeResume.Reset();
-
             paused = false;
             debug = Config.GetBool("autoEncDebug", false);
 
@@ -156,10 +154,11 @@ namespace Flowframes.Main
                             {
                                 await Export.EncodeChunk(outpath, Interpolate.currentSettings.interpFolder, currentChunkNo, Interpolate.currentSettings.outSettings, frameLinesToEncodeAr[0], frameLinesToEncodeAr.Length, aiRunning ? AvProcess.LogMode.Hidden : AvProcess.LogMode.OnlyLastLine);
 
-                                IEnumerable<string> inputFrames = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(encFile + FrameOrder.inputFramesJson)).Skip(frameLinesToEncodeAr[0]).Take(frameLinesToEncodeAr.Length);
+                                IEnumerable<string> inputFrames = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(encFile + FrameOrder.inputFramesJson)).Take(frameLinesToEncodeAr[0] + frameLinesToEncodeAr.Length);
+                                int indexInputFrame = inputFrames.Distinct().Count();
                                 AutoEncodeResume.encodedChunks++;
                                 AutoEncodeResume.encodedFrames += frameLinesToEncodeAr.Length;
-                                AutoEncodeResume.processedInputFrames.AddRange(inputFrames);
+                                AutoEncodeResume.lastEncodedOriginalInputFrame = FrameRename.GetOriginalFileName(indexInputFrame - 1);
                                 AutoEncodeResume.SaveChunk();
 
                                 if (Interpolate.canceled) return;
@@ -203,10 +202,8 @@ namespace Flowframes.Main
                 if (currentMuxTask != null)
                     await currentMuxTask;
 
-                if (imgSeq)
-                    return;
-
-                await Export.ChunksToVideo(Interpolate.currentSettings.tempFolder, videoChunksFolder, Interpolate.currentSettings.outPath);
+                if (!imgSeq)
+                    await Export.ChunksToVideo(Interpolate.currentSettings.tempFolder, videoChunksFolder, Interpolate.currentSettings.outPath);
             }
             catch (Exception e)
             {
@@ -256,12 +253,15 @@ namespace Flowframes.Main
             return aiRunning || encodedFrameLines.Count < interpFramesLines.Length;
         }
 
-        static int GetChunkSize(int targetFramesAmount)
+        static int GetChunkSize(int inuptFramesNo, float factor)
         {
-            int round = (int)Math.Floor(targetFramesAmount / 2400f);
-            if (round == 0)
-                round = 1;
-            return Math.Min(round * 600, 6000);
+            int intMFactor = (factor * 1000).RoundToInt();
+            int factorMultiple = Math.Truncate(factor) == factor ? (int)factor : intMFactor / (int)BigInteger.GreatestCommonDivisor(1000, intMFactor);
+
+            // multiple of 600 (for video I frame interval) and factor (for resume)
+            int multiple = 600 * factorMultiple / (int)BigInteger.GreatestCommonDivisor(600, factorMultiple);
+            int round = Math.Min(10, (int)Math.Ceiling(inuptFramesNo * factor / multiple / 5));
+            return round * multiple;
         }
     }
 }

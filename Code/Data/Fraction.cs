@@ -203,7 +203,7 @@ namespace Flowframes.Data
 
         public static Fraction operator *(Fraction fract, double multi)
         {
-            long numerator = (long)Math.Round((double)(fract.Numerator * (double)multi));
+            long numerator = (long)Math.Round(fract.Numerator * multi, MidpointRounding.AwayFromZero);
             long denomenator = fract.Denominator;
 
             return new Fraction(numerator, denomenator).GetReduced();

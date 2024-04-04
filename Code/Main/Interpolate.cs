@@ -72,7 +72,7 @@ namespace Flowframes
                 }
             }
 
-            if (!AutoEncodeResume.resumeNextRun && Config.GetBool(Config.Key.keepTempFolder) && IoUtils.GetAmountOfFiles(currentSettings.framesFolder, false) > 0)
+            if (Config.GetBool(Config.Key.keepTempFolder))
                 await FrameRename.UnRename();
 
             IoUtils.DeleteIfSmallerThanKb(currentSettings.FullOutPath);
@@ -204,7 +204,7 @@ namespace Flowframes
             if (!ai.Piped || (ai.Piped && currentSettings.inputIsFrames))
             {
                 await Task.Run(() => Dedupe.CreateDupesFile(currentSettings.framesFolder, currentSettings.framesExt));
-                await FrameRename.Rename();
+                await FrameRename.Rename(AutoEncodeResume.lastEncodedOriginalInputFrame);
                 AutoEncodeResume.SaveGlobal(false);
             }
             else if (ai.Piped && dedupe)
@@ -230,26 +230,27 @@ namespace Flowframes
             List<Task> tasks = new List<Task>();
             AiProcess.lastAiProcess = AiProcess.lastAiProcessOther = null;
 
+            string framesFolder = Path.Combine(currentSettings.tempFolder, Paths.framesWorkDir);
             if (ai.NameInternal == Implementations.rifeCuda.NameInternal)
-                tasks.Add(AiProcess.RunRifeCuda(currentSettings.framesFolder, currentSettings.interpFactor, currentSettings.model.Dir));
+                tasks.Add(AiProcess.RunRifeCuda(framesFolder, currentSettings.interpFactor, currentSettings.model.Dir));
 
             if (ai.NameInternal == Implementations.rifeNcnn.NameInternal)
-                tasks.Add(AiProcess.RunRifeNcnn(currentSettings.framesFolder, outpath, currentSettings.interpFactor, currentSettings.model.Dir));
+                tasks.Add(AiProcess.RunRifeNcnn(framesFolder, outpath, currentSettings.interpFactor, currentSettings.model.Dir));
 
             if (ai.NameInternal == Implementations.rifeNcnnVs.NameInternal)
-                tasks.Add(AiProcess.RunRifeNcnnVs(currentSettings.framesFolder, outpath, currentSettings.interpFactor, currentSettings.model.Dir));
+                tasks.Add(AiProcess.RunRifeNcnnVs(framesFolder, outpath, currentSettings.interpFactor, currentSettings.model.Dir));
 
             if (ai.NameInternal == Implementations.flavrCuda.NameInternal)
-                tasks.Add(AiProcess.RunFlavrCuda(currentSettings.framesFolder, currentSettings.interpFactor, currentSettings.model.Dir));
+                tasks.Add(AiProcess.RunFlavrCuda(framesFolder, currentSettings.interpFactor, currentSettings.model.Dir));
 
             if (ai.NameInternal == Implementations.dainNcnn.NameInternal)
-                tasks.Add(AiProcess.RunDainNcnn(currentSettings.framesFolder, outpath, currentSettings.interpFactor, currentSettings.model.Dir, Config.GetInt(Config.Key.dainNcnnTilesize, 512)));
+                tasks.Add(AiProcess.RunDainNcnn(framesFolder, outpath, currentSettings.interpFactor, currentSettings.model.Dir, Config.GetInt(Config.Key.dainNcnnTilesize, 512)));
 
             if (ai.NameInternal == Implementations.xvfiCuda.NameInternal)
-                tasks.Add(AiProcess.RunXvfiCuda(currentSettings.framesFolder, currentSettings.interpFactor, currentSettings.model.Dir));
+                tasks.Add(AiProcess.RunXvfiCuda(framesFolder, currentSettings.interpFactor, currentSettings.model.Dir));
 
             if (ai.NameInternal == Implementations.ifrnetNcnn.NameInternal)
-                tasks.Add(AiProcess.RunIfrnetNcnn(currentSettings.framesFolder, outpath, currentSettings.interpFactor, currentSettings.model.Dir));
+                tasks.Add(AiProcess.RunIfrnetNcnn(framesFolder, outpath, currentSettings.interpFactor, currentSettings.model.Dir));
 
             if (currentlyUsingAutoEnc)
             {

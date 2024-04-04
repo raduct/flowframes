@@ -333,8 +333,8 @@ namespace Flowframes.Os
 
             if (!OsUtils.ShowHiddenCmd())
             {
-                rifeNcnn.OutputDataReceived += (sender, outLine) => { LogOutput("[O] " + outLine.Data, Implementations.rifeNcnn); };
-                rifeNcnn.ErrorDataReceived += (sender, outLine) => { LogOutput("[E] " + outLine.Data, Implementations.rifeNcnn, true); };
+                rifeNcnn.OutputDataReceived += (sender, outLine) => { LogOutput("[O] " + outLine.Data, Implementations.rifeNcnn, false, main); };
+                rifeNcnn.ErrorDataReceived += (sender, outLine) => { LogOutput("[E] " + outLine.Data, Implementations.rifeNcnn, true, main); };
             }
 
             rifeNcnn.Start();
@@ -608,7 +608,7 @@ namespace Flowframes.Os
             await ifrnetNcnn.WaitForExitAsync();
         }
 
-        static void LogOutput(string line, AI ai, bool err = false)
+        static void LogOutput(string line, AI ai, bool err = false, bool main = true)
         {
             if (string.IsNullOrWhiteSpace(line) || line.Length < 6)
                 return;
@@ -722,7 +722,7 @@ namespace Flowframes.Os
             if (hasShownError)
                 Interpolate.Cancel();
 
-            InterpolationProgress.UpdateLastFrameFromInterpOutput(line);
+            InterpolationProgress.UpdateLastFrameFromInterpOutput(line, main);
         }
 
         public static bool IsRunning()

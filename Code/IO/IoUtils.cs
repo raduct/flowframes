@@ -350,7 +350,7 @@ namespace Flowframes.IO
                 else     // Path is frame folder
                 {
                     Image thumb = await MainUiFunctions.GetThumbnail(path);
-                    res = new Size(thumb.Width, thumb.Height);
+                    if (thumb != null) res = new Size(thumb.Width, thumb.Height);
                 }
             }
             catch (Exception e)

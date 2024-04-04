@@ -175,6 +175,7 @@ namespace Flowframes.Ui
 
             if (ai.FactorSupport == AI.InterpFactorSupport.AnyFloat)
             {
+                factor = (float)Math.Round(factor, 3, MidpointRounding.AwayFromZero);
                 return factor.Clamp(1, 128);
             }
 

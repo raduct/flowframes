@@ -72,6 +72,9 @@ namespace Flowframes.Main
 
             currentSettings.RefreshExtensions();
 
+            bool skip = await AutoEncodeResume.PrepareResumedRun();
+            if (skip || canceled) return;
+
             if (IoUtils.GetAmountOfFiles(currentSettings.framesFolder, false, "*") < 2)
             {
                 if (Config.GetBool(Config.Key.sbsRunPreviousStepIfNeeded))
@@ -102,9 +105,6 @@ namespace Flowframes.Main
             if (Config.GetBool(Config.Key.sbsAllowAutoEnc) && !(await InterpolateUtils.CheckEncoderValid())) return;
 
             if (canceled) return;
-
-            bool skip = await AutoEncodeResume.PrepareResumedRun();
-            if (skip || canceled) return;
 
             Program.mainForm.SetStatus("Running AI...");
             await RunAi(currentSettings.interpFolder, currentSettings.ai, true);
