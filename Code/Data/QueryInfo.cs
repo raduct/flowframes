@@ -1,10 +1,10 @@
 ﻿namespace Flowframes.Data
 {
-    class QueryInfo
+    struct QueryInfo
     {
         public string path;
         public long filesize;
-        public string cmd = null;
+        public string cmd;
 
         public QueryInfo(string path, long filesize, string cmd = null)
         {

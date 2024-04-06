@@ -353,7 +353,7 @@ namespace Flowframes.Main
                 IoUtils.TryDeleteIfExists(Path.Combine(sceneFramesPath, frame + I.currentSettings.framesExt));
         }
 
-        public static void RemoveCloseSceneChanges(string scenesPath, string sceneScoresFilePath, Fraction fps)
+        public static void TemporalFilterSceneChanges(string scenesPath, string sceneScoresFilePath, Fraction fps)
         {
             Logger.Log("Remove consecutive scene changes...");
 
@@ -377,7 +377,7 @@ namespace Flowframes.Main
 
             // Keep only the scene change with maximum score in the time range of 400ms
             List<int> framesToDelete = new List<int>();
-            int range = fps.GetFloat() > 0 ? (int)Math.Floor(fps.GetFloat() * 0.4 + 0.5) : 10;
+            int range = fps.GetFloat() > 0 ? (int)Math.Round(fps.GetFloat() * 0.4, MidpointRounding.AwayFromZero) : 10;
             while (sceneScore.Count > 0)
             {
                 float maxScore = 0;

@@ -39,9 +39,9 @@ namespace Flowframes
             CultureInfo.DefaultThreadCurrentCulture = culture;
             CultureInfo.DefaultThreadCurrentUICulture = culture;
 
-            Logger.StartLogging();
             Paths.Init();
             Config.Init();
+            Logger.StartLogging();
             Cleanup();
 
             ServicePointManager.Expect100Continue = true;

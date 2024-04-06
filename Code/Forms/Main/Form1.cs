@@ -58,7 +58,7 @@ namespace Flowframes.Forms.Main
             UiUtils.InitCombox(trimCombox, 0);
 
             Program.mainForm = this;
-            Logger.textbox = logBox;
+            Logger.SetLogBox(logBox);
             VulkanUtils.Init();
             NvApi.Init();
             InterpolationProgress.preview = previewPicturebox;
@@ -290,8 +290,11 @@ namespace Flowframes.Forms.Main
         {
             percent = percent.Clamp(0, 100);
             TaskbarManager.Instance.SetProgressValue(percent, 100);
-            longProgBar.Value = percent;
-            longProgBar.Refresh();
+            longProgBar.InvokeSafe(delegate
+            {
+                longProgBar.Value = percent;
+                longProgBar.Refresh();
+            });
         }
 
         public Size currInRes;
@@ -770,22 +773,34 @@ namespace Flowframes.Forms.Main
             _quickSettingsInitialized = true;
         }
 
+        public void ShowPauseButton(bool running)
+        {
+            Button pauseButton = GetPauseBtn();
+            pauseButton.InvokeSafe(delegate
+            {
+                pauseButton.Visible = running;
+            });
+        }
+
         public void SetPauseButtonStyle(bool paused)
         {
             Button btn = GetPauseBtn();
 
-            if (paused)
+            btn.InvokeSafe(delegate
             {
-                btn.BackgroundImage = Resources.baseline_play_arrow_white_48dp;
-                btn.FlatAppearance.BorderColor = Color.MediumSeaGreen;
-                btn.FlatAppearance.MouseOverBackColor = Color.MediumSeaGreen;
-            }
-            else
-            {
-                btn.BackgroundImage = Resources.baseline_pause_white_48dp;
-                btn.FlatAppearance.BorderColor = Color.DarkOrange;
-                btn.FlatAppearance.MouseOverBackColor = Color.DarkOrange;
-            }
+                if (paused)
+                {
+                    btn.BackgroundImage = Resources.baseline_play_arrow_white_48dp;
+                    btn.FlatAppearance.BorderColor = Color.MediumSeaGreen;
+                    btn.FlatAppearance.MouseOverBackColor = Color.MediumSeaGreen;
+                }
+                else
+                {
+                    btn.BackgroundImage = Resources.baseline_pause_white_48dp;
+                    btn.FlatAppearance.BorderColor = Color.DarkOrange;
+                    btn.FlatAppearance.MouseOverBackColor = Color.DarkOrange;
+                }
+            });
         }
 
         private void dedupMode_SelectedIndexChanged(object sender, EventArgs e)

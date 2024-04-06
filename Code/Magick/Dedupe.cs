@@ -1,5 +1,6 @@
 ﻿using Flowframes.Data;
 using Flowframes.IO;
+using Flowframes.MiscUtils;
 using Flowframes.Os;
 using ImageMagick;
 using System;
@@ -113,12 +114,13 @@ namespace Flowframes.Magick
             void lamUpdateInfoBox()
             {
                 int framesProcessed = statsFramesKept + statsFramesDeleted;
-                Logger.Log($"Deduplication: Running de-duplication ({framesProcessed}/{framePaths.Length / increment}), deleted {statsFramesDeleted} ({(float)statsFramesDeleted / framePaths.Length / increment * 100f:0}%) duplicate frames so far...", false, true);
-                Program.mainForm.SetProgress(((float)framesProcessed / framePaths.Length / increment * 100f).RoundToInt());
+                int percentage = FormatUtils.RatioInt(framesProcessed, framePaths.Length / increment);
+                Logger.Log($"Deduplication: Running de-duplication ({framesProcessed}/{framePaths.Length / increment}), deleted {statsFramesDeleted} ({percentage}%) duplicate frames so far...", false, true);
+                Program.mainForm.SetProgress(percentage);
             }
 
             // start the worker threads
-            Task[] workTasks = new Task[Environment.ProcessorCount];
+            Task[] workTasks = new Task[Environment.ProcessorCount / 2];
             int chunkSize = framePaths.Length / workTasks.Length / 2 * 2; // make sure is even
             for (int i = 0; i < workTasks.Length; i++)
             {
@@ -130,12 +132,14 @@ namespace Flowframes.Magick
             }
 
             // wait for all the worker threads to finish and update the info box
-            while (!Task.WaitAll(workTasks, 250))
+            Task allWorkTask = Task.WhenAll(workTasks);
+            while (true)
             {
-                await Task.CompletedTask;
+                Task winner = await Task.WhenAny(allWorkTask, Task.Delay(250));
                 lamUpdateInfoBox(); // Print every 0.25s (or when done)
+                if (winner == allWorkTask)
+                    break;
             }
-            lamUpdateInfoBox();
 
             if (Interpolate.canceled) return;
 

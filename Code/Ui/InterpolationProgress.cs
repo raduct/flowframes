@@ -7,7 +7,6 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -44,26 +43,24 @@ namespace Flowframes.Ui
         public static async void GetProgressByFrameAmount(string outdir, int target)
         {
             targetFrames = target;
-            string currentOutdir = outdir;
             Restart();
-            Logger.Log($"Starting GetProgressByFrameAmount() loop for outdir '{currentOutdir}', target is {target} frames", true);
+            Logger.Log($"Starting GetProgressByFrameAmount() loop for outdir '{outdir}', target is {target} frames", true);
             bool firstProgUpd = true;
 
             while (Program.busy)
             {
-                if (AiProcess.processTime.IsRunning && Directory.Exists(currentOutdir))
+                if (AiProcess.processTime.IsRunning && Directory.Exists(outdir))
                 {
                     if (firstProgUpd && Program.mainForm.IsInFocus())
                         Program.mainForm.SetTab(Program.mainForm.previewTab.Name);
 
                     firstProgUpd = false;
-                    int lastFrameNo = I.currentSettings.is3D ? Math.Min(lastFrame, lastOtherFrame) : lastFrame;
-                    string lastFramePath = currentOutdir + "\\" + lastFrameNo.ToString().PadLeft(Data.Padding.interpFrames, '0') + I.currentSettings.interpExt;
+                    int lastFrameNo =  I.currentSettings.is3D ? Math.Min(lastFrame, lastOtherFrame) : lastFrame;
 
                     if (lastFrameNo > 1)
-                        UpdateInterpProgress(lastFrameNo, targetFrames, lastFramePath);
+                        UpdateInterpProgress(lastFrameNo, targetFrames, outdir);
 
-                    await Task.Delay((target < 1000) ? 200 : 1000);
+                    await Task.Delay(target < 1000 ? 200 : 1000);
 
                     if (lastFrameNo >= targetFrames)
                         break;
@@ -80,7 +77,7 @@ namespace Flowframes.Ui
                 Program.mainForm.SetProgress(0);
         }
 
-        public static void UpdateLastFrameFromInterpOutput(string output, bool main)
+        public static bool UpdateLastFrameFromInterpOutput(string output, bool main)
         {
             try
             {
@@ -92,12 +89,14 @@ namespace Flowframes.Ui
                         lastOtherFrame = Math.Max(frame, lastOtherFrame);
                     else
                         lastFrame = Math.Max(frame, lastFrame);
+                    return true;
                 }
             }
             catch
             {
                 Logger.Log($"UpdateLastFrameFromInterpOutput: Failed to get progress from '{output}' even though Regex matched!", true);
             }
+            return false;
         }
 
         public static async void GetProgressFromFfmpegLog(string logFile, int target)
@@ -111,7 +110,7 @@ namespace Flowframes.Ui
             {
                 if (AiProcess.processTime.IsRunning)
                 {
-                    string lastLogLine = Logger.GetSessionLogLastLine(logFile);
+                    string lastLogLine = Logger.GetLogLastLine(logFile);
                     int num = lastLogLine == null ? 0 : lastLogLine.Split("frame=")[1].Split("fps=")[0].GetInt();
 
                     if (num > 0)
@@ -138,9 +137,8 @@ namespace Flowframes.Ui
         public static float peakFpsOut;
 
         private const int previewUpdateRateMs = 200;
-        private static readonly Regex EOLRegex = new Regex("\r\n|\r|\n");
 
-        public static void UpdateInterpProgress(int frames, int target, string latestFramePath = "")
+        public static void UpdateInterpProgress(int frames, int target, string currentOutdir = "")
         {
             if (I.canceled) return;
             //interpolatedInputFramesCount = ((frames / I.currentSettings.interpFactor).RoundToInt() - 1);
@@ -163,7 +161,7 @@ namespace Flowframes.Ui
             float eta = framesLeft * secondsPerFrame;
             string etaStr = FormatUtils.Time(new TimeSpan(0, 0, eta.RoundToInt()), false);
 
-            bool replaceLine = EOLRegex.Split(Logger.textbox.Text).Last().Contains("Average Speed: ");
+            bool replaceLine = Logger.LastUiLine.Contains("Average Speed: ");
 
             string logStr = $"Interpolated {frames}/{target} Frames ({percent}%) - Average Speed: {fpsIn} FPS In / {fpsOut} FPS Out - ";
             logStr += $"Time: {FormatUtils.Time(AiProcess.processTime.Elapsed)} - ETA: {etaStr}";
@@ -171,11 +169,12 @@ namespace Flowframes.Ui
             Logger.Log(logStr, false, replaceLine);
             try
             {
-                if (!string.IsNullOrWhiteSpace(latestFramePath) && frames > currentFactor)
+                if (!string.IsNullOrWhiteSpace(currentOutdir) && frames > currentFactor)
                 {
                     if (bigPreviewForm == null && !preview.Visible  /* ||Program.mainForm.WindowState != FormWindowState.Minimized */ /* || !Program.mainForm.IsInFocus()*/) return;        // Skip if the preview is not visible or the form is not in focus
                     if (timeSinceLastPreviewUpdate.IsRunning && timeSinceLastPreviewUpdate.ElapsedMilliseconds < previewUpdateRateMs) return;
-                    Image img = IoUtils.GetImage(latestFramePath, false);
+                    string lastFramePath = Path.Combine(currentOutdir, frames.ToString().PadLeft(Data.Padding.interpFrames, '0') + I.currentSettings.interpExt);
+                    Image img = IoUtils.GetImage(lastFramePath, false);
                     SetPreviewImg(img);
                 }
             }

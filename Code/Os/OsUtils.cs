@@ -207,18 +207,16 @@ namespace Flowframes.Os
             Logger.Log($"Getting output for {process.StartInfo.FileName} {process.StartInfo.Arguments}", true);
             NmkdStopwatch sw = new NmkdStopwatch();
 
-            Stopwatch timeSinceLastOutput = new Stopwatch();
-            timeSinceLastOutput.Restart();
-
             string output = string.Empty;
 
-            process.OutputDataReceived += (object sender, DataReceivedEventArgs e) => output += $"{e.Data}\n";
-            process.ErrorDataReceived += (object sender, DataReceivedEventArgs e) => output += $"{e.Data}\n";
+            TaskCompletionSource<object> outputTcs = new TaskCompletionSource<object>(), errorTcs = new TaskCompletionSource<object>();
+            process.OutputDataReceived += (object sender, DataReceivedEventArgs e) => { if (e.Data == null) outputTcs.SetResult(null); else output += $"{e.Data}\n"; };
+            process.ErrorDataReceived += (object sender, DataReceivedEventArgs e) => { if (e.Data == null) errorTcs.SetResult(null); else output += $"{e.Data}\n"; };
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
-            await process.WaitForExitAsync();
-            while (timeSinceLastOutput.ElapsedMilliseconds < 100) await Task.Delay(50);
+            await Task.WhenAll(process.WaitForExitAsync(), outputTcs.Task, errorTcs.Task);
+
             output = output.Trim('\r', '\n');
 
             Logger.Log($"Output (after {sw}):  {output.Replace("\r", " / ").Replace("\n", " / ").Trunc(250)}", true);

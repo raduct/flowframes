@@ -56,7 +56,7 @@ namespace Flowframes
             Logger.Log($"ConcatVideos('{Path.GetFileName(concatFile)}', '{outPath}', {looptimes})", true, false, "ffmpeg");
 
             if (showLog)
-                Logger.Log($"Merging videos...", false, Logger.GetLastLine().Contains("frame"));
+                Logger.Log($"Merging videos...", false, Logger.LastUiLine.Contains("frame"));
 
             IoUtils.RenameExistingFileOrDir(outPath);
             string loopStr = (looptimes > 0) ? $"-stream_loop {looptimes}" : "";
@@ -235,7 +235,7 @@ namespace Flowframes
         public static async Task<int> ReadFrameCountFfmpegAsync(string filePath)
         {
             string args = $"{filePath.GetConcStr()} -i {filePath.Wrap()} -map 0:v:0 -c copy -f null - ";
-            string info = await RunFfmpeg(args, LogMode.Hidden, "panic");
+            string info = await RunFfmpeg(args, "", LogMode.Hidden, "panic", false, true);
             try
             {
                 string[] lines = info.SplitIntoLines();
@@ -259,7 +259,7 @@ namespace Flowframes
         {
             Logger.Log($"IsEncoderCompatible('{enc}')", true, false, "ffmpeg");
             string args = $"-loglevel error -f lavfi -i color=black:s=1920x1080 -vframes 1 -c:v {enc} -f null -";
-            string output = await RunFfmpeg(args, LogMode.Hidden);
+            string output = await RunFfmpeg(args, "", LogMode.Hidden, null, false, true);
             return !output.SplitIntoLines().Where(l => !l.Lower().StartsWith("frame") && l.IsNotEmpty()).Any();
         }
 

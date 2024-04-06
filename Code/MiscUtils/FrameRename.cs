@@ -58,7 +58,7 @@ namespace Flowframes.MiscUtils
             }
             await Task.WhenAll(tasks);
 
-            Logger.Log($"Renamed {importFilenames.Length} frames in {benchmark.ElapsedMilliseconds} ms", false, true);
+            Logger.Log($"Renamed {importFilenames.Length} frames in {FormatUtils.Time(benchmark.ElapsedMilliseconds)}", false, true);
 
             framesAreRenamed = true;
         }
@@ -138,7 +138,7 @@ namespace Flowframes.MiscUtils
             }
             await Task.WhenAll(tasks);
 
-            Logger.Log($"Unrenamed {importFilenames.Length} frames in {benchmark.ElapsedMilliseconds} ms", false, true);
+            Logger.Log($"Unrenamed {importFilenames.Length} frames in {FormatUtils.Time(benchmark.ElapsedMilliseconds)}", false, true);
             framesAreRenamed = false;
         }
 

@@ -44,10 +44,10 @@ namespace Flowframes.MiscUtils
             if (span.TotalSeconds >= 1f || !allowMs)
             {
                 string format = span.TotalSeconds < 10f ? @"%s\.f" : @"%s";
-                return span.ToString(format) + "s";
+                return span.ToString(format) + " s";
             }
 
-            return span.ToString(@"fff") + "ms";
+            return span.ToString(@"fff") + " ms";
         }
 
         public static string TimeSw(Stopwatch sw)

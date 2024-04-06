@@ -18,7 +18,7 @@ namespace Flowframes.Media
 
             bool hidden = logMode == LogMode.Hidden;
 
-            if (HideMessage(line)) // Don't print certain warnings 
+            if (!hidden && HideMessage(line)) // Don't print certain warnings 
                 hidden = true;
 
             bool replaceLastLine = logMode == LogMode.OnlyLastLine;
@@ -26,7 +26,8 @@ namespace Flowframes.Media
             if (line.Contains("time=") && (line.StartsWith("frame=") || line.StartsWith("size=")))
                 line = FormatUtils.BeautifyFfmpegStats(line);
 
-            appendStr += Environment.NewLine + line;
+            if (appendStr != null)
+                appendStr += "\n" + line;
             Logger.Log($"{prefix} {line}", hidden, replaceLastLine, logFilename);
 
             if (!hidden && showProgressBar && line.Contains("Time:"))
@@ -100,10 +101,8 @@ namespace Flowframes.Media
                     return;
                 }
 
-                long total = currInDuration / 100;
                 long current = FormatUtils.TimestampToMs(ffmpegTime);
-                int progress = Convert.ToInt32(current / total);
-                Program.mainForm.SetProgress(progress);
+                form.SetProgress(FormatUtils.RatioInt(current, currInDuration));
             }
             catch (Exception e)
             {

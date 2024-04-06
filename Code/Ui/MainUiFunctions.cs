@@ -23,6 +23,7 @@ namespace Flowframes.Ui
 
             GetFrameCountCached.Clear();
             GetMediaResolutionCached.Clear();
+            GetVideoInfo.ClearCache();
 
             if (Config.GetBool(Config.Key.clearLogOnInput))
                 Logger.ClearLogBox();

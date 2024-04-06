@@ -40,7 +40,7 @@ namespace Flowframes.Media
             string args = $"{GetTrimArg(true)} {inArg} {GetImgArgs(format)} {rateArg} {scnDetect} -frame_pts 1 -s 256x144 {GetTrimArg(false)} \"{outDir}/%{Padding.inputFrames}d{format}\"";
 
             LogMode logMode = Interpolate.currentMediaFile.FrameCount > 50 ? LogMode.OnlyLastLine : LogMode.Hidden;
-            await RunFfmpeg(args, Interpolate.currentSettings.tempFolder, logMode, inputIsFrames ? "panic" : "warning", true);
+            await RunFfmpeg(args, Interpolate.currentSettings.tempFolder, logMode, inputIsFrames ? "panic" : "warning");
 
             bool hiddenLog = Interpolate.currentMediaFile.FrameCount <= 50;
             int amount = IoUtils.GetAmountOfFiles(outDir, false);
@@ -134,7 +134,7 @@ namespace Flowframes.Media
             //string args = $"{GetTrimArg(true)} -itsscale {Interpolate.currentMediaFile.VideoStreams.First().FpsInfo.VfrRatio} -i {inputFile.Wrap()} {GetImgArgs(format, true, alpha)} {rateArg} -frame_pts 1 {vf} {sizeStr} {GetTrimArg(false)} \"{framesDir}/%{Padding.inputFrames}d{format}\""; LogMode logMode = Interpolate.currentMediaFile.FrameCount > 50 ? LogMode.OnlyLastLine : LogMode.Hidden;
             string args = $"{GetTrimArg(true)} -i {inputFile.Wrap()} {GetImgArgs(format, true, alpha)} -frame_pts 1 {vf} {sizeStr} {GetTrimArg(false)} \"{framesDir}/%{Padding.inputFrames}d{format}\"";
             LogMode logMode = Interpolate.currentMediaFile.FrameCount > 50 ? LogMode.OnlyLastLine : LogMode.Hidden;
-            await RunFfmpeg(args, logMode, true);
+            await RunFfmpeg(args, logMode);
             int amount = IoUtils.GetAmountOfFiles(framesDir, false, "*" + format);
             Logger.Log($"Extracted {amount} {(amount == 1 ? "frame" : "frames")} from input.", false, true);
             await Task.CompletedTask;
@@ -190,7 +190,6 @@ namespace Flowframes.Media
 
         static bool AreImagesCompatible(string inpath, int maxHeight)
         {
-            NmkdStopwatch sw = new NmkdStopwatch();
             string[] validExtensions = Filetypes.imagesInterpCompat; // = new string[] { ".jpg", ".jpeg", ".png" };
             FileInfo[] files = IoUtils.GetFileInfosSorted(inpath);
 

@@ -123,7 +123,7 @@ namespace Flowframes
             {
                 Program.mainForm.SetStatus("Extracting scenes from video...");
                 await FfmpegExtract.ExtractSceneChanges(currentSettings.inPath, Path.Combine(currentSettings.tempFolder, Paths.scenesDir), currentSettings.inFps, currentSettings.inputIsFrames, currentSettings.framesExt);
-                Utils.RemoveCloseSceneChanges(Path.Combine(currentSettings.tempFolder, Paths.scenesDir), Path.Combine(currentSettings.tempFolder, Utils.sceneScoresFile), currentSettings.inFps);
+                Utils.TemporalFilterSceneChanges(Path.Combine(currentSettings.tempFolder, Paths.scenesDir), Path.Combine(currentSettings.tempFolder, Utils.sceneScoresFile), currentSettings.inFps);
             }
 
             if (!currentSettings.inputIsFrames)        // Extract if input is video, import if image sequence
@@ -254,7 +254,7 @@ namespace Flowframes
 
             if (currentlyUsingAutoEnc)
             {
-                Logger.Log($"{Logger.GetLastLine()} (Using Auto-Encode)", true);
+                Logger.Log($"{Logger.LastUiLine} (Using Auto-Encode)", true);
                 tasks.Add(AutoEncode.MainLoop(outpath));
             }
 
@@ -290,7 +290,7 @@ namespace Flowframes
 
             Program.mainForm.SetWorking(false);
             Program.mainForm.SetTab(Program.mainForm.interpOptsTab.Name);
-            Logger.LogIfLastLineDoesNotContainMsg("Canceled interpolation.");
+            Logger.Log("Canceled interpolation.");
 
             if (!string.IsNullOrWhiteSpace(reason) && !noMsgBox)
                 UiUtils.ShowMessageBox($"Canceled:\n\n{reason}");

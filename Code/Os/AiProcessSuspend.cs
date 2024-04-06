@@ -13,15 +13,10 @@ namespace Flowframes.Os
 
         public static void Reset()
         {
-            SetRunning(false);
+            Program.mainForm.ShowPauseButton(false);
             Program.mainForm.SetPauseButtonStyle(false);
             aiProcFrozen = false;
             suspendedProcesses.Clear();
-        }
-
-        public static void SetRunning(bool running)
-        {
-            Program.mainForm.GetPauseBtn().Visible = running;
         }
 
         public static bool SuspendResume()

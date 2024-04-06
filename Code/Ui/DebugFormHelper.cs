@@ -3,7 +3,6 @@ using Flowframes.MiscUtils;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace Flowframes.Ui
@@ -29,7 +28,7 @@ namespace Flowframes.Ui
 
                 for (int i = 0; i < dd.Items.Count; i++)
                 {
-                    if (((string)dd.Items[i]).Split('.').FirstOrDefault() == Logger.defaultLogName)
+                    if ((string)dd.Items[i] == Logger.defaultLogName)
                         dd.SelectedIndex = i;
                 }
             }

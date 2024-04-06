@@ -43,6 +43,7 @@ namespace Flowframes.Main
         public static async Task MainLoop(string interpFramesPath)
         {
             paused = false;
+            busy = false;
             debug = Config.GetBool("autoEncDebug", false);
 
             try

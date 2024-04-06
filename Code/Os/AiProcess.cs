@@ -24,13 +24,12 @@ namespace Flowframes.Os
         public static Stopwatch processTime = new Stopwatch();
 
         public static int lastStartupTimeMs = 1000;
-        static string lastInPath;
 
         public static void Kill()
         {
             try
             {
-                AiProcessSuspend.SetRunning(false);
+                Program.mainForm.ShowPauseButton(false);
                 if (lastAiProcess != null && !lastAiProcess.HasExited)
                     OsUtils.KillProcessTree(lastAiProcess.Id);
                 if (lastAiProcessOther != null && !lastAiProcessOther.HasExited)
@@ -42,27 +41,25 @@ namespace Flowframes.Os
             }
         }
 
-        static void AiStarted(Process proc, int startupTimeMs, string inPath = "")
+        static void AiStarted(Process proc, int startupTimeMs)
         {
             lastStartupTimeMs = startupTimeMs;
             processTime.Restart();
             lastAiProcess = proc;
-            AiProcessSuspend.SetRunning(true);
-            lastInPath = string.IsNullOrWhiteSpace(inPath) ? Interpolate.currentSettings.framesFolder : inPath;
+            Program.mainForm.ShowPauseButton(true);
             hasShownError = false;
         }
 
-        static void AiStartedRt(Process proc, string inPath = "")
+        static void AiStartedRt(Process proc)
         {
             lastAiProcess = proc;
-            AiProcessSuspend.SetRunning(true);
-            lastInPath = string.IsNullOrWhiteSpace(inPath) ? Interpolate.currentSettings.framesFolder : inPath;
+            Program.mainForm.ShowPauseButton(true);
             hasShownError = false;
         }
 
-        static void SetProgressCheck(string interpPath, float factor)
+        static void SetProgressCheck(string framesPath, string interpPath, float factor)
         {
-            int frames = IoUtils.GetAmountOfFiles(lastInPath, false);
+            int frames = IoUtils.GetAmountOfFiles(framesPath, false);
             int target = ((frames * factor) - (factor - 1)).RoundToInt();
             InterpolationProgress.currentFactor = factor;
 
@@ -87,7 +84,7 @@ namespace Flowframes.Os
         {
             if (Interpolate.canceled) return;
             Program.mainForm.SetProgress(100);
-            AiProcessSuspend.SetRunning(false);
+            Program.mainForm.ShowPauseButton(false);
 
             if (rt)
             {
@@ -124,7 +121,7 @@ namespace Flowframes.Os
                     return;
                 }
 
-                string log = string.Join("\n", Logger.GetSessionLogLastLines(lastLogName, 10).Select(x => x.Split("]: ").Last()).ToList());
+                string log = string.Join("\n", Logger.GetLogLastLines(lastLogName, 10).Select(x => x.Split("]: ").Last()));
                 Interpolate.Cancel($"Interpolation failed - {amount} interpolated frames were created.\n\n\nLast 10 log lines:\n{log}\n\nCheck the log '{lastLogName}' for more details.");
                 return;
             }
@@ -135,19 +132,53 @@ namespace Flowframes.Os
                 {
                     if (AvProcess.lastAvProcess != null && !AvProcess.lastAvProcess.HasExited)
                     {
-                        if (Logger.LastLogLine.Contains("frame: ", StringComparison.InvariantCultureIgnoreCase))
-                            Logger.Log(FormatUtils.BeautifyFfmpegStats(Logger.LastLogLine), false, Logger.LastUiLine.Contains("frame", StringComparison.InvariantCultureIgnoreCase));
+                        string lastLogLine = Logger.GetLogLastLine("ffmpeg");
+                        if (lastLogLine.Contains("frame: ", StringComparison.InvariantCultureIgnoreCase))
+                            Logger.Log(FormatUtils.BeautifyFfmpegStats(lastLogLine), false, Logger.LastUiLine.Contains("frame", StringComparison.InvariantCultureIgnoreCase));
                     }
 
                     if (AvProcess.lastAvProcess != null && AvProcess.lastAvProcess.HasExited && !AutoEncode.HasWorkToDo())     // Stop logging if ffmpeg is not running & AE is done
                         break;
 
-                    await Task.Delay(500);
+                    await Task.Delay(200);
                 }
             }
             catch (Exception e)
             {
                 Logger.Log($"AiFinished encoder logging error: {e.Message}\n{e.StackTrace}", true);
+            }
+        }
+
+        private static async Task RunAIProcessAsynch(bool logOutput, Process process, AI ai, bool main = true)
+        {
+            if (logOutput)
+            {
+                TaskCompletionSource<object> outputTcs = new TaskCompletionSource<object>(), errorTcs = new TaskCompletionSource<object>();
+                process.OutputDataReceived += (sender, outLine) =>
+                    {
+                        if (outLine.Data == null)
+                            outputTcs.SetResult(null);
+                        else
+                            LogOutput(outLine.Data, ai, false, main);
+                    };
+                process.ErrorDataReceived += (sender, outLine) =>
+                    {
+                        if (outLine.Data == null)
+                            errorTcs.SetResult(null);
+                        else
+                            LogOutput("[E] " + outLine.Data, ai, true, main);
+                    };
+                process.Start();
+                process.PriorityClass = ProcessPriorityClass.AboveNormal;
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+                await Task.WhenAll(process.WaitForExitAsync(), outputTcs.Task, errorTcs.Task);
+            }
+            else
+            {
+                process.Start();
+                process.PriorityClass = ProcessPriorityClass.AboveNormal;
+                await process.WaitForExitAsync();
             }
         }
 
@@ -192,7 +223,7 @@ namespace Flowframes.Os
 
         public static async Task RunRifeCudaProcess(string inPath, string outDir, string script, float interpFactor, string mdl)
         {
-            string outPath = Path.Combine(inPath.GetParentDir(), outDir);
+            string outPath = Path.Combine(Interpolate.currentSettings.tempFolder, outDir);
             Directory.CreateDirectory(outPath);
             string uhdStr = await InterpolateUtils.UseUhd() ? "--UHD" : "";
             string wthreads = $"--wthreads {2 * (int)interpFactor}";
@@ -203,27 +234,13 @@ namespace Flowframes.Os
 
             Process rifePy = OsUtils.NewProcess(!OsUtils.ShowHiddenCmd());
             AiStarted(rifePy, 3500);
-            SetProgressCheck(Path.Combine(Interpolate.currentSettings.tempFolder, outDir), interpFactor);
+            SetProgressCheck(inPath, outPath, interpFactor);
             rifePy.StartInfo.Arguments = $"{OsUtils.GetCmdArg()} cd /D {Path.Combine(Paths.GetPkgPath(), Implementations.rifeCuda.PkgDir).Wrap()} & " +
                 $"set CUDA_VISIBLE_DEVICES={Config.Get(Config.Key.torchGpus)} & {Python.GetPyCmd()} {script} {args}";
             Logger.Log($"Running RIFE (CUDA){(await InterpolateUtils.UseUhd() ? " (UHD Mode)" : "")}...", false);
             Logger.Log("cmd.exe " + rifePy.StartInfo.Arguments, true);
 
-            if (!OsUtils.ShowHiddenCmd())
-            {
-                rifePy.OutputDataReceived += (sender, outLine) => { LogOutput(outLine.Data, Implementations.rifeCuda); };
-                rifePy.ErrorDataReceived += (sender, outLine) => { LogOutput("[E] " + outLine.Data, Implementations.rifeCuda, true); };
-            }
-
-            rifePy.Start();
-
-            if (!OsUtils.ShowHiddenCmd())
-            {
-                rifePy.BeginOutputReadLine();
-                rifePy.BeginErrorReadLine();
-            }
-
-            await rifePy.WaitForExitAsync();
+            await RunAIProcessAsynch(!OsUtils.ShowHiddenCmd(), rifePy, Implementations.rifeCuda);
         }
 
         public static async Task RunFlavrCuda(string framesPath, float interpFactor, string mdl)
@@ -257,33 +274,19 @@ namespace Flowframes.Os
 
         public static async Task RunFlavrCudaProcess(string inPath, string outDir, string script, float interpFactor, string mdl)
         {
-            string outPath = Path.Combine(inPath.GetParentDir(), outDir);
+            string outPath = Path.Combine(Interpolate.currentSettings.tempFolder, outDir);
             Directory.CreateDirectory(outPath);
             string args = $" --input {inPath.Wrap()} --output {outPath.Wrap()} --model {mdl}/{mdl}.pth --factor {interpFactor}";
 
             Process flavrPy = OsUtils.NewProcess(!OsUtils.ShowHiddenCmd());
             AiStarted(flavrPy, 4000);
-            SetProgressCheck(Path.Combine(Interpolate.currentSettings.tempFolder, outDir), interpFactor);
+            SetProgressCheck(inPath, outPath, interpFactor);
             flavrPy.StartInfo.Arguments = $"{OsUtils.GetCmdArg()} cd /D {Path.Combine(Paths.GetPkgPath(), Implementations.flavrCuda.PkgDir).Wrap()} & " +
                 $"set CUDA_VISIBLE_DEVICES={Config.Get(Config.Key.torchGpus)} & {Python.GetPyCmd()} {script} {args}";
             Logger.Log($"Running FLAVR (CUDA)...", false);
             Logger.Log("cmd.exe " + flavrPy.StartInfo.Arguments, true);
 
-            if (!OsUtils.ShowHiddenCmd())
-            {
-                flavrPy.OutputDataReceived += (sender, outLine) => { LogOutput(outLine.Data, Implementations.flavrCuda); };
-                flavrPy.ErrorDataReceived += (sender, outLine) => { LogOutput("[E] " + outLine.Data, Implementations.flavrCuda, true); };
-            }
-
-            flavrPy.Start();
-
-            if (!OsUtils.ShowHiddenCmd())
-            {
-                flavrPy.BeginOutputReadLine();
-                flavrPy.BeginErrorReadLine();
-            }
-
-            await flavrPy.WaitForExitAsync();
+            await RunAIProcessAsynch(!OsUtils.ShowHiddenCmd(), flavrPy, Implementations.flavrCuda);
         }
 
         public static async Task RunRifeNcnn(string framesPath, string outPath, float factor, string mdl)
@@ -331,30 +334,15 @@ namespace Flowframes.Os
 
             Logger.Log("cmd.exe " + rifeNcnn.StartInfo.Arguments, true);
 
-            if (!OsUtils.ShowHiddenCmd())
-            {
-                rifeNcnn.OutputDataReceived += (sender, outLine) => { LogOutput("[O] " + outLine.Data, Implementations.rifeNcnn, false, main); };
-                rifeNcnn.ErrorDataReceived += (sender, outLine) => { LogOutput("[E] " + outLine.Data, Implementations.rifeNcnn, true, main); };
-            }
-
-            rifeNcnn.Start();
-            rifeNcnn.PriorityClass = ProcessPriorityClass.BelowNormal;
-
             if (main)
             {
-                AiStarted(rifeNcnn, 1500, inPath);
-                SetProgressCheck(outPath, factor);
+                AiStarted(rifeNcnn, 1000);
+                SetProgressCheck(inPath, outPath, factor);
             }
             else
                 lastAiProcessOther = rifeNcnn;
 
-            if (!OsUtils.ShowHiddenCmd())
-            {
-                rifeNcnn.BeginOutputReadLine();
-                rifeNcnn.BeginErrorReadLine();
-            }
-
-            await rifeNcnn.WaitForExitAsync();
+            await RunAIProcessAsynch(!OsUtils.ShowHiddenCmd(), rifeNcnn, Implementations.rifeNcnn, main);
         }
 
         public static async Task RunRifeNcnnVs(string framesPath, string outPath, float factor, string mdl, bool rt = false)
@@ -408,33 +396,19 @@ namespace Flowframes.Os
             if (rt)
             {
                 Logger.Log($"Starting. Use Space to pause, Left Arrow and Right Arrow to seek, though seeking can be slow.");
-                AiStartedRt(rifeNcnnVs, inPath);
+                AiStartedRt(rifeNcnnVs);
             }
             else
             {
                 SetProgressCheck(Interpolate.currentMediaFile.FrameCount, factor, Implementations.rifeNcnnVs.LogFilename);
-                AiStarted(rifeNcnnVs, 1000, inPath);
+                AiStarted(rifeNcnnVs, 1000);
             }
 
             rifeNcnnVs.StartInfo.Arguments = $"{OsUtils.GetCmdArg()} cd /D {pkgDir.Wrap()} & vspipe {VapourSynthUtils.CreateScript(vsSettings).Wrap()} -c y4m - | {pipedTargetArgs}";
 
             Logger.Log("cmd.exe " + rifeNcnnVs.StartInfo.Arguments, true);
 
-            if (!OsUtils.ShowHiddenCmd())
-            {
-                rifeNcnnVs.OutputDataReceived += (sender, outLine) => { LogOutput("[O] " + outLine.Data, Implementations.rifeNcnnVs); };
-                rifeNcnnVs.ErrorDataReceived += (sender, outLine) => { LogOutput("[E] " + outLine.Data, Implementations.rifeNcnnVs, true); };
-            }
-
-            rifeNcnnVs.Start();
-
-            if (!OsUtils.ShowHiddenCmd())
-            {
-                rifeNcnnVs.BeginOutputReadLine();
-                rifeNcnnVs.BeginErrorReadLine();
-            }
-
-            await rifeNcnnVs.WaitForExitAsync();
+            await RunAIProcessAsynch(!OsUtils.ShowHiddenCmd(), rifeNcnnVs, Implementations.rifeNcnnVs);
         }
 
         public static async Task RunDainNcnn(string framesPath, string outPath, float factor, string mdl, int tilesize)
@@ -464,8 +438,8 @@ namespace Flowframes.Os
             Directory.CreateDirectory(outPath);
             Process dain = OsUtils.NewProcess(!OsUtils.ShowHiddenCmd());
             AiStarted(dain, 1500);
-            SetProgressCheck(outPath, factor);
-            int targetFrames = ((IoUtils.GetAmountOfFiles(lastInPath, false, "*.*") * factor).RoundToInt());
+            SetProgressCheck(framesPath, outPath, factor);
+            int targetFrames = (IoUtils.GetAmountOfFiles(framesPath, false, "*.*") * factor).RoundToInt();
 
             string args = $" -v -i {framesPath.Wrap()} -o {outPath.Wrap()} -n {targetFrames} -m {mdl.ToLowerInvariant()}" +
                 $" -t {NcnnUtils.GetNcnnTilesize(tilesize)} -g {Config.Get(Config.Key.ncnnGpus)} -f {NcnnUtils.GetNcnnPattern()} -j 2:1:2";
@@ -474,21 +448,7 @@ namespace Flowframes.Os
             Logger.Log("Running DAIN...", false);
             Logger.Log("cmd.exe " + dain.StartInfo.Arguments, true);
 
-            if (!OsUtils.ShowHiddenCmd())
-            {
-                dain.OutputDataReceived += (sender, outLine) => { LogOutput("[O] " + outLine.Data, Implementations.dainNcnn); };
-                dain.ErrorDataReceived += (sender, outLine) => { LogOutput("[E] " + outLine.Data, Implementations.dainNcnn, true); };
-            }
-
-            dain.Start();
-
-            if (!OsUtils.ShowHiddenCmd())
-            {
-                dain.BeginOutputReadLine();
-                dain.BeginErrorReadLine();
-            }
-
-            await dain.WaitForExitAsync();
+            await RunAIProcessAsynch(!OsUtils.ShowHiddenCmd(), dain, Implementations.dainNcnn);
         }
 
         public static async Task RunXvfiCuda(string framesPath, float interpFactor, string mdl)
@@ -523,7 +483,7 @@ namespace Flowframes.Os
         public static async Task RunXvfiCudaProcess(string inPath, string outDir, string script, float interpFactor, string mdlDir)
         {
             string pkgPath = Path.Combine(Paths.GetPkgPath(), Implementations.xvfiCuda.PkgDir);
-            string basePath = inPath.GetParentDir();
+            string basePath = Interpolate.currentSettings.tempFolder;
             string outPath = Path.Combine(basePath, outDir);
             Directory.CreateDirectory(outPath);
             string mdlArgs = File.ReadAllText(Path.Combine(pkgPath, mdlDir, "args.ini"));
@@ -532,27 +492,13 @@ namespace Flowframes.Os
 
             Process xvfiPy = OsUtils.NewProcess(!OsUtils.ShowHiddenCmd());
             AiStarted(xvfiPy, 3500);
-            SetProgressCheck(Path.Combine(Interpolate.currentSettings.tempFolder, outDir), interpFactor);
+            SetProgressCheck(inPath, outPath, interpFactor);
             xvfiPy.StartInfo.Arguments = $"{OsUtils.GetCmdArg()} cd /D {pkgPath.Wrap()} & " +
                 $"set CUDA_VISIBLE_DEVICES={Config.Get(Config.Key.torchGpus)} & {Python.GetPyCmd()} {script} {args}";
             Logger.Log($"Running XVFI (CUDA)...", false);
             Logger.Log("cmd.exe " + xvfiPy.StartInfo.Arguments, true);
 
-            if (!OsUtils.ShowHiddenCmd())
-            {
-                xvfiPy.OutputDataReceived += (sender, outLine) => { LogOutput(outLine.Data, Implementations.xvfiCuda); };
-                xvfiPy.ErrorDataReceived += (sender, outLine) => { LogOutput("[E] " + outLine.Data, Implementations.xvfiCuda, true); };
-            }
-
-            xvfiPy.Start();
-
-            if (!OsUtils.ShowHiddenCmd())
-            {
-                xvfiPy.BeginOutputReadLine();
-                xvfiPy.BeginErrorReadLine();
-            }
-
-            await xvfiPy.WaitForExitAsync();
+            await RunAIProcessAsynch(!OsUtils.ShowHiddenCmd(), xvfiPy, Implementations.xvfiCuda);
         }
 
         public static async Task RunIfrnetNcnn(string framesPath, string outPath, float factor, string mdl)
@@ -579,8 +525,8 @@ namespace Flowframes.Os
         {
             Directory.CreateDirectory(outPath);
             Process ifrnetNcnn = OsUtils.NewProcess(!OsUtils.ShowHiddenCmd());
-            AiStarted(ifrnetNcnn, 1500, inPath);
-            SetProgressCheck(outPath, factor);
+            AiStarted(ifrnetNcnn, 1500);
+            SetProgressCheck(inPath, outPath, factor);
             //int targetFrames = ((IoUtils.GetAmountOfFiles(lastInPath, false, "*.*") * factor).RoundToInt()); // TODO: Maybe won't work with fractional factors ??
             //string frames = mdl.Contains("v4") ? $"-n {targetFrames}" : "";
             string uhdStr = ""; // await InterpolateUtils.UseUhd() ? "-u" : "";
@@ -591,24 +537,10 @@ namespace Flowframes.Os
 
             Logger.Log("cmd.exe " + ifrnetNcnn.StartInfo.Arguments, true);
 
-            if (!OsUtils.ShowHiddenCmd())
-            {
-                ifrnetNcnn.OutputDataReceived += (sender, outLine) => { LogOutput("[O] " + outLine.Data, Implementations.ifrnetNcnn); };
-                ifrnetNcnn.ErrorDataReceived += (sender, outLine) => { LogOutput("[E] " + outLine.Data, Implementations.ifrnetNcnn, true); };
-            }
-
-            ifrnetNcnn.Start();
-
-            if (!OsUtils.ShowHiddenCmd())
-            {
-                ifrnetNcnn.BeginOutputReadLine();
-                ifrnetNcnn.BeginErrorReadLine();
-            }
-
-            await ifrnetNcnn.WaitForExitAsync();
+            await RunAIProcessAsynch(!OsUtils.ShowHiddenCmd(), ifrnetNcnn, Implementations.ifrnetNcnn);
         }
 
-        static void LogOutput(string line, AI ai, bool err = false, bool main = true)
+        static void LogOutput(string line, AI ai, bool err, bool main)
         {
             if (string.IsNullOrWhiteSpace(line) || line.Length < 6)
                 return;
@@ -616,6 +548,9 @@ namespace Flowframes.Os
             lastLogName = ai.LogFilename;
             if (!line.EndsWith(" done"))
                 Logger.Log(line, true, false, ai.LogFilename);
+
+            if (InterpolationProgress.UpdateLastFrameFromInterpOutput(line, main))
+                return;
 
             if (ai.Backend == AI.AiBackend.Pytorch) // Pytorch specific
             {
@@ -650,7 +585,7 @@ namespace Flowframes.Os
                 if (!hasShownError && err && (line.Contains("RuntimeError") || line.Contains("ImportError") || line.Contains("OSError")))
                 {
                     hasShownError = true;
-                    string lastLogLines = string.Join("\n", Logger.GetSessionLogLastLines(lastLogName, 6).Select(x => $"[{x.Split("]: [").Skip(1).FirstOrDefault()}"));
+                    string lastLogLines = string.Join("\n", Logger.GetLogLastLines(lastLogName, 6).Select(x => $"[{x.Split("]: [").Skip(1).FirstOrDefault()}"));
                     UiUtils.ShowMessageBox($"A python error occured during interpolation!\nCheck the log for details:\n\n{lastLogLines}", UiUtils.MessageType.Error);
                 }
             }
@@ -680,7 +615,7 @@ namespace Flowframes.Os
                 if (!hasShownError && err && line.StartsWith("vk") && line.EndsWith("failed"))
                 {
                     hasShownError = true;
-                    string lastLogLines = string.Join("\n", Logger.GetSessionLogLastLines(lastLogName, 6).Select(x => $"[{x.Split("]: [").Skip(1).FirstOrDefault()}"));
+                    string lastLogLines = string.Join("\n", Logger.GetLogLastLines(lastLogName, 6).Select(x => $"[{x.Split("]: [").Skip(1).FirstOrDefault()}"));
                     UiUtils.ShowMessageBox($"A Vulkan error occured during interpolation!\n\n{lastLogLines}", UiUtils.MessageType.Error);
                 }
             }
@@ -690,7 +625,7 @@ namespace Flowframes.Os
                 if (!hasShownError && Interpolate.currentSettings.outSettings.Format != Enums.Output.Format.Realtime && line.Contains("fwrite() call failed", StringComparison.InvariantCultureIgnoreCase))
                 {
                     hasShownError = true;
-                    string lastLogLines = string.Join("\n", Logger.GetSessionLogLastLines(lastLogName, 6).Select(x => $"[{x.Split("]: [").Skip(1).FirstOrDefault()}"));
+                    string lastLogLines = string.Join("\n", Logger.GetLogLastLines(lastLogName, 6).Select(x => $"[{x.Split("]: [").Skip(1).FirstOrDefault()}"));
                     UiUtils.ShowMessageBox($"VapourSynth interpolation failed with an unknown error. Check the log for details:\n\n{lastLogLines}", UiUtils.MessageType.Error);
                 }
 
@@ -721,8 +656,6 @@ namespace Flowframes.Os
 
             if (hasShownError)
                 Interpolate.Cancel();
-
-            InterpolationProgress.UpdateLastFrameFromInterpOutput(line, main);
         }
 
         public static bool IsRunning()

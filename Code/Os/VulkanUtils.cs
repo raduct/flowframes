@@ -1,5 +1,5 @@
-﻿using Flowframes.MiscUtils;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Vulkan;
 
@@ -23,7 +23,7 @@ namespace Flowframes.Os
 
         public static void Init()
         {
-            var sw = new NmkdStopwatch();
+            var sw = Stopwatch.StartNew();
             VkDevices = new List<VkDevice>();
             Instance vkInstance = new Instance(new InstanceCreateInfo());
             PhysicalDevice[] physicalDevices = vkInstance.EnumeratePhysicalDevices();
@@ -44,7 +44,7 @@ namespace Flowframes.Os
 
             // Clean up Vulkan resources
             vkInstance.Destroy();
-            Logger.Log($"[VK] Vulkan device check took {sw.ElapsedMs} ms", true);
+            Logger.Log($"[VK] Vulkan device check took {sw.ElapsedMilliseconds} ms", true);
         }
 
         public static int GetMaxNcnnThreads(int deviceId)

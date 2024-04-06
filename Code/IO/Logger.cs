@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -12,15 +13,13 @@ namespace Flowframes
 {
     class Logger
     {
-        public static TextBox textbox;
+        private static TextBox textBox = null;
         public const string defaultLogName = "sessionlog";
-        private static long id;
+        private static long gloabalId = 0;
 
-        private static readonly ConcurrentDictionary<string, ConcurrentQueueL<string>> sessionLogs = new ConcurrentDictionary<string, ConcurrentQueueL<string>>();
-        private static string _lastUi = "";
+        private static readonly ConcurrentDictionary<string, ConcurrentQueueL<string>> memLogs = new ConcurrentDictionary<string, ConcurrentQueueL<string>>(2, 3);
+        private static string _lastUi = null;
         public static string LastUiLine { get { return _lastUi; } }
-        private static string _lastLog = "";
-        public static string LastLogLine { get { return _lastLog; } }
 
         class ConcurrentQueueL<T> : ConcurrentQueue<T>
         {
@@ -40,6 +39,7 @@ namespace Flowframes
             public bool replaceLastLine;
             public string filename;
             public DateTime time;
+            public long id;
 
             public LogEntry(string logMessageArg, bool hiddenArg = false, bool replaceLastLineArg = false, string filenameArg = "")
             {
@@ -47,6 +47,7 @@ namespace Flowframes
                 hidden = hiddenArg;
                 replaceLastLine = replaceLastLineArg;
                 filename = filenameArg;
+                id = Interlocked.Increment(ref gloabalId);
                 time = DateTime.Now;
             }
         }
@@ -62,7 +63,7 @@ namespace Flowframes
 
             Show(logEntry); // Show entry synch
 
-            WriteSessionLog(logEntry); // Save into in-memory log
+            WriteMemLog(logEntry); // Save into in-memory log
 
             fileLogQueue.Add(logEntry); // Write to file asynch
         }
@@ -94,53 +95,27 @@ namespace Flowframes
 
         private static void Show(LogEntry entry)
         {
+            entry.logMessage = entry.logMessage.Replace("\n", Environment.NewLine);
+
+            if (entry.hidden) return;
+
             lock (lockShow)
             {
-                if (entry.logMessage == LastUiLine)
-                    entry.hidden = true; // Never show the same line twice in UI, but log it to file
-
-                _lastLog = entry.logMessage;
-
-                if (!entry.hidden)
+                if (entry.logMessage != LastUiLine) // Never show the same line twice in UI, but log it to file
+                {
                     _lastUi = entry.logMessage;
 
-                Console.WriteLine(entry.logMessage);
+                    WriteLogBox(entry.logMessage, entry.replaceLastLine);
 
-                try
-                {
-                    if (!entry.hidden && entry.replaceLastLine)
-                    {
-                        textbox.Suspend();
-                        string[] lines = textbox.Text.SplitIntoLines();
-                        textbox.Text = string.Join(Environment.NewLine, lines.Take(lines.Length - 1).ToArray());
-                    }
+                    entry.logMessage = "[UI] " + (entry.replaceLastLine ? "[REPL] " : string.Empty) + entry.logMessage;
                 }
-                catch { }
-
-                entry.logMessage = entry.logMessage.Replace("\n", Environment.NewLine);
-
-                if (!entry.hidden && textbox != null)
-                    textbox.AppendText((textbox.Text.Length > 1 ? Environment.NewLine : "") + entry.logMessage);
-
-                if (entry.replaceLastLine)
-                {
-                    textbox.Resume();
-                    entry.logMessage = "[REPL] " + entry.logMessage;
-                }
-
-                if (!entry.hidden)
-                    entry.logMessage = "[UI] " + entry.logMessage;
             }
         }
 
         private static void LogToFile(LogEntry entry)
         {
-            LogToFile(entry.logMessage, entry.filename);
-        }
-
-        private static void LogToFile(string logStr, string filename)
-        {
-            string filePath = Path.Combine(Paths.GetLogPath(), filename);
+            string logStr = Environment.NewLine + entry.logMessage;
+            string filePath = Path.Combine(Paths.GetLogPath(), entry.filename + ".txt");
 
             try
             {
@@ -152,57 +127,46 @@ namespace Flowframes
             }
         }
 
-        private static void WriteSessionLog(LogEntry entry)
+        private static void WriteMemLog(LogEntry entry)
         {
             // Prepare for log
             if (string.IsNullOrWhiteSpace(entry.filename))
                 entry.filename = defaultLogName;
-            if (Path.GetExtension(entry.filename) != ".txt")
-                entry.filename = Path.ChangeExtension(entry.filename, "txt");
 
             entry.logMessage = entry.logMessage.Replace(Environment.NewLine, " ").TrimWhitespaces();
-            entry.logMessage = $"{Environment.NewLine}[{id.ToString().PadLeft(8, '0')}] [{entry.time:yyyy-MM-dd HH:mm:ss}]: {entry.logMessage}";
-            id++;
+            entry.logMessage = $"[{entry.id.ToString().PadLeft(8, '0')}] [{entry.time:yyyy-MM-dd HH:mm:ss}]: {entry.logMessage}";
+            Console.WriteLine(entry.logMessage);
 
-            if (sessionLogs.TryGetValue(entry.filename, out ConcurrentQueueL<string> sessionLog))
+            if (memLogs.TryGetValue(entry.filename, out ConcurrentQueueL<string> memLog))
             {
-                if (sessionLog.Count >= 10)
-                    sessionLog.TryDequeue(out _);
+                if (memLog.Count >= 10)
+                    memLog.TryDequeue(out _);
             }
             else
             {
-                sessionLog = new ConcurrentQueueL<string>();
-                sessionLogs[entry.filename] = sessionLog;
+                memLog = new ConcurrentQueueL<string>();
+                memLogs[entry.filename] = memLog;
             }
-            sessionLog.Enqueue(entry.logMessage);
+            memLog.Enqueue(entry.logMessage);
         }
 
-        private static ConcurrentQueueL<string> GetSessionLog(string filename)
+        private static ConcurrentQueueL<string> GetMemLog(string filename)
         {
-            if (Path.GetExtension(filename) != ".txt")
-                filename = Path.ChangeExtension(filename, "txt");
-
-            sessionLogs.TryGetValue(filename, out ConcurrentQueueL<string> logQ);
+            memLogs.TryGetValue(filename, out ConcurrentQueueL<string> logQ);
             return logQ;
         }
 
-        public static List<string> GetSessionLogLastLines(string filename, int linesCount)
+        public static List<string> GetLogLastLines(string filename, int linesCount)
         {
-            ConcurrentQueueL<string> logQ = GetSessionLog(filename);
+            ConcurrentQueueL<string> logQ = GetMemLog(filename);
             List<string> log = logQ?.ToList() ?? new List<string>();
             return log.Count > linesCount ? log.GetRange(log.Count - linesCount, linesCount) : log;
         }
 
-        public static string GetSessionLogLastLine(string filename)
+        public static string GetLogLastLine(string filename)
         {
-            ConcurrentQueueL<string> logQ = GetSessionLog(filename);
+            ConcurrentQueueL<string> logQ = GetMemLog(filename);
             return logQ?.Last;
-        }
-
-        public static void LogIfLastLineDoesNotContainMsg(string s, bool hidden = false, bool replaceLastLine = false, string filename = "")
-        {
-            if (!GetLastLine().Contains(s))
-                Log(s, hidden, replaceLastLine, filename);
         }
 
         public static void WriteToFile(string content, bool append, string filename)
@@ -232,17 +196,43 @@ namespace Flowframes
 
         public static void ClearLogBox()
         {
-            textbox.Text = "";
+            WriteLogBox(null);
         }
 
-        public static string GetLastLine(bool includeHidden = false)
+        private static void WriteLogBox(string logMessage, bool replaceLastLine = false)
         {
-            return includeHidden ? _lastLog : _lastUi;
+            if (textBox == null || !textBox.IsHandleCreated)
+                return;
+
+            textBox.InvokeSafe(delegate
+            {
+                if (logMessage == null)
+                    textBox.Clear();
+                else
+                {
+                    if (replaceLastLine)
+                    {
+                        string text = textBox.Text ?? string.Empty;
+                        if (!string.IsNullOrEmpty(text))
+                        {
+                            int lastNL = text.LastIndexOf(Environment.NewLine);
+                            text = lastNL > 0 ? text.Remove(lastNL) : string.Empty;
+                        }
+                        textBox.SuspendDrawing();
+                        textBox.Text = text + (text.Length > 0 ? Environment.NewLine : string.Empty) + logMessage;
+                        textBox.ResumeDrawing();
+                        textBox.SelectionStart = textBox.TextLength;
+                        textBox.ScrollToCaret();
+                    }
+                    else
+                        textBox.AppendText((textBox.TextLength > 0 ? Environment.NewLine : string.Empty) + logMessage);
+                }
+            }, true);
         }
 
-        public static void RemoveLastLine()
+        public static void SetLogBox(TextBox logBox)
         {
-            textbox.Text = textbox.Text.Remove(textbox.Text.LastIndexOf(Environment.NewLine));
+            textBox = logBox;
         }
     }
 }

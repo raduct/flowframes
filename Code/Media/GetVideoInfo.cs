@@ -14,7 +14,7 @@ namespace Flowframes.Media
         enum InfoType { Ffmpeg, Ffprobe };
         public enum FfprobeMode { ShowFormat, ShowStreams, ShowBoth };
 
-        static Dictionary<QueryInfo, string> cmdCache = new Dictionary<QueryInfo, string>();
+        static readonly Dictionary<QueryInfo, string> cmdCache = new Dictionary<QueryInfo, string>();
 
         public static async Task<string> GetFfmpegInfoAsync(string path, string lineFilter = "", bool noCache = false)
         {
@@ -96,34 +96,16 @@ namespace Flowframes.Media
             long filesize = IoUtils.GetPathSize(path);
             QueryInfo hash = new QueryInfo(path, filesize, process.StartInfo.Arguments);
 
-            if (!noCache && filesize > 0 && CacheContains(hash, ref cmdCache))
+            if (!noCache && filesize > 0 && cmdCache.TryGetValue(hash, out string output))
             {
                 Logger.Log($"GetVideoInfo: '{process.StartInfo.FileName} {process.StartInfo.Arguments}' cached, won't re-run.", true, false, "ffmpeg");
-                return GetFromCache(hash, ref cmdCache);
+                return output;
             }
 
             Logger.Log($"GetVideoInfo: '{process.StartInfo.FileName} {process.StartInfo.Arguments}' not cached, running.", true, false, "ffmpeg");
-            string output = await OsUtils.GetOutputAsync(process);
+            output = await OsUtils.GetOutputAsync(process);
             cmdCache.Add(hash, output);
             return output;
-        }
-
-        private static bool CacheContains(QueryInfo hash, ref Dictionary<QueryInfo, string> cacheDict)
-        {
-            foreach (KeyValuePair<QueryInfo, string> entry in cacheDict)
-                if (entry.Key.path == hash.path && entry.Key.filesize == hash.filesize && entry.Key.cmd == hash.cmd)
-                    return true;
-
-            return false;
-        }
-
-        private static string GetFromCache(QueryInfo hash, ref Dictionary<QueryInfo, string> cacheDict)
-        {
-            foreach (KeyValuePair<QueryInfo, string> entry in cacheDict)
-                if (entry.Key.path == hash.path && entry.Key.filesize == hash.filesize && entry.Key.cmd == hash.cmd)
-                    return entry.Value;
-
-            return "";
         }
 
         public static void ClearCache()

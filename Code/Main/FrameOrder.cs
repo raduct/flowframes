@@ -41,8 +41,7 @@ namespace Flowframes.Main
                 else
                     await new FrameOrder().CreateFramesFileImgSeq(tempFolder, loopEnabled, interpFactor);
 
-                Logger.Log($"Generating frame order information... Done.", false, true);
-                Logger.Log($"Generated frame order info file in {benchmark.ElapsedMilliseconds} ms", true);
+                Logger.Log($"Generated frame order info file in {FormatUtils.Time(benchmark.ElapsedMilliseconds)}", false, true);
             }
             catch (Exception e)
             {
