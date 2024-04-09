@@ -202,7 +202,7 @@ namespace Flowframes.Magick
                 frames[curFrameName] = dupes;
             }
 
-            File.WriteAllText(Path.Combine(framesPath.GetParentDir(), dupesFileName), frames.ToJson(true));
+            File.WriteAllText(Path.Combine(Interpolate.currentSettings.tempFolder, dupesFileName), frames.ToJson(true));
         }
 
         public static async Task CreateFramesFileVideo(string videoPath, bool loop)

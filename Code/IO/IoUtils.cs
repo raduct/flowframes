@@ -575,8 +575,8 @@ namespace Flowframes.IO
         {
             InterpSettings curr = Interpolate.currentSettings;
             string max = Config.Get(Config.Key.maxFps);
-            Fraction maxFps = max.Contains('/') ? new Fraction(max) : new Fraction(max.GetFloat());
-            float fps = fpsLimit ? maxFps.GetFloat() : curr.outFps.GetFloat();
+            float maxFps = max.Contains('/') ? new Fraction(max).GetFloat() : max.GetFloat();
+            float fps = fpsLimit ? maxFps : curr.outFps.GetFloat();
 
             Size outRes = await InterpolateUtils.GetOutputResolution(curr.inPath, true);
             string pattern = Config.Get(Config.Key.exportNamePattern);

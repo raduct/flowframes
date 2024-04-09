@@ -56,10 +56,10 @@ namespace Flowframes.Main
                 bool dontEncodeFullFpsVid = fpsLimit && Config.GetInt(Config.Key.maxFpsMode) == 0;
 
                 if (!dontEncodeFullFpsVid)
-                    await Encode(exportSettings, path, Path.Combine(outFolder, await IoUtils.GetCurrentExportFilename(false, true)), I.currentSettings.outFps, new Fraction());
+                    await Encode(exportSettings, Path.Combine(outFolder, await IoUtils.GetCurrentExportFilename(false, true)), I.currentSettings.outFps, new Fraction());
 
                 if (fpsLimit)
-                    await Encode(exportSettings, path, Path.Combine(outFolder, await IoUtils.GetCurrentExportFilename(true, true)), I.currentSettings.outFps, maxFps);
+                    await Encode(exportSettings, Path.Combine(outFolder, await IoUtils.GetCurrentExportFilename(true, true)), I.currentSettings.outFps, maxFps);
             }
             catch (Exception e)
             {
@@ -126,7 +126,7 @@ namespace Flowframes.Main
             Fraction maxFps = max.Contains('/') ? new Fraction(max) : new Fraction(max.GetFloat());
             bool fpsLimit = maxFps.GetFloat() > 0f && I.currentSettings.outFps.GetFloat() > maxFps.GetFloat();
             bool dontEncodeFullFpsSeq = fpsLimit && Config.GetInt(Config.Key.maxFpsMode) == 0;
-            string framesFile = Path.Combine(framesPath.GetParentDir(), Paths.GetFrameOrderFilename(I.currentSettings.interpFactor));
+            string framesFile = Path.Combine(I.currentSettings.tempFolder, Paths.GetFrameOrderFilename(I.currentSettings.interpFactor));
 
             if (!dontEncodeFullFpsSeq)
             {
@@ -183,9 +183,9 @@ namespace Flowframes.Main
             }
         }
 
-        static async Task Encode(OutputSettings settings, string framesPath, string outPath, Fraction fps, Fraction resampleFps)
+        static async Task Encode(OutputSettings settings, string outPath, Fraction fps, Fraction resampleFps)
         {
-            string framesFile = Path.Combine(framesPath.GetParentDir(), Paths.GetFrameOrderFilename(I.currentSettings.interpFactor));
+            string framesFile = Path.Combine(I.currentSettings.tempFolder, Paths.GetFrameOrderFilename(I.currentSettings.interpFactor));
 
             if (!File.Exists(framesFile))
             {

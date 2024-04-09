@@ -419,7 +419,7 @@ namespace Flowframes.Forms.Main
             ValidateFactor();
 
             if (!BatchProcessing.busy)      // Don't load values from GUI if batch processing is used
-                Interpolate.currentSettings = GetCurrentSettings();
+                Interpolate.SetSettings(GetCurrentSettings());
 
             AiProcessSuspend.Reset();
             SaveOutputSettings();

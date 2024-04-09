@@ -21,12 +21,12 @@ namespace Flowframes.Main
             if (currentSettings == null)
             {
                 Logger.Log($"[SBS] Getting new current settings", true);
-                currentSettings = Program.mainForm.GetCurrentSettings();
+                SetSettings(Program.mainForm.GetCurrentSettings());
             }
             else
             {
                 Logger.Log($"[SBS] Updating current settings", true);
-                currentSettings = Program.mainForm.UpdateCurrentSettings(currentSettings);
+                SetSettings(Program.mainForm.UpdateCurrentSettings(currentSettings));
             }
 
             currentSettings.RefreshAlpha();

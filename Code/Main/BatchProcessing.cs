@@ -80,12 +80,12 @@ namespace Flowframes.Main
             MediaFile mf = new MediaFile(entry.inPath, false);
             mf.InputRate = entry.inFps;
             await mf.Initialize();
-            Interpolate.currentMediaFile = mf;
+            Interpolate.SetMediaFile(mf);
 
             Logger.Log($"Queue: Processing {mf.Name} ({entry.interpFactor}x {entry.ai.NameShort}).");
 
             Program.mainForm.LoadBatchEntry(entry);     // Load entry into GUI
-            Interpolate.currentSettings = entry;
+            Interpolate.SetSettings(entry);
             Program.mainForm.runBtn_Click(null, null);
 
             while (Program.busy)

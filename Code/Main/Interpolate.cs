@@ -17,16 +17,28 @@ using System.Windows.Forms;
 using Padding = Flowframes.Data.Padding;
 using Utils = Flowframes.Main.InterpolateUtils;
 
+#pragma warning disable IDE1006
+
 namespace Flowframes
 {
     public class Interpolate
     {
-        public static bool currentlyUsingAutoEnc;
-        public static InterpSettings currentSettings;
-        public static MediaFile currentMediaFile;
-        public static bool canceled = false;
-        public static float InterpProgressMultiplier = 1f;
+        public static bool currentlyUsingAutoEnc { get; private set; }
+        public static InterpSettings currentSettings { get; private set; }
+        public static MediaFile currentMediaFile { get; private set; }
+        public static bool canceled { get; internal set; } = false;
+        public static float InterpProgressMultiplier { get; set; } = 1f;
         static readonly Stopwatch sw = new Stopwatch();
+
+        public static void SetSettings(InterpSettings newSettings)
+        {
+            currentSettings = newSettings;
+        }
+
+        public static void SetMediaFile(MediaFile newMediaFile)
+        {
+            currentMediaFile = newMediaFile;
+        }
 
         public static async Task Start()
         {
@@ -83,8 +95,8 @@ namespace Flowframes
         {
             await Cleanup();
             Program.mainForm.SetWorking(false);
-            Logger.Log("Total processing time: " + FormatUtils.Time(sw.Elapsed));
             sw.Stop();
+            Logger.Log("Total processing time: " + FormatUtils.Time(sw.Elapsed));
 
             if (!BatchProcessing.busy)
                 OsUtils.ShowNotificationIfInBackground("Flowframes", $"Finished interpolation after {FormatUtils.Time(sw.Elapsed)}.");

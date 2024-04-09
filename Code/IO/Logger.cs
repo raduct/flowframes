@@ -196,7 +196,13 @@ namespace Flowframes
 
         public static void ClearLogBox()
         {
-            WriteLogBox(null);
+            if (textBox == null || !textBox.IsHandleCreated)
+                return;
+
+            textBox.InvokeSafe(delegate
+            {
+                textBox.Clear();
+            });
         }
 
         private static void WriteLogBox(string logMessage, bool replaceLastLine = false)
@@ -206,27 +212,22 @@ namespace Flowframes
 
             textBox.InvokeSafe(delegate
             {
-                if (logMessage == null)
-                    textBox.Clear();
-                else
+                if (replaceLastLine)
                 {
-                    if (replaceLastLine)
+                    string text = textBox.Text;
+                    if (!string.IsNullOrEmpty(text))
                     {
-                        string text = textBox.Text ?? string.Empty;
-                        if (!string.IsNullOrEmpty(text))
-                        {
-                            int lastNL = text.LastIndexOf(Environment.NewLine);
-                            text = lastNL > 0 ? text.Remove(lastNL) : string.Empty;
-                        }
+                        int lastNL = text.LastIndexOf(Environment.NewLine);
+                        text = (lastNL > 0 ? text.Substring(0, lastNL + Environment.NewLine.Length) : string.Empty) + logMessage;
                         textBox.SuspendDrawing();
-                        textBox.Text = text + (text.Length > 0 ? Environment.NewLine : string.Empty) + logMessage;
+                        textBox.Text = text;
                         textBox.ResumeDrawing();
-                        textBox.SelectionStart = textBox.TextLength;
+                        textBox.SelectionStart = text.Length;
                         textBox.ScrollToCaret();
+                        return;
                     }
-                    else
-                        textBox.AppendText((textBox.TextLength > 0 ? Environment.NewLine : string.Empty) + logMessage);
                 }
+                textBox.AppendText((textBox.TextLength > 0 ? Environment.NewLine : string.Empty) + logMessage);
             }, true);
         }
 

@@ -113,7 +113,7 @@ namespace Flowframes.Main
                 }
 
                 string fpsLimitValue = Config.Get(Config.Key.maxFps);
-                float fpsLimit = (fpsLimitValue.Contains('/') ? new Fraction(fpsLimitValue).GetFloat() : fpsLimitValue.GetFloat());
+                float fpsLimit = fpsLimitValue.Contains('/') ? new Fraction(fpsLimitValue).GetFloat() : fpsLimitValue.GetFloat();
                 int maxFps = s.outSettings.Encoder.GetInfo().MaxFramerate;
 
                 if (passes && s.outFps.GetFloat() < 1f || (s.outFps.GetFloat() > maxFps && !(fpsLimit > 0 && fpsLimit <= maxFps)))
@@ -123,10 +123,8 @@ namespace Flowframes.Main
                     passes = false;
                 }
 
-                float fpsLimitFloat = fpsLimitValue.GetFloat();
-
-                if (fpsLimitFloat > 0 && fpsLimitFloat < s.outFps.GetFloat())
-                    I.InterpProgressMultiplier = s.outFps.GetFloat() / fpsLimitFloat;
+                if (fpsLimit > 0 && fpsLimit < s.outFps.GetFloat())
+                    I.InterpProgressMultiplier = s.outFps.GetFloat() / fpsLimit;
                 else
                     I.InterpProgressMultiplier = 1f;
 

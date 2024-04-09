@@ -62,7 +62,7 @@ namespace Flowframes
             string loopStr = (looptimes > 0) ? $"-stream_loop {looptimes}" : "";
             string vfrFilename = Path.GetFileName(concatFile);
             string args = $" {loopStr} -f concat -i {vfrFilename} -fps_mode cfr -c copy -movflags +faststart -fflags +genpts {outPath.Wrap()}";
-            await RunFfmpeg(args, concatFile.GetParentDir(), LogMode.Hidden);
+            await RunFfmpeg(args, Interpolate.currentSettings.tempFolder, LogMode.Hidden);
         }
 
         public static async Task LoopVideo(string inputFile, int times, bool delSrc = false)
@@ -235,7 +235,7 @@ namespace Flowframes
         public static async Task<int> ReadFrameCountFfmpegAsync(string filePath)
         {
             string args = $"{filePath.GetConcStr()} -i {filePath.Wrap()} -map 0:v:0 -c copy -f null - ";
-            string info = await RunFfmpeg(args, "", LogMode.Hidden, "panic", false, true);
+            string info = await RunFfmpeg(args, null, LogMode.Hidden, "panic", false, true);
             try
             {
                 string[] lines = info.SplitIntoLines();
@@ -259,7 +259,7 @@ namespace Flowframes
         {
             Logger.Log($"IsEncoderCompatible('{enc}')", true, false, "ffmpeg");
             string args = $"-loglevel error -f lavfi -i color=black:s=1920x1080 -vframes 1 -c:v {enc} -f null -";
-            string output = await RunFfmpeg(args, "", LogMode.Hidden, null, false, true);
+            string output = await RunFfmpeg(args, null, LogMode.Hidden, null, false, true);
             return !output.SplitIntoLines().Where(l => !l.Lower().StartsWith("frame") && l.IsNotEmpty()).Any();
         }
 

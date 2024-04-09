@@ -37,7 +37,7 @@ namespace Flowframes.Ui
                 Logger.Log("Your file seems to be on an HDD or USB device. It is recommended to interpolate videos on an SSD drive for best performance.");
 
             Logger.Log("Importing file...");
-            Interpolate.currentMediaFile = new MediaFile(path);
+            Interpolate.SetMediaFile(new MediaFile(path));
             await Interpolate.currentMediaFile.Initialize();
             Program.mainForm.currInDuration = Interpolate.currentMediaFile.DurationMs;
             Program.mainForm.currInDurationCut = Program.mainForm.currInDuration;
