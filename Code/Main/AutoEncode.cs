@@ -153,7 +153,7 @@ namespace Flowframes.Main
                             int[] frameLinesToEncodeAr = frameLinesToEncode.ToArray(); // capture value
                             currentEncodingTask = Task.Run(async () =>
                             {
-                                await Export.EncodeChunk(outpath, Interpolate.currentSettings.interpFolder, currentChunkNo, Interpolate.currentSettings.outSettings, frameLinesToEncodeAr[0], frameLinesToEncodeAr.Length, aiRunning ? AvProcess.LogMode.Hidden : AvProcess.LogMode.OnlyLastLine);
+                                await Export.EncodeChunk(outpath, Interpolate.currentSettings.interpFolder, currentChunkNo, Interpolate.currentSettings.outSettings, frameLinesToEncodeAr[0], frameLinesToEncodeAr.Length, aiRunning ? AvProcess.LogMode.Background : AvProcess.LogMode.OnlyLastLine);
 
                                 IEnumerable<string> inputFrames = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(encFile + FrameOrder.inputFramesJson)).Take(frameLinesToEncodeAr[0] + frameLinesToEncodeAr.Length);
                                 int indexInputFrame = inputFrames.Distinct().Count();

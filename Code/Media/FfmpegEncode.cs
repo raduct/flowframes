@@ -14,7 +14,7 @@ namespace Flowframes.Media
     {
         public static async Task FramesToVideo(string framesFile, string outPath, OutputSettings settings, Fraction fps, Fraction resampleFps, float itsScale, VidExtraData extraData, LogMode logMode = LogMode.OnlyLastLine, bool isChunk = false)
         {
-            if (logMode != LogMode.Hidden)
+            if (logMode != LogMode.Hidden && logMode != LogMode.Background)
                 Logger.Log((resampleFps.GetFloat() <= 0) ? "Encoding video..." : $"Encoding video resampled to {resampleFps.GetString()} FPS...");
 
             IoUtils.RenameExistingFileOrDir(outPath);

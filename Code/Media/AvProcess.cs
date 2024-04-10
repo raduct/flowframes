@@ -13,7 +13,7 @@ namespace Flowframes
     class AvProcess
     {
         public static Process lastAvProcess;
-        public enum LogMode { Visible, OnlyLastLine, Hidden }
+        public enum LogMode { Visible, OnlyLastLine, Hidden, Background }
 
         private const string defLogLevel = "warning";
         public static void Kill()
@@ -52,7 +52,7 @@ namespace Flowframes
             else
                 ffmpeg.StartInfo.Arguments = $"{GetCmdArg()} cd /D {GetAvDir().Wrap()} & ffmpeg {beforeArgs} {args}";
 
-            if (logMode != LogMode.Hidden) Logger.Log("Running FFmpeg...", false);
+            if (logMode != LogMode.Hidden && logMode != LogMode.Background) Logger.Log("Running FFmpeg...", false);
             Logger.Log($"ffmpeg {beforeArgs} {args}", true, false, "ffmpeg");
 
             if (!show)

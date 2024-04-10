@@ -125,27 +125,28 @@ namespace Flowframes.Os
                 return;
             }
 
-            try
-            {
-                while (Interpolate.currentlyUsingAutoEnc && Program.busy)
-                {
-                    if (AvProcess.lastAvProcess != null && !AvProcess.lastAvProcess.HasExited)
-                    {
-                        string lastLogLine = Logger.GetLogLastLine("ffmpeg");
-                        if (lastLogLine.Contains("frame: ", StringComparison.InvariantCultureIgnoreCase))
-                            Logger.Log(FormatUtils.BeautifyFfmpegStats(lastLogLine), false, Logger.LastUiLine.Contains("frame", StringComparison.InvariantCultureIgnoreCase));
-                    }
+            await Task.CompletedTask;
+            //try
+            //{
+            //    while (Interpolate.currentlyUsingAutoEnc && Program.busy)
+            //    {
+            //        if (AvProcess.lastAvProcess != null && !AvProcess.lastAvProcess.HasExited)
+            //        {
+            //            string lastLogLine = Logger.GetLogLastLine("ffmpeg");
+            //            if (lastLogLine.Contains("frame: ", StringComparison.InvariantCultureIgnoreCase))
+            //                Logger.Log(FormatUtils.BeautifyFfmpegStats(lastLogLine.Split("] ").Last()), false, Logger.LastUiLine.Contains("frame", StringComparison.InvariantCultureIgnoreCase));
+            //        }
 
-                    if (AvProcess.lastAvProcess != null && AvProcess.lastAvProcess.HasExited && !AutoEncode.HasWorkToDo())     // Stop logging if ffmpeg is not running & AE is done
-                        break;
+            //        if (AvProcess.lastAvProcess != null && AvProcess.lastAvProcess.HasExited && !AutoEncode.HasWorkToDo())     // Stop logging if ffmpeg is not running & AE is done
+            //            break;
 
-                    await Task.Delay(200);
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.Log($"AiFinished encoder logging error: {e.Message}\n{e.StackTrace}", true);
-            }
+            //        await Task.Delay(200);
+            //    }
+            //}
+            //catch (Exception e)
+            //{
+            //    Logger.Log($"AiFinished encoder logging error: {e.Message}\n{e.StackTrace}", true);
+            //}
         }
 
         private static async Task RunAIProcessAsynch(bool logOutput, Process process, AI ai, bool main = true)

@@ -1,5 +1,6 @@
 ﻿using Flowframes.Forms.Main;
 using Flowframes.MiscUtils;
+using Flowframes.Os;
 using System;
 using System.Text.RegularExpressions;
 using static Flowframes.AvProcess;
@@ -16,15 +17,21 @@ namespace Flowframes.Media
             if (Interpolate.canceled || string.IsNullOrWhiteSpace(line) || line.Trim().Length < 1)
                 return;
 
-            bool hidden = logMode == LogMode.Hidden;
+            bool aiRunning = AiProcess.IsRunning();
+            bool hidden = logMode == LogMode.Hidden || (logMode == LogMode.Background && aiRunning);
 
-            if (!hidden && HideMessage(line)) // Don't print certain warnings 
+            if (!hidden && HideMessage(line)) // Don't display certain warnings 
                 hidden = true;
-
-            bool replaceLastLine = logMode == LogMode.OnlyLastLine;
 
             if (line.Contains("time=") && (line.StartsWith("frame=") || line.StartsWith("size=")))
                 line = FormatUtils.BeautifyFfmpegStats(line);
+
+            bool replaceLastLine = !hidden && (logMode == LogMode.OnlyLastLine || (logMode == LogMode.Background && !aiRunning));
+            if (replaceLastLine && !line.Contains("frame: ", StringComparison.InvariantCultureIgnoreCase)) // Display only progress
+            {
+                hidden = true;
+                replaceLastLine = false;
+            }
 
             if (appendStr != null)
                 appendStr += "\n" + line;
