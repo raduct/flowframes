@@ -87,16 +87,22 @@ namespace Flowframes.Main
                         continue;
                     }
 
-                    bool aiRunning = AiProcess.IsRunning();
-
                     string lastFrame = (Interpolate.currentSettings.is3D ? Math.Min(InterpolationProgress.lastFrame, InterpolationProgress.lastOtherFrame) : InterpolationProgress.lastFrame).ToString().PadLeft(Padding.interpFrames, '0');
-                    for (int frameLineNum = unencodedFrameLines.Count > 0 ? unencodedFrameLines.Last() + 1 : 0; frameLineNum < interpFramesLines.Length; frameLineNum++)
+                    int lastIndex = unencodedFrameLines.Count > 0 ? unencodedFrameLines.Last() : (encodedFrameLines.Count > 0 ? encodedFrameLines.Last() : -1);
+                    if (lastIndex == -1 || !interpFramesLines[lastIndex].StartsWith(lastFrame)) // new interpolated frames ready
                     {
-                        if (aiRunning && interpFramesLines[frameLineNum].Contains(lastFrame))
-                            break;
-
-                        unencodedFrameLines.Add(frameLineNum);
+                        bool foundLastFrame = false;
+                        for (int frameLineNum = lastIndex + 1; frameLineNum < interpFramesLines.Length; frameLineNum++)
+                        {
+                            if (foundLastFrame && !interpFramesLines[frameLineNum].StartsWith(lastFrame)) // get all output frames (dedupe) based on lastFrame
+                                break;
+                            unencodedFrameLines.Add(frameLineNum);
+                            if (interpFramesLines[frameLineNum].StartsWith(lastFrame))
+                                foundLastFrame = true;
+                        }
                     }
+
+                    bool aiRunning = AiProcess.IsRunning();
 
                     if (aiRunning && Config.GetBool(Config.Key.alwaysWaitForAutoEnc))
                     {
@@ -239,7 +245,7 @@ namespace Flowframes.Main
 
         static bool FrameIsStillNeeded(string frameName, int frameIndex)
         {
-            if ((frameIndex + 1) < interpFramesLines.Length && interpFramesLines[frameIndex + 1].Contains(frameName))
+            if ((frameIndex + 1) < interpFramesLines.Length && interpFramesLines[frameIndex + 1].StartsWith(frameName))
                 return true;
             return false;
         }
@@ -249,9 +255,9 @@ namespace Flowframes.Main
             if (Interpolate.canceled) return false;
             bool aiRunning = AiProcess.IsRunning();
             if (debug)
-                Logger.Log($"[AE] HasWorkToDo - Process Running: {aiRunning} - encodedFrameLines.Count: {encodedFrameLines.Count} - interpFramesLines.Length: {interpFramesLines.Length}", true);
+                Logger.Log($"[AE] HasWorkToDo - Process Running: {aiRunning} - encodedFrameLines.Count: {encodedFrameLines.Count} - unencodedFrameLines.Count: {unencodedFrameLines.Count} - interpFramesLines.Length: {interpFramesLines.Length}", true);
 
-            return aiRunning || encodedFrameLines.Count < interpFramesLines.Length;
+            return aiRunning || unencodedFrameLines.Count > 0;
         }
 
         static int GetChunkSize(int inuptFramesNo, float factor)

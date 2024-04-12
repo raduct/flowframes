@@ -37,9 +37,7 @@ namespace Flowframes.MiscUtils
                 {
                     string sceneFilename = Path.GetFileNameWithoutExtension(sceneFullFileName);
                     int fileNo = int.Parse(sceneFilename);
-                    string newFilename = (fileNo - skippedOffset).ToString();
-                    if (fileNo >= skippedOffset)
-                        newFilename = newFilename.PadLeft(Padding.inputFrames, '0');
+                    string newFilename = fileNo >= skippedOffset ? (fileNo - skippedOffset).ToString().PadLeft(Padding.inputFrames, '0') : "!" + sceneFilename;
                     string targetPath = Path.Combine(Path.GetDirectoryName(sceneFullFileName), newFilename + Path.GetExtension(sceneFullFileName));
                     File.Move(sceneFullFileName, targetPath);
                 }
@@ -106,8 +104,7 @@ namespace Flowframes.MiscUtils
                 foreach (string sceneFullFileName in scenes.Reverse())
                 {
                     string sceneFilename = Path.GetFileNameWithoutExtension(sceneFullFileName);
-                    int fileNo = int.Parse(sceneFilename);
-                    string newFilename = (fileNo + skippedOffset).ToString().PadLeft(Padding.inputFrames, '0');
+                    string newFilename = sceneFilename[0] != '!' ? (int.Parse(sceneFilename) + skippedOffset).ToString().PadLeft(Padding.inputFrames, '0') : sceneFilename.Substring(1);
                     string targetPath = Path.Combine(Path.GetDirectoryName(sceneFullFileName), newFilename + Path.GetExtension(sceneFullFileName));
                     File.Move(sceneFullFileName, targetPath);
                 }

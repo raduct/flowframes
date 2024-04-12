@@ -85,7 +85,7 @@ namespace Flowframes
             }
 
             if (Config.GetBool(Config.Key.keepTempFolder))
-                await FrameRename.UnRename();
+                await Task.Run(() => FrameRename.UnRename());
 
             IoUtils.DeleteIfSmallerThanKb(currentSettings.FullOutPath);
             await Done();
@@ -135,7 +135,7 @@ namespace Flowframes
             {
                 Program.mainForm.SetStatus("Extracting scenes from video...");
                 await FfmpegExtract.ExtractSceneChanges(currentSettings.inPath, Path.Combine(currentSettings.tempFolder, Paths.scenesDir), currentSettings.inFps, currentSettings.inputIsFrames, currentSettings.framesExt);
-                Utils.TemporalFilterSceneChanges(Path.Combine(currentSettings.tempFolder, Paths.scenesDir), Path.Combine(currentSettings.tempFolder, Utils.sceneScoresFile), currentSettings.inFps);
+                await Task.Run(() => Utils.TemporalFilterSceneChanges(Path.Combine(currentSettings.tempFolder, Paths.scenesDir), Path.Combine(currentSettings.tempFolder, Utils.sceneScoresFile), currentSettings.inFps));
             }
 
             if (!currentSettings.inputIsFrames)        // Extract if input is video, import if image sequence
@@ -216,16 +216,16 @@ namespace Flowframes
             if (!ai.Piped || (ai.Piped && currentSettings.inputIsFrames))
             {
                 await Task.Run(() => Dedupe.CreateDupesFile(currentSettings.framesFolder, currentSettings.framesExt));
-                await FrameRename.Rename(AutoEncodeResume.lastEncodedOriginalInputFrame);
+                await Task.Run(() => FrameRename.Rename(AutoEncodeResume.lastEncodedOriginalInputFrame));
                 AutoEncodeResume.SaveGlobal(false);
             }
             else if (ai.Piped && dedupe)
             {
-                await Dedupe.CreateFramesFileVideo(currentSettings.inPath, Config.GetBool(Config.Key.enableLoop));
+                await Task.Run(() => Dedupe.CreateFramesFileVideo(currentSettings.inPath, Config.GetBool(Config.Key.enableLoop)));
             }
 
             if (!ai.Piped || (ai.Piped && dedupe))
-                await FrameOrder.CreateFrameOrderFile(currentSettings.tempFolder, Config.GetBool(Config.Key.enableLoop), currentSettings.interpFactor);
+                await Task.Run(() => FrameOrder.CreateFrameOrderFile(currentSettings.tempFolder, Config.GetBool(Config.Key.enableLoop), currentSettings.interpFactor));
 
             if (currentSettings.model.FixedFactors.Length > 0 && (currentSettings.interpFactor != (int)currentSettings.interpFactor || !currentSettings.model.FixedFactors.Contains(currentSettings.interpFactor.RoundToInt())))
                 Cancel($"The selected model does not support {currentSettings.interpFactor}x interpolation.\n\nSupported Factors: {currentSettings.model.GetFactorsString()}");

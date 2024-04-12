@@ -169,7 +169,7 @@ namespace Flowframes.Os
                             LogOutput("[E] " + outLine.Data, ai, true, main);
                     };
                 process.Start();
-                process.PriorityClass = ProcessPriorityClass.AboveNormal;
+                //process.PriorityClass = ProcessPriorityClass.AboveNormal; // cmd.exe not inhereted for above normal
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
                 await Task.WhenAll(process.WaitForExitAsync(), outputTcs.Task, errorTcs.Task);
@@ -329,7 +329,7 @@ namespace Flowframes.Os
             string uhdStr = await InterpolateUtils.UseUhd() ? "-u" : "";
             string ttaStr = Config.GetBool(Config.Key.rifeNcnnUseTta, false) ? "-x" : "";
 
-            rifeNcnn.StartInfo.Arguments = $"{OsUtils.GetCmdArg()} cd /D {Path.Combine(Paths.GetPkgPath(), Implementations.rifeNcnn.PkgDir).Wrap()} & rife-ncnn-vulkan.exe" +
+            rifeNcnn.StartInfo.Arguments = $"{OsUtils.GetCmdArg()} cd /D {Path.Combine(Paths.GetPkgPath(), Implementations.rifeNcnn.PkgDir).Wrap()} & start /b /abovenormal /wait rife-ncnn-vulkan.exe" +
                 $" -v -i {inPath.Wrap()} -o {outPath.Wrap()} {frames} -m {mdl.ToLowerInvariant()} {ttaStr} {uhdStr} -g {Config.Get(Config.Key.ncnnGpus)} -f {NcnnUtils.GetNcnnPattern()} -j {NcnnUtils.GetNcnnThreads(Implementations.rifeNcnn)}";
 
             Logger.Log("cmd.exe " + rifeNcnn.StartInfo.Arguments, true);
