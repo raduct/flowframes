@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Flowframes.Main
@@ -173,13 +174,13 @@ namespace Flowframes.Main
 
             await Task.WhenAll(tasks);
 
-            string fileContent = "";
+            StringBuilder fileContent = new StringBuilder();
             for (int x = 0; x < frameFileContents.Count; x++)
-                fileContent += frameFileContents[x];
+                fileContent.Append(frameFileContents[x]);
 
             if (Config.GetBool(Config.Key.fixOutputDuration)) // Match input duration by padding duping last frame until interp frames == (inputframes * factor)
             {
-                string[] lines = fileContent.SplitIntoLines();
+                string[] lines = fileContent.ToString().SplitIntoLines();
                 IEnumerable<string> fileLines = lines.Where(x => x.StartsWith("file ")).Reverse();
                 int neededFrames = (frameFiles.Length * interpFactor).RoundToInt() - fileLines.Count() / (Interpolate.currentSettings.is3D ? 2 : 1);
 
@@ -187,18 +188,19 @@ namespace Flowframes.Main
                 {
                     if (Interpolate.currentSettings.is3D)
                     {
-                        fileContent += fileLines.ElementAt(1) + "\n";
-                        fileContent += durationLine;
+                        fileContent.Append(fileLines.ElementAt(1) + "\n");
+                        fileContent.Append(durationLine);
                     }
-                    fileContent += fileLines.First() + "\n";
-                    fileContent += durationLine;
+                    fileContent.Append(fileLines.First() + "\n");
+                    fileContent.Append(durationLine);
                 }
             }
 
+            string stringFileContent = fileContent.ToString();
             if (loop)
-                fileContent = fileContent.Remove(fileContent.LastIndexOf('\n'));
+                stringFileContent = stringFileContent.Remove(stringFileContent.LastIndexOf('\n'));
 
-            File.WriteAllText(framesFile, fileContent);
+            File.WriteAllText(framesFile, stringFileContent);
 
             List<string> allInputFilenames = new List<string>();
             for (int x = 0; x < inputFilenames.Count; x++)
@@ -343,7 +345,7 @@ namespace Flowframes.Main
             int interpFramesAmount = factor;
             string ext = Interpolate.currentSettings.interpExt;
 
-            string fileContent = "";
+            StringBuilder fileContent = new StringBuilder();
             List<string> currentinputFilenames = new List<string>();
             inputFilenames[number] = currentinputFilenames;
 
@@ -373,7 +375,7 @@ namespace Flowframes.Main
                         string scnChangeNote = $"SCN:{frameFiles[i]}>{frameFiles[i + 1]}";
 
                         totalFileCount++;
-                        fileContent = WriteFrameWithDupes(dupesAmount, fileContent, totalFileCount, ext, debug, $"[In: {frameName}] [ Source ]", scnChangeNote);
+                        WriteFrameWithDupes(dupesAmount, fileContent, totalFileCount, ext, debug, $"[In: {frameName}] [ Source ]", scnChangeNote);
 
                         if (Config.GetInt(Config.Key.sceneChangeFillMode) == 0)      // Duplicate last frame
                         {
@@ -382,7 +384,7 @@ namespace Flowframes.Main
                             for (int dupeCount = 1; dupeCount < interpFramesAmount; dupeCount++)
                             {
                                 totalFileCount++;
-                                fileContent = WriteFrameWithDupes(dupesAmount, fileContent, lastNum, ext, debug, $"[In: {frameName}] [DISCARDED]");
+                                WriteFrameWithDupes(dupesAmount, fileContent, lastNum, ext, debug, $"[In: {frameName}] [DISCARDED]");
                             }
                         }
                         else
@@ -390,7 +392,7 @@ namespace Flowframes.Main
                             for (int dupeCount = 1; dupeCount < interpFramesAmount; dupeCount++)
                             {
                                 totalFileCount++;
-                                fileContent = WriteFrameWithDupes(dupesAmount, fileContent, totalFileCount, ext, debug, $"[In: {frameName}] [BLEND FRAME]");
+                                WriteFrameWithDupes(dupesAmount, fileContent, totalFileCount, ext, debug, $"[In: {frameName}] [BLEND FRAME]");
                             }
                         }
 
@@ -399,7 +401,7 @@ namespace Flowframes.Main
                     else
                     {
                         totalFileCount++;
-                        fileContent = WriteFrameWithDupes(dupesAmount, fileContent, totalFileCount, ext, debug, $"[In: {frameName}] [{((frm == 0) ? " Source " : $"Interp {frm}")}]");
+                        WriteFrameWithDupes(dupesAmount, fileContent, totalFileCount, ext, debug, $"[In: {frameName}] [{((frm == 0) ? " Source " : $"Interp {frm}")}]");
                     }
                 }
                 // Keep same number of elements as interp frames
@@ -408,25 +410,23 @@ namespace Flowframes.Main
                 savedTotalFileCount = totalFileCount;
             }
 
-            frameFileContents[number] = fileContent;
+            frameFileContents[number] = fileContent.ToString();
         }
 
-        static string WriteFrameWithDupes(int dupesAmount, string fileContent, int frameNum, string ext, bool debug, string debugNote = "", string forcedNote = "")
+        static void WriteFrameWithDupes(int dupesAmount, StringBuilder fileContent, int frameNum, string ext, bool debug, string debugNote = "", string forcedNote = "")
         {
             string fileName = frameNum.ToString().PadLeft(Padding.interpFrames, '0') + ext;
             for (int writtenDupes = -1; writtenDupes < dupesAmount; writtenDupes++)      // Write duplicates
             {
                 string debugStr = debug ? (writtenDupes != -1 ? $"Dupe {writtenDupes + 1:000} " : string.Empty) + $"{debugNote} " : string.Empty;
-                fileContent += $"file '{Paths.interpDir}/{fileName}' # {debugStr} {forcedNote}\n";
-                fileContent += durationLine;
+                fileContent.Append($"file '{Paths.interpDir}/{fileName}' # {debugStr} {forcedNote}\n");
+                fileContent.Append(durationLine);
                 if (Interpolate.currentSettings.is3D)
                 {
-                    fileContent += $"file '{Paths.GetOtherDir(Paths.interpDir)}/{fileName}' # {debugStr}{forcedNote}\n";
-                    fileContent += durationLine;
+                    fileContent.Append($"file '{Paths.GetOtherDir(Paths.interpDir)}/{fileName}' # {debugStr}{forcedNote}\n");
+                    fileContent.Append(durationLine);
                 }
             }
-
-            return fileContent;
         }
     }
 }

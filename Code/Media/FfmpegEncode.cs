@@ -31,15 +31,11 @@ namespace Flowframes.Media
             }
 
             string args = "";
-            string tile = "";
-            if (Interpolate.currentSettings.is3D)
-                tile = "-filter_complex tile=2x1";
-
             for (int i = 0; i < encArgs.Length; i++)
             {
                 string pre = i == 0 ? "" : $" && ffmpeg {AvProcess.GetFfmpegDefaultArgs()}";
                 string post = (i == 0 && encArgs.Length > 1) ? $"-f null -" : outPath.Wrap();
-                args += $"{pre} {GetFfmpegExportArgsIn(fps, itsScale)} {inArg} {tile} {encArgs[i]} {await GetFfmpegExportArgsOut(resampleFps, extraData, settings, isChunk)} {post} ";
+                args += $"{pre} {GetFfmpegExportArgsIn(fps, itsScale)} {inArg} {encArgs[i]} {await GetFfmpegExportArgsOut(resampleFps, extraData, settings, isChunk)} {post} ";
             }
 
             await RunFfmpeg(args, Interpolate.currentSettings.tempFolder, logMode);
@@ -61,6 +57,9 @@ namespace Flowframes.Media
             var beforeArgs = new List<string>();
             var filters = new List<string>();
             var extraArgs = new List<string> { Config.Get(Config.Key.ffEncArgs) };
+
+            if (Interpolate.currentSettings.is3D)
+                filters.Add("tile=2x1");
 
             if (resampleFps.GetFloat() >= 0.1f)
                 filters.Add($"fps={resampleFps}");
