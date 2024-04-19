@@ -292,11 +292,11 @@ namespace Flowframes
                     DialogResult dialogResult = UiUtils.ShowMessageBox($"Delete the temp folder (Yes) or keep it for resuming later (No)?", "Delete temporary files?", MessageBoxButtons.YesNo);
 
                     if (dialogResult == DialogResult.Yes)
-                        Task.Run(async () => { await IoUtils.TryDeleteIfExistsAsync(currentSettings.tempFolder); });
+                        Task.Run(() => IoUtils.TryDeleteIfExistsAsync(currentSettings.tempFolder));
                 }
                 else
                 {
-                    Task.Run(async () => { await IoUtils.TryDeleteIfExistsAsync(currentSettings.tempFolder); });
+                    Task.Run(() => IoUtils.TryDeleteIfExistsAsync(currentSettings.tempFolder));
                 }
             }
 

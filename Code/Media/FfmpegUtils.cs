@@ -7,9 +7,11 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using static Flowframes.Data.Enums.Encoding;
 using static Flowframes.Media.GetVideoInfo;
+using Encoder = Flowframes.Data.Enums.Encoding.Encoder;
 using Stream = Flowframes.Data.Streams.Stream;
 
 namespace Flowframes.Media
@@ -551,18 +553,19 @@ namespace Flowframes.Media
             return supported;
         }
 
-        public static int CreateConcatFile(string inputFilesDir, string outputPath, List<string> validExtensions = null)
+        public static int CreateConcatFile(string inputFilesDir, string outputPath, List<string> validExtensions)
         {
-            if (IoUtils.GetAmountOfFiles(inputFilesDir, false) < 1)
+            if (validExtensions == null || IoUtils.GetAmountOfFiles(inputFilesDir, false) < 1)
                 return 0;
 
             Directory.CreateDirectory(outputPath.GetParentDir());
             validExtensions = validExtensions ?? new List<string>();
-            validExtensions = validExtensions.Select(x => x.Remove(".").Lower()).ToList(); // Ignore "." in extensions
-            var validFiles = IoUtils.GetFilesSorted(inputFilesDir).Where(f => validExtensions.Contains(Path.GetExtension(f).Replace(".", "").Lower()));
-            string fileContent = string.Join(Environment.NewLine, validFiles.Select(f => $"file '{f.Replace(@"\", "/")}'"));
+            IEnumerable<string> validFiles = IoUtils.GetFilesSorted(inputFilesDir).Where(f => validExtensions.Contains(Path.GetExtension(f).Lower()));
+            StringBuilder fileContent = new StringBuilder();
+            foreach (string file in validFiles)
+                fileContent.Append($"file '{file.Replace(@"\", "/")}'\n");
             IoUtils.TryDeleteIfExists(outputPath);
-            File.WriteAllText(outputPath, fileContent);
+            File.WriteAllText(outputPath, fileContent.ToString());
 
             return validFiles.Count();
         }

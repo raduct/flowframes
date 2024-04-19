@@ -28,7 +28,7 @@ namespace Flowframes.Media
 
             if (inputIsFrames)
             {
-                string concatFile = Path.Combine(Paths.GetSessionDataPath(), "png-scndetect-concat-temp.ini");
+                string concatFile = Path.Combine(Paths.GetSessionDataPath(), "scndetect-concat-temp.ini");
                 FfmpegUtils.CreateConcatFile(inPath, concatFile, Filetypes.imagesInterpCompat.ToList());
                 inArg = $"-f concat -safe 0 -i {concatFile.Wrap()}";
             }
@@ -137,7 +137,6 @@ namespace Flowframes.Media
             await RunFfmpeg(args, logMode);
             int amount = IoUtils.GetAmountOfFiles(framesDir, false, "*" + format);
             Logger.Log($"Extracted {amount} {(amount == 1 ? "frame" : "frames")} from input.", false, true);
-            await Task.CompletedTask;
             if (delSrc)
                 DeleteSource(inputFile);
         }

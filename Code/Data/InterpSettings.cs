@@ -185,9 +185,10 @@ namespace Flowframes
                 bool gifOutput = outSettings.Encoder == Enums.Encoding.Encoder.Gif;
                 bool webpOutput = outSettings.Encoder == Enums.Encoding.Encoder.Webp;
                 bool proResAlpha = outSettings.Encoder == Enums.Encoding.Encoder.ProResKs && OutputUtils.AlphaFormats.Contains(outSettings.PixelFormat);
-                bool outputSupportsAlpha = pngOutput || webpOutput || gifOutput || proResAlpha;
+                bool jxlOutput = outSettings.Encoder == Enums.Encoding.Encoder.Jxl;
+                bool outputSupportsAlpha = pngOutput || webpOutput || gifOutput || proResAlpha || jxlOutput;
                 string ext = inputIsFrames ? Path.GetExtension(IoUtils.GetFilesSorted(inPath).First()).ToLowerInvariant() : Path.GetExtension(inPath).ToLowerInvariant();
-                alpha = (alphaModel && outputSupportsAlpha && (ext == ".gif" || ext == ".png" || ext == ".apng" || ext == ".webp" || ext == ".mov"));
+                alpha = alphaModel && outputSupportsAlpha && (ext == ".gif" || ext == ".png" || ext == ".apng" || ext == ".webp" || ext == ".mov" || ext == ".jxl");
                 Logger.Log($"RefreshAlpha: model.supportsAlpha = {alphaModel} - outputSupportsAlpha = {outputSupportsAlpha} - input ext: {ext} => alpha = {alpha}", true);
             }
             catch (Exception e)

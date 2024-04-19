@@ -289,7 +289,7 @@ namespace Flowframes.IO
                 counter++;
 
                 if (counter % 1000 == 0)
-                    await Task.CompletedTask;
+                    await Task.Delay(1);
             }
         }
 

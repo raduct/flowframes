@@ -28,7 +28,7 @@ namespace Flowframes.Magick
                 counter++;
                 if (setProgress)
                     Program.mainForm.SetProgress(FormatUtils.RatioInt(counter, files.Length));
-                await Task.CompletedTask;
+                await Task.Delay(1);
             }
         }
 
@@ -56,7 +56,7 @@ namespace Flowframes.Magick
                     {
                         if (setProgress)
                             Program.mainForm.SetProgress(FormatUtils.RatioInt(counter, files.Length));
-                        await Task.CompletedTask;
+                        await Task.Delay(1);
                         sw.Restart();
                     }
                 }
@@ -106,7 +106,7 @@ namespace Flowframes.Magick
                     {
                         if (setProgress)
                             Program.mainForm.SetProgress(FormatUtils.RatioInt(counter, files.Length));
-                        await Task.CompletedTask;
+                        await Task.Delay(1);
                         sw.Restart();
                     }
                 }
@@ -134,7 +134,7 @@ namespace Flowframes.Magick
                 counter++;
                 if (setProgress)
                     Program.mainForm.SetProgress(FormatUtils.RatioInt(counter, files.Length));
-                await Task.CompletedTask;
+                await Task.Delay(1);
             }
         }
     }

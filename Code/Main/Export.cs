@@ -178,7 +178,7 @@ namespace Flowframes.Main
                 {
                     sw.Restart();
                     Logger.Log($"Moving output frames... {idx}/{framesLines.Length}", hideLog, true);
-                    await Task.CompletedTask;
+                    await Task.Delay(1);
                 }
             }
         }
