@@ -148,16 +148,16 @@ namespace Flowframes.Forms.Main
             labelOutput.Text = $"Set {string.Join(", ", infoStrings)}";
         }
 
-        static async Task Checks()
+        async Task Checks()
         {
             try
             {
                 //_ = Task.Run(() => Updater.UpdateModelList());
-                //_ = Task.Run(() => Updater.AsyncUpdateCheck());
+                //_ = Task.Run(() => Updater.UpdateCheck());
                 //_ = Task.Run(() => GetWebInfo.LoadNews(newsLabel));
                 //_ = Task.Run(() => GetWebInfo.LoadPatronListCsv(patronsLabel));
-                _ = Servers.Init();
-                _ = Task.Run(() => Python.CheckCompression());
+                _ = Task.Run(() => Servers.Init());
+                await Python.CheckCompression();
                 await StartupChecks.SymlinksCheck();
                 await StartupChecks.DetectHwEncoders();
             }
@@ -558,7 +558,10 @@ namespace Flowframes.Forms.Main
 
         public void UpdateAiModelCombox()
         {
-            aiModel = UiUtils.LoadAiModelsIntoGui(aiModel, GetAi());
+            this.InvokeSafe(delegate
+            {
+                aiModel = UiUtils.LoadAiModelsIntoGui(aiModel, GetAi());
+            });
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)

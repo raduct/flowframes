@@ -13,7 +13,7 @@ namespace Flowframes.Os
     class Updater
     {
         public enum VersionCompareResult { Older, Newer, Equal };
-        public static string latestVerUrl = "https://raw.githubusercontent.com/n00mkrad/flowframes/main/ver.txt";
+        public const string latestVerUrl = "https://raw.githubusercontent.com/n00mkrad/flowframes/main/ver.txt";
 
         public static string GetInstalledVerStr()
         {
@@ -129,7 +129,7 @@ namespace Flowframes.Os
             Application.Exit();
         }
 
-        public static void AsyncUpdateCheck()
+        public static void UpdateCheck()
         {
             Version installed = GetInstalledVer();
             Version latestPat = GetLatestVer(true);

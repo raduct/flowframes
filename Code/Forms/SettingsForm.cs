@@ -47,22 +47,25 @@ namespace Flowframes.Forms
 
         public async Task CheckModelCacheSize()
         {
-            await Task.Delay(200);
+            await Task.CompletedTask;
 
             long modelFoldersBytes = 0;
 
             foreach (string modelFolder in ModelDownloader.GetAllModelFolders())
                 modelFoldersBytes += IoUtils.GetDirSize(modelFolder, true);
 
-            if (modelFoldersBytes > 1024 * 1024)
+            clearModelCacheBtn.InvokeSafe(delegate
             {
-                clearModelCacheBtn.Enabled = true;
-                clearModelCacheBtn.Text = $"Clear Model Cache ({FormatUtils.Bytes(modelFoldersBytes)})";
-            }
-            else
-            {
-                clearModelCacheBtn.Enabled = false;
-            }
+                if (modelFoldersBytes > 1024 * 1024)
+                {
+                    clearModelCacheBtn.Enabled = true;
+                    clearModelCacheBtn.Text = $"Clear Model Cache ({FormatUtils.Bytes(modelFoldersBytes)})";
+                }
+                else
+                {
+                    clearModelCacheBtn.Enabled = false;
+                }
+            });
         }
 
         private void SettingsForm_FormClosing(object sender, FormClosingEventArgs e)

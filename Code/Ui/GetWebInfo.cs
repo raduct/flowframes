@@ -9,16 +9,19 @@ namespace Flowframes.Ui
 {
     class GetWebInfo
     {
-        public static async Task LoadNews (Label newsLabel)
+        public static async Task LoadNews(Label newsLabel)
         {
             try
             {
                 string url = $"https://raw.githubusercontent.com/n00mkrad/flowframes/main/changelog.txt";
                 var client = new WebClient();
                 var str = await client.DownloadStringTaskAsync(new Uri(url));
-                newsLabel.Text = str;
+                newsLabel.InvokeSafe(delegate
+                {
+                    newsLabel.Text = str;
+                });
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Logger.Log($"Failed to load news: {e.Message}", true);
             }
@@ -31,7 +34,10 @@ namespace Flowframes.Ui
                 string url = $"https://raw.githubusercontent.com/n00mkrad/flowframes/main/patrons.csv";
                 var client = new WebClient();
                 var csvData = await client.DownloadStringTaskAsync(new Uri(url));
-                patronsLabel.Text = ParsePatreonCsv(csvData);
+                patronsLabel.InvokeSafe(delegate
+                {
+                    patronsLabel.Text = ParsePatreonCsv(csvData);
+                });
             }
             catch (Exception e)
             {

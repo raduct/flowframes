@@ -70,7 +70,7 @@ namespace Flowframes
 
         public static void StartLogging()
         {
-            Task.Run(() =>
+            _ = Task.Run(() =>
             {
                 Console.WriteLine("Start logging");
                 try
