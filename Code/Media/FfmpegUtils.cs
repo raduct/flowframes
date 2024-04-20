@@ -555,11 +555,10 @@ namespace Flowframes.Media
 
         public static int CreateConcatFile(string inputFilesDir, string outputPath, List<string> validExtensions)
         {
-            if (validExtensions == null || IoUtils.GetAmountOfFiles(inputFilesDir, false) < 1)
+            if (validExtensions == null || validExtensions.Count() == 0 || IoUtils.GetAmountOfFiles(inputFilesDir, false) < 1)
                 return 0;
 
             Directory.CreateDirectory(outputPath.GetParentDir());
-            validExtensions = validExtensions ?? new List<string>();
             IEnumerable<string> validFiles = IoUtils.GetFilesSorted(inputFilesDir).Where(f => validExtensions.Contains(Path.GetExtension(f).Lower()));
             StringBuilder fileContent = new StringBuilder();
             foreach (string file in validFiles)

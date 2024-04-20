@@ -131,12 +131,12 @@ namespace Flowframes.IO
 
         private static void CopyWork(DirectoryInfo source, DirectoryInfo target, bool move)
         {
-            DirectoryInfo[] directories = source.GetDirectories();
+            IEnumerable<DirectoryInfo> directories = source.EnumerateDirectories();
             foreach (DirectoryInfo directoryInfo in directories)
             {
                 CopyWork(directoryInfo, target.CreateSubdirectory(directoryInfo.Name), move);
             }
-            FileInfo[] files = source.GetFiles();
+            IEnumerable<FileInfo> files = source.EnumerateFiles();
             foreach (FileInfo fileInfo in files)
             {
                 if (move)
@@ -179,12 +179,12 @@ namespace Flowframes.IO
         {
             int counter = 1;
             DirectoryInfo d = new DirectoryInfo(dir);
-            FileInfo[] files;
+            IEnumerable<FileInfo> files;
 
             if (recursive)
-                files = d.GetFiles(wildcard, SearchOption.AllDirectories);
+                files = d.EnumerateFiles(wildcard, SearchOption.AllDirectories);
             else
-                files = d.GetFiles(wildcard, SearchOption.TopDirectoryOnly);
+                files = d.EnumerateFiles(wildcard, SearchOption.TopDirectoryOnly);
 
             foreach (FileInfo file in files)
             {
@@ -214,14 +214,14 @@ namespace Flowframes.IO
                     return 0;
 
                 DirectoryInfo d = new DirectoryInfo(path);
-                FileInfo[] files = null;
+                IEnumerable<FileInfo> files = null;
 
                 if (recursive)
-                    files = d.GetFiles(wildcard, SearchOption.AllDirectories);
+                    files = d.EnumerateFiles(wildcard, SearchOption.AllDirectories);
                 else
-                    files = d.GetFiles(wildcard, SearchOption.TopDirectoryOnly);
+                    files = d.EnumerateFiles(wildcard, SearchOption.TopDirectoryOnly);
 
-                return files.Length;
+                return files.Count();
             }
             catch
             {
@@ -229,7 +229,7 @@ namespace Flowframes.IO
             }
         }
 
-        static bool TryCopy(string source, string target, bool overwrite = true, bool showLog = false)
+        public static bool TryCopy(string source, string target, bool overwrite = true, bool showLog = false)
         {
             try
             {
@@ -411,7 +411,7 @@ namespace Flowframes.IO
                 path = renamedPath;
 
                 ulong taskId = BackgroundTaskManager.Add($"TryDeleteIfExistsAsync {path}");
-                bool returnVal = await Task.Run(() => { return TryDeleteIfExists(path); });
+                bool returnVal = await Task.Run(() => TryDeleteIfExists(path));
                 BackgroundTaskManager.Remove(taskId);
                 return returnVal;
             }
@@ -608,7 +608,7 @@ namespace Flowframes.IO
         {
             FileInfo highest = null;
             int highestInt = -1;
-            foreach (FileInfo frame in new DirectoryInfo(path).GetFiles("*.*", SearchOption.TopDirectoryOnly))
+            foreach (FileInfo frame in new DirectoryInfo(path).EnumerateFiles("*.*", SearchOption.TopDirectoryOnly))
             {
                 int num = frame.Name.GetInt();
                 if (num > highestInt)
@@ -780,11 +780,11 @@ namespace Flowframes.IO
 
         public static void ZeroPadDir(string path, string ext, int targetLength, bool recursive = false)
         {
-            FileInfo[] files;
+            IEnumerable<FileInfo> files;
             if (recursive)
-                files = new DirectoryInfo(path).GetFiles($"*.{ext}", SearchOption.AllDirectories);
+                files = new DirectoryInfo(path).EnumerateFiles($"*.{ext}", SearchOption.AllDirectories);
             else
-                files = new DirectoryInfo(path).GetFiles($"*.{ext}", SearchOption.TopDirectoryOnly);
+                files = new DirectoryInfo(path).EnumerateFiles($"*.{ext}", SearchOption.TopDirectoryOnly);
 
             ZeroPadDir(files.Select(x => x.FullName).ToList(), targetLength);
         }
@@ -827,7 +827,7 @@ namespace Flowframes.IO
         public static string[] GetFilesSorted(string path, bool recursive = false, string pattern = "*")
         {
             SearchOption opt = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-            return Directory.GetFiles(path, pattern, opt).OrderBy(x => Path.GetFileName(x)).ToArray();
+            return Directory.EnumerateFiles(path, pattern, opt).OrderBy(x => Path.GetFileName(x)).ToArray();
         }
 
         public static string[] GetFilesSorted(string path, string pattern = "*")
@@ -847,7 +847,7 @@ namespace Flowframes.IO
 
             SearchOption opt = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
             DirectoryInfo dir = new DirectoryInfo(path);
-            return dir.GetFiles(pattern, opt).OrderBy(x => x.Name).ToArray();
+            return dir.EnumerateFiles(pattern, opt).OrderBy(x => x.Name).ToArray();
         }
 
         public static bool CreateFileIfNotExists(string path)
@@ -873,24 +873,25 @@ namespace Flowframes.IO
 
             try
             {
-                string[] files;
+                IEnumerable<FileInfo> files;
                 StringComparison ignCase = StringComparison.OrdinalIgnoreCase;
+                DirectoryInfo dir = new DirectoryInfo(path);
 
                 if (includedExtensions == null)
-                    files = Directory.GetFiles(path);
+                    files = dir.EnumerateFiles();
                 else
-                    files = Directory.GetFiles(path).Where(file => includedExtensions.Any(x => file.EndsWith(x, ignCase))).ToArray();
+                    files = dir.EnumerateFiles().Where(file => includedExtensions.Any(x => file.Extension.Equals(x, ignCase)));
 
-                foreach (string file in files)
+                foreach (FileInfo file in files)
                 {
-                    try { size += new FileInfo(file).Length; } catch { size += 0; }
+                    try { size += file.Length; } catch { size += 0; }
                 }
 
                 if (!recursive)
                     return size;
 
                 // Add subdirectory sizes.
-                DirectoryInfo[] dis = new DirectoryInfo(path).GetDirectories();
+                IEnumerable<DirectoryInfo> dis = dir.EnumerateDirectories();
                 foreach (DirectoryInfo di in dis)
                     size += GetDirSize(di.FullName, true, includedExtensions);
             }

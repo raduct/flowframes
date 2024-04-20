@@ -99,7 +99,7 @@ namespace Flowframes
 
             try
             {
-                foreach (DirectoryInfo dir in new DirectoryInfo(Paths.GetLogPath(true)).GetDirectories())
+                foreach (DirectoryInfo dir in new DirectoryInfo(Paths.GetLogPath(true)).EnumerateDirectories())
                 {
                     string[] split = dir.Name.Split('-');
                     int daysOld = (DateTime.Now - new DateTime(split[0].GetInt(), split[1].GetInt(), split[2].GetInt())).Days;
@@ -114,7 +114,7 @@ namespace Flowframes
 
                 IoUtils.DeleteContentsOfDir(Paths.GetSessionDataPath()); // Clear this session's temp files...
 
-                foreach (DirectoryInfo dir in new DirectoryInfo(Paths.GetSessionsPath()).GetDirectories())
+                foreach (DirectoryInfo dir in new DirectoryInfo(Paths.GetSessionsPath()).EnumerateDirectories())
                 {
                     string[] split = dir.Name.Split('-');
                     int daysOld = (DateTime.Now - new DateTime(split[0].GetInt(), split[1].GetInt(), split[2].GetInt())).Days;

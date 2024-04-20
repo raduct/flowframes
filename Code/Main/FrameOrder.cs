@@ -32,7 +32,7 @@ namespace Flowframes.Main
 
             try
             {
-                foreach (string file in Directory.GetFiles(tempFolder, $"{Paths.frameOrderPrefix}*.*"))
+                foreach (string file in Directory.EnumerateFiles(tempFolder, $"{Paths.frameOrderPrefix}*.*"))
                     File.Delete(file);
 
                 Stopwatch benchmark = Stopwatch.StartNew();
@@ -148,7 +148,7 @@ namespace Flowframes.Main
             sceneFrames.Clear();
 
             if (Directory.Exists(scnFramesPath))
-                sceneFrames.AddRange(Directory.GetFiles(scnFramesPath).Select(file => Path.GetFileNameWithoutExtension(file)));
+                sceneFrames.AddRange(Directory.EnumerateFiles(scnFramesPath).Select(file => Path.GetFileNameWithoutExtension(file)));
 
             inputFilenames.Clear();
             bool debug = true; // Config.GetBool("frameOrderDebug", false);

@@ -37,7 +37,7 @@ namespace Flowframes.Main
             string pkgPath = Path.Combine(Paths.GetPkgPath(), ai.PkgDir);
             List<string> custModels = new List<string>();
 
-            foreach (DirectoryInfo dir in new DirectoryInfo(pkgPath).GetDirectories())
+            foreach (DirectoryInfo dir in new DirectoryInfo(pkgPath).EnumerateDirectories())
             {
                 if (dir.Name.EndsWith("_custom") && Regex.IsMatch(dir.Name, @"^[a-zA-Z0-9_]+$"))
                     custModels.Add(dir.Name);

@@ -230,7 +230,7 @@ namespace Flowframes.Main
             try
             {
                 DirectoryInfo chunksDir = new DirectoryInfo(chunksFolder);
-                foreach (DirectoryInfo dir in chunksDir.GetDirectories())
+                foreach (DirectoryInfo dir in chunksDir.EnumerateDirectories())
                 {
                     string suffix = dir.Name.Replace("chunks", "");
                     string tempConcatFile = Path.Combine(tempFolder, $"chunks-concat{suffix}.ini");
@@ -246,7 +246,7 @@ namespace Flowframes.Main
                     await MergeChunks(tempConcatFile, outPath, isBackup);
 
                     if (!isBackup)
-                        _ = Task.Run(() => _ = IoUtils.TryDeleteIfExistsAsync(IoUtils.FilenameSuffix(outPath, Paths.backupSuffix)));
+                        _ = Task.Run(() => IoUtils.TryDeleteIfExistsAsync(IoUtils.FilenameSuffix(outPath, Paths.backupSuffix)));
                 }
             }
             catch (Exception e)
