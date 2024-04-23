@@ -531,6 +531,8 @@ namespace Flowframes.Os
             if (InterpolationProgress.UpdateLastFrameFromInterpOutput(line, main))
                 return;
 
+            // Check for errors
+            string errorMsg = null;
             if (ai.Backend == AI.AiBackend.Pytorch) // Pytorch specific
             {
                 if (line.Contains("ff:nocuda-cpu"))
@@ -539,42 +541,42 @@ namespace Flowframes.Os
                 if (!hasShownError && err && line.Contains("modulenotfounderror", StringComparison.InvariantCultureIgnoreCase))
                 {
                     hasShownError = true;
-                    UiUtils.ShowMessageBox($"A python module is missing.\nCheck {ai.LogFilename} for details.\n\n{line}", UiUtils.MessageType.Error);
+                    errorMsg = $"A python module is missing.\nCheck {ai.LogFilename} for details.\n\n{line}";
                 }
 
                 if (!hasShownError && line.Contains("no longer supports this gpu", StringComparison.InvariantCultureIgnoreCase))
                 {
                     hasShownError = true;
-                    UiUtils.ShowMessageBox($"Your GPU seems to be outdated and is not supported!\n\n{line}", UiUtils.MessageType.Error);
+                    errorMsg = $"Your GPU seems to be outdated and is not supported!\n\n{line}";
                 }
 
                 if (!hasShownError && line.Contains("error(s) in loading state_dict", StringComparison.InvariantCultureIgnoreCase))
                 {
                     hasShownError = true;
                     string msg = (Interpolate.currentSettings.ai.NameInternal == Implementations.flavrCuda.NameInternal) ? "\n\nFor FLAVR, you need to select the correct model for each scale!" : "";
-                    UiUtils.ShowMessageBox($"Error loading the AI model!\n\n{line}{msg}", UiUtils.MessageType.Error);
+                    errorMsg = $"Error loading the AI model!\n\n{line}{msg}";
                 }
 
                 if (!hasShownError && line.Contains("unicodeencodeerror", StringComparison.InvariantCultureIgnoreCase))
                 {
                     hasShownError = true;
-                    UiUtils.ShowMessageBox($"It looks like your path contains invalid characters - remove them and try again!\n\n{line}", UiUtils.MessageType.Error);
+                    errorMsg = $"It looks like your path contains invalid characters - remove them and try again!\n\n{line}";
                 }
 
                 if (!hasShownError && err && (line.Contains("RuntimeError") || line.Contains("ImportError") || line.Contains("OSError")))
                 {
                     hasShownError = true;
                     string lastLogLines = string.Join("\n", Logger.GetLogLastLines(lastLogName, 6).Select(x => $"[{x.Split("]: [").Skip(1).FirstOrDefault()}"));
-                    UiUtils.ShowMessageBox($"A python error occured during interpolation!\nCheck the log for details:\n\n{lastLogLines}", UiUtils.MessageType.Error);
+                    errorMsg = $"A python error occured during interpolation!\nCheck the log for details:\n\n{lastLogLines}";
                 }
             }
 
             if (ai.Backend == AI.AiBackend.Ncnn) // NCNN specific
             {
-                if (!hasShownError && err && line.StartsWith("vk") && line.Contains("Instance") && line.EndsWith("failed"))
+                if (!hasShownError && err && line.MatchesWildcard("vk*Instance* failed"))
                 {
                     hasShownError = true;
-                    UiUtils.ShowMessageBox($"Vulkan failed to start up!\n\n{line}\n\nThis most likely means your GPU is not compatible.", UiUtils.MessageType.Error);
+                    errorMsg = $"Vulkan failed to start up!\n\n{line}\n\nThis most likely means your GPU is not compatible.";
                 }
 
                 if (!hasShownError && err && line.Contains("vkAllocateMemory failed"))
@@ -582,20 +584,20 @@ namespace Flowframes.Os
                     hasShownError = true;
                     bool usingDain = (Interpolate.currentSettings.ai.NameInternal == Implementations.dainNcnn.NameInternal);
                     string msg = usingDain ? "\n\nTry reducing the tile size in the AI settings." : "\n\nTry a lower resolution (Settings -> Max Video Size).";
-                    UiUtils.ShowMessageBox($"Vulkan ran out of memory!\n\n{line}{msg}", UiUtils.MessageType.Error);
+                    errorMsg = $"Vulkan ran out of memory!\n\n{line}{msg}";
                 }
 
                 if (!hasShownError && err && line.Contains("invalid gpu device"))
                 {
                     hasShownError = true;
-                    UiUtils.ShowMessageBox($"A Vulkan error occured during interpolation!\n\n{line}\n\nAre your GPU IDs set correctly?", UiUtils.MessageType.Error);
+                    errorMsg = $"A Vulkan error occured during interpolation!\n\n{line}\n\nAre your GPU IDs set correctly?";
                 }
 
-                if (!hasShownError && err && line.StartsWith("vk") && line.EndsWith("failed"))
+                if (!hasShownError && err && line.MatchesWildcard("vk* failed"))
                 {
                     hasShownError = true;
                     string lastLogLines = string.Join("\n", Logger.GetLogLastLines(lastLogName, 6).Select(x => $"[{x.Split("]: [").Skip(1).FirstOrDefault()}"));
-                    UiUtils.ShowMessageBox($"A Vulkan error occured during interpolation!\n\n{lastLogLines}", UiUtils.MessageType.Error);
+                    errorMsg = $"A Vulkan error occured during interpolation!\n\n{lastLogLines}";
                 }
             }
 
@@ -605,36 +607,37 @@ namespace Flowframes.Os
                 {
                     hasShownError = true;
                     string lastLogLines = string.Join("\n", Logger.GetLogLastLines(lastLogName, 6).Select(x => $"[{x.Split("]: [").Skip(1).FirstOrDefault()}"));
-                    UiUtils.ShowMessageBox($"VapourSynth interpolation failed with an unknown error. Check the log for details:\n\n{lastLogLines}", UiUtils.MessageType.Error);
+                    errorMsg = $"VapourSynth interpolation failed with an unknown error. Check the log for details:\n\n{lastLogLines}";
                 }
 
                 if (!hasShownError && line.Contains("allocate memory failed", StringComparison.InvariantCultureIgnoreCase))
                 {
                     hasShownError = true;
-                    UiUtils.ShowMessageBox($"Out of memory!\nTry reducing your RAM usage by closing some programs.\n\n{line}", UiUtils.MessageType.Error);
+                    errorMsg = $"Out of memory!\nTry reducing your RAM usage by closing some programs.\n\n{line}";
                 }
 
                 if (!hasShownError && line.Contains("vapoursynth.error:", StringComparison.InvariantCultureIgnoreCase))
                 {
                     hasShownError = true;
-                    UiUtils.ShowMessageBox($"VapourSynth Error:\n\n{line}", UiUtils.MessageType.Error);
+                    errorMsg = $"VapourSynth Error:\n\n{line}";
                 }
             }
 
             if (!hasShownError && err && line.Contains("out of memory", StringComparison.InvariantCultureIgnoreCase))
             {
                 hasShownError = true;
-                UiUtils.ShowMessageBox($"Your GPU ran out of VRAM! Please try a video with a lower resolution or use the Max Video Size option in the settings.\n\n{line}", UiUtils.MessageType.Error);
+                errorMsg = $"Your GPU ran out of VRAM! Please try a video with a lower resolution or use the Max Video Size option in the settings.\n\n{line}";
             }
 
             if (!hasShownError && line.Contains("illegal memory access", StringComparison.InvariantCultureIgnoreCase))
             {
                 hasShownError = true;
-                UiUtils.ShowMessageBox($"Your GPU appears to be unstable! If you have an overclock enabled, please disable it!\n\n{line}", UiUtils.MessageType.Error);
+                errorMsg = $"Your GPU appears to be unstable! If you have an overclock enabled, please disable it!\n\n{line}";
             }
 
+            // First cancel then show message that waits for user input
             if (hasShownError)
-                Interpolate.Cancel();
+                Interpolate.Cancel(errorMsg);
         }
 
         public static bool IsRunning()

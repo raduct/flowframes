@@ -553,7 +553,7 @@ namespace Flowframes.Media
             return supported;
         }
 
-        public static int CreateConcatFile(string inputFilesDir, string outputPath, List<string> validExtensions)
+        public static int CreateConcatFile(string inputFilesDir, string outputPath, List<string> validExtensions, bool evenOnly = false)
         {
             if (validExtensions == null || validExtensions.Count() == 0 || IoUtils.GetAmountOfFiles(inputFilesDir, false) < 1)
                 return 0;
@@ -561,12 +561,21 @@ namespace Flowframes.Media
             Directory.CreateDirectory(outputPath.GetParentDir());
             IEnumerable<string> validFiles = IoUtils.GetFilesSorted(inputFilesDir).Where(f => validExtensions.Contains(Path.GetExtension(f).Lower()));
             StringBuilder fileContent = new StringBuilder();
+            bool isEven = true;
+            int counter = 0;
             foreach (string file in validFiles)
-                fileContent.Append($"file '{file.Replace(@"\", "/")}'\n");
+            {
+                if (!evenOnly || isEven)
+                {
+                    fileContent.Append($"file '{file.Replace(@"\", "/")}'\n");
+                    counter++;
+                }
+                isEven = !isEven;
+            }
             IoUtils.TryDeleteIfExists(outputPath);
             File.WriteAllText(outputPath, fileContent.ToString());
 
-            return validFiles.Count();
+            return counter;
         }
 
         public static Size SizeFromString(string str, char delimiter = ':')

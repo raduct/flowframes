@@ -165,7 +165,7 @@ namespace Flowframes.Ui
 
             string logStr = $"Interpolated {frames}/{target} Frames ({percent}%) - Average Speed: {fpsIn} FPS In / {fpsOut} FPS Out - ";
             logStr += $"Time: {FormatUtils.Time(AiProcess.processTime.Elapsed)} - ETA: {etaStr}";
-            if (AutoEncode.busy) logStr += " - Encoding...";
+            if (AutoEncode.encoding) logStr += " - Encoding...";
             Logger.Log(logStr, false, replaceLine);
             try
             {

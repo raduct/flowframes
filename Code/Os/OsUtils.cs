@@ -99,16 +99,14 @@ namespace Flowframes.Os
 
         public static void KillProcessTree(int pid)
         {
-            // Get a list of all currently running processes
-            Process[] runningProcesses = Process.GetProcesses();
-
             // Check if the process with the given pid is running
-            Process proc = Process.GetProcesses().FirstOrDefault(p => p.Id == pid);
-
-            if (proc != null && !proc.HasExited)
+            try
             {
-                proc.Kill();
+                Process proc = Process.GetProcessById(pid);
+                proc?.Kill();
             }
+            catch (ArgumentException) { }
+            catch (InvalidOperationException) { }
 
             // Query to find child processes
             ManagementObjectSearcher processSearcher = new ManagementObjectSearcher($"Select * From Win32_Process Where ParentProcessID={pid}");

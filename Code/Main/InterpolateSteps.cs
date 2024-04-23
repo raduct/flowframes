@@ -54,7 +54,7 @@ namespace Flowframes.Main
 
         public static async Task ExtractFramesStep()
         {
-            if (!(await IoUtils.TryDeleteIfExistsAsync(currentSettings.framesFolder)))
+            if (!await IoUtils.TryDeleteIfExistsAsync(currentSettings.framesFolder))
             {
                 UiUtils.ShowMessageBox("Failed to delete existing frames folder - Make sure no file is opened in another program!", UiUtils.MessageType.Error);
                 return;

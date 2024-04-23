@@ -131,17 +131,17 @@ namespace Flowframes
             currentSettings.RefreshAlpha();
             currentSettings.RefreshExtensions(InterpSettings.FrameType.Import);
 
-            if (Config.GetBool(Config.Key.scnDetect) && !currentSettings.ai.Piped)
-            {
-                Program.mainForm.SetStatus("Extracting scenes from video...");
-                await FfmpegExtract.ExtractSceneChanges(currentSettings.inPath, Path.Combine(currentSettings.tempFolder, Paths.scenesDir), currentSettings.inFps, currentSettings.inputIsFrames, currentSettings.framesExt);
-                await Task.Run(() => Utils.TemporalFilterSceneChanges(Path.Combine(currentSettings.tempFolder, Paths.scenesDir), Path.Combine(currentSettings.tempFolder, Utils.sceneScoresFile), currentSettings.inFps));
-            }
-
             if (!currentSettings.inputIsFrames)        // Extract if input is video, import if image sequence
                 await ExtractFrames(currentSettings.inPath, currentSettings.framesFolder, currentSettings.alpha);
             else
                 await FfmpegExtract.ImportImagesCheckCompat(currentSettings.inPath, currentSettings.framesFolder, currentSettings.alpha, currentSettings.ScaledResolution, true, currentSettings.framesExt);
+
+            if (Config.GetBool(Config.Key.scnDetect) && !currentSettings.ai.Piped)
+            {
+                Program.mainForm.SetStatus("Extracting scene changes from input...");
+                await FfmpegExtract.ExtractSceneChanges(currentSettings.framesFolder, Path.Combine(currentSettings.tempFolder, Paths.scenesDir), currentSettings.inFps, true, currentSettings.framesExt, currentSettings.is3D);
+                await Task.Run(() => Utils.TemporalFilterSceneChanges(Path.Combine(currentSettings.tempFolder, Paths.scenesDir), Path.Combine(currentSettings.tempFolder, Utils.sceneScoresFile), currentSettings.is3D ? currentSettings.inFps.GetFloat() / 2 : currentSettings.inFps.GetFloat()));
+            }
         }
 
         public static async Task ExtractFrames(string inPath, string outPath, bool alpha)
@@ -274,7 +274,7 @@ namespace Flowframes
             await Task.WhenAll(tasks);
         }
 
-        public static void Cancel(string reason = "", bool noMsgBox = false)
+        public static void Cancel(string reason = null, bool noMsgBox = false)
         {
             if (currentSettings == null)
                 return;
@@ -284,6 +284,13 @@ namespace Flowframes
             Program.mainForm.SetProgress(0);
             AiProcess.Kill();
             AvProcess.Kill();
+
+            Program.mainForm.SetWorking(false);
+            Program.mainForm.SetTab(Program.mainForm.interpOptsTab.Name);
+            Logger.Log($"Canceled interpolation.{(string.IsNullOrWhiteSpace(reason) ? string.Empty : " Reason: " + reason)}");
+
+            if (!string.IsNullOrWhiteSpace(reason) && !noMsgBox)
+                UiUtils.ShowMessageBox($"Canceled:\n\n{reason}");
 
             if (!currentSettings.stepByStep && !Config.GetBool(Config.Key.keepTempFolder))
             {
@@ -299,13 +306,6 @@ namespace Flowframes
                     _ = Task.Run(() => IoUtils.TryDeleteIfExistsAsync(currentSettings.tempFolder));
                 }
             }
-
-            Program.mainForm.SetWorking(false);
-            Program.mainForm.SetTab(Program.mainForm.interpOptsTab.Name);
-            Logger.Log("Canceled interpolation.");
-
-            if (!string.IsNullOrWhiteSpace(reason) && !noMsgBox)
-                UiUtils.ShowMessageBox($"Canceled:\n\n{reason}");
         }
 
         public static async Task Cleanup(bool ignoreKeepSetting = false, int retriesLeft = 3, bool isRetry = false)

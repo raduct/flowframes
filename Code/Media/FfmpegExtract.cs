@@ -19,7 +19,7 @@ namespace Flowframes.Media
         internal static readonly string[] pixelFmtTiff = new[] { "rgb24", "rgb48le", "pal8", "rgba", "yuv420p", "yuv422p", "yuv440p", "yuv444p" };
         internal static readonly string[] pixelFmtWebp = new[] { "bgra", "yuv420p", "yuva420p" };
 
-        public static async Task ExtractSceneChanges(string inPath, string outDir, Fraction rate, bool inputIsFrames, string format)
+        public static async Task ExtractSceneChanges(string inPath, string outDir, Fraction rate, bool inputIsFrames, string format, bool is3D)
         {
             Logger.Log("Extracting scene changes...");
             Directory.CreateDirectory(outDir);
@@ -29,15 +29,15 @@ namespace Flowframes.Media
             if (inputIsFrames)
             {
                 string concatFile = Path.Combine(Paths.GetSessionDataPath(), "scndetect-concat-temp.ini");
-                FfmpegUtils.CreateConcatFile(inPath, concatFile, Filetypes.imagesInterpCompat.ToList());
+                _ = FfmpegUtils.CreateConcatFile(inPath, concatFile, Filetypes.imagesInterpCompat.ToList(), is3D);
                 inArg = $"-f concat -safe 0 -i {concatFile.Wrap()}";
             }
 
-            string rateFilter = rate.GetFloat() > 0 ? $"fps={rate}," : "";
+            string rateFilter = !inputIsFrames && rate.GetFloat() > 0 ? $"fps={rate}," : string.Empty;
             string scnDetect = $"-vf \"{rateFilter}select='gt(scene,{Config.GetFloatString(Config.Key.scnDetectValue)})',metadata=print:file={InterpolateUtils.sceneScoresFile}\"";
             //string rateArg = (rate.GetFloat() > 0) ? $"-fps_mode cfr -r {rate}" : "-fps_mode passthrough";
             string rateArg = "-fps_mode passthrough";
-            string args = $"{GetTrimArg(true)} {inArg} {GetImgArgs(format)} {rateArg} {scnDetect} -frame_pts 1 -s 256x144 {GetTrimArg(false)} \"{outDir}/%{Padding.inputFrames}d{format}\"";
+            string args = $"{(inputIsFrames ? string.Empty : GetTrimArg(true))} {inArg} {GetImgArgs(format)} {rateArg} {scnDetect} -frame_pts 1 -s 256x144 {(inputIsFrames ? string.Empty : GetTrimArg(false))} \"{outDir}/%{Padding.inputFrames}d{format}\"";
 
             LogMode logMode = Interpolate.currentMediaFile.FrameCount > 50 ? LogMode.OnlyLastLine : LogMode.Hidden;
             await RunFfmpeg(args, Interpolate.currentSettings.tempFolder, logMode, inputIsFrames ? "panic" : "warning");

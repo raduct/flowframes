@@ -24,7 +24,7 @@ namespace Flowframes.Main
         static readonly List<int> unencodedFrameLines = new List<int>();
 
         static bool debug;
-        public static bool busy;
+        public static bool encoding;
         public static bool paused;
 
         public static void UpdateChunkAndBufferSizes()
@@ -43,7 +43,7 @@ namespace Flowframes.Main
         public static async Task MainLoop(string interpFramesPath)
         {
             paused = false;
-            busy = false;
+            encoding = false;
             debug = Config.GetBool("autoEncDebug", false);
 
             try
@@ -153,13 +153,15 @@ namespace Flowframes.Main
                             string firstFile = Path.GetFileName(interpFramesLines[frameLinesToEncode.First()]);
                             string lastFile = Path.GetFileName(interpFramesLines[frameLinesToEncode.Last()]);
                             Logger.Log($"[AE] Encoding Chunk #{chunkNo} to using line {frameLinesToEncode.First()} ({firstFile}) through {frameLinesToEncode.Last()} ({lastFile}) - {unencodedFrameLines.Count} unencoded frames left in total", true, false, "ffmpeg");
+                            encoding = true;
 
-                            busy = true;
                             int currentChunkNo = chunkNo; // capture value
                             int[] frameLinesToEncodeAr = frameLinesToEncode.ToArray(); // capture value
                             currentEncodingTask = Task.Run(async () =>
                             {
                                 await Export.EncodeChunk(outpath, Interpolate.currentSettings.interpFolder, currentChunkNo, Interpolate.currentSettings.outSettings, frameLinesToEncodeAr[0], frameLinesToEncodeAr.Length, aiRunning ? AvProcess.LogMode.Background : AvProcess.LogMode.OnlyLastLine);
+
+                                if (Interpolate.canceled) return; // Don't save resume data if cancelled
 
                                 IEnumerable<string> inputFrames = JsonConvert.DeserializeObject<List<string>>(File.ReadAllText(encFile + FrameOrder.inputFramesJson)).Take(frameLinesToEncodeAr[0] + frameLinesToEncodeAr.Length);
                                 int indexInputFrame = inputFrames.Distinct().Count();
@@ -168,13 +170,11 @@ namespace Flowframes.Main
                                 AutoEncodeResume.lastEncodedOriginalInputFrame = FrameRename.GetOriginalFileName(indexInputFrame - 1);
                                 AutoEncodeResume.SaveChunk();
 
-                                if (Interpolate.canceled) return;
-
                                 if (Config.GetInt(Config.Key.autoEncMode) == 2)
                                     DeleteOldFrames(interpFramesPath, frameLinesToEncodeAr);
 
                                 Logger.Log("[AE] Done Encoding Chunk #" + currentChunkNo, true, false, "ffmpeg");
-                                busy = false;
+                                encoding = false;
                             });
 
                             if (Interpolate.canceled) return;
