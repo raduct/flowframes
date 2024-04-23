@@ -14,7 +14,7 @@ namespace Flowframes.Media
 
             foreach (FileInfo file in IoUtils.GetFileInfosSorted(rgbDir))
             {
-                string args = $"-i {file.FullName.Wrap()} -vf \"format=yuva444p16le,alphaextract,format=yuv420p,{GetPadFilter()}\" {Path.Combine(alphaDir, file.Name).Wrap()}";
+                string args = $"-i {file.FullName.Wrap()} -vf \"format=yuva444p16le,alphaextract,format=yuv420p,{GetPadFilter(Size.Empty)}\" {Path.Combine(alphaDir, file.Name).Wrap()}";
                 await RunFfmpeg(args, LogMode.Hidden);
             }
         }

@@ -19,7 +19,7 @@ namespace Flowframes.Media
 
             IoUtils.RenameExistingFileOrDir(outPath);
             Directory.CreateDirectory(outPath.GetParentDir());
-            string[] encArgs = Utils.GetEncArgs(settings, (Interpolate.currentSettings.ScaledResolution.IsEmpty ? Interpolate.currentSettings.InputResolution : Interpolate.currentSettings.ScaledResolution), Interpolate.currentSettings.outFps.GetFloat());
+            string[] encArgs = Utils.GetEncArgs(settings, Interpolate.currentSettings.ScaledResolution.IsEmpty ? Interpolate.currentSettings.InputResolution : Interpolate.currentSettings.ScaledResolution, Interpolate.currentSettings.outFps.GetFloat());
 
             string inArg = $"-f concat -i {Path.GetFileName(framesFile)}";
             string linksDir = Path.Combine(framesFile + Paths.symlinksSuffix);
@@ -96,7 +96,7 @@ namespace Flowframes.Media
                 filters.Add($"zscale=transfer=linear,format={settings.PixelFormat.ToString().Lower()}".Wrap());
             }
 
-            filters.Add(GetPadFilter());
+            filters.Add(GetPadFilter(Interpolate.currentSettings.InputResolution));
             filters = filters.Where(f => f.IsNotEmpty()).ToList();
 
             return filters.Count > 0 ?

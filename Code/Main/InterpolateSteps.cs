@@ -102,7 +102,7 @@ namespace Flowframes.Main
                 return;
             }
 
-            if (Config.GetBool(Config.Key.sbsAllowAutoEnc) && !(await InterpolateUtils.CheckEncoderValid())) return;
+            if (Config.GetBool(Config.Key.sbsAllowAutoEnc) && !await InterpolateUtils.CheckEncoderValid()) return;
 
             if (canceled) return;
 

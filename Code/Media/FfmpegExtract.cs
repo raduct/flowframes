@@ -128,7 +128,7 @@ namespace Flowframes.Media
             IoUtils.CreateDir(framesDir);
             string mpStr = deDupe ? GetMpdecimate(true) : "";
             string rateFilter = rate.GetFloat() > 0 && !deDupe ? $"fps={rate}" : "";
-            string filters = FormatUtils.ConcatStrings(new[] { GetPadFilter(), mpStr, rateFilter });
+            string filters = FormatUtils.ConcatStrings(new[] { GetPadFilter(Interpolate.currentSettings.InputResolution), mpStr, rateFilter });
             string vf = filters.Length > 2 ? $"-vf {filters}" : "";
             //string rateArg = (rate.GetFloat() > 0 && !deDupe) ? $" -fps_mode cfr -r {rate}" : "-fps_mode passthrough";
             //string args = $"{GetTrimArg(true)} -itsscale {Interpolate.currentMediaFile.VideoStreams.First().FpsInfo.VfrRatio} -i {inputFile.Wrap()} {GetImgArgs(format, true, alpha)} {rateArg} -frame_pts 1 {vf} {sizeStr} {GetTrimArg(false)} \"{framesDir}/%{Padding.inputFrames}d{format}\""; LogMode logMode = Interpolate.currentMediaFile.FrameCount > 50 ? LogMode.OnlyLastLine : LogMode.Hidden;
@@ -276,7 +276,7 @@ namespace Flowframes.Media
             }
 
             string sizeStr = (size.Width > 1 && size.Height > 1) ? $"-s {size.Width}x{size.Height}" : "";
-            string vf = $"-vf {GetPadFilter()}";
+            string vf = $"-vf {GetPadFilter(Interpolate.currentSettings.InputResolution)}";
             string args = $"-r 25 {inArg} {GetImgArgs(format, true, alpha)} {sizeStr} -fps_mode passthrough -start_number 0 {vf} \"{outPath}/%{Padding.inputFrames}d{format}\"";
             LogMode logMode = IoUtils.GetAmountOfFiles(inPath, false) > 50 ? LogMode.OnlyLastLine : LogMode.Hidden;
             await RunFfmpeg(args, logMode, "panic");
@@ -332,7 +332,7 @@ namespace Flowframes.Media
             bool isPng = Path.GetExtension(outPath).Equals(".png", StringComparison.InvariantCultureIgnoreCase);
             string comprArg = isPng ? pngCompr : "";
             string pixFmt = "-pix_fmt " + (isPng ? $"rgb24 {comprArg}" : "yuvj420p");
-            string args = $"-i {inputFile.Wrap()} {comprArg} {sizeStr} {pixFmt} -vf {GetPadFilter()} {outPath.Wrap()}";
+            string args = $"-i {inputFile.Wrap()} {comprArg} {sizeStr} {pixFmt} -vf {GetPadFilter(Interpolate.currentSettings.InputResolution)} {outPath.Wrap()}";
             await RunFfmpeg(args, LogMode.Hidden);
         }
 

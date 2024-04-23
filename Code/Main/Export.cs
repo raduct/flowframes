@@ -71,7 +71,7 @@ namespace Flowframes.Main
         public static async Task<string> GetPipedFfmpegCmd(bool ffplay = false)
         {
             InterpSettings s = I.currentSettings;
-            string encArgs = FfmpegUtils.GetEncArgs(s.outSettings, (s.ScaledResolution.IsEmpty ? s.InputResolution : s.ScaledResolution), s.outFps.GetFloat(), true).FirstOrDefault();
+            string encArgs = FfmpegUtils.GetEncArgs(s.outSettings, s.ScaledResolution.IsEmpty ? s.InputResolution : s.ScaledResolution, s.outFps.GetFloat(), true).FirstOrDefault();
 
             string max = Config.Get(Config.Key.maxFps);
             Fraction maxFps = max.Contains('/') ? new Fraction(max) : new Fraction(max.GetFloat());

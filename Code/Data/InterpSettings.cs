@@ -87,7 +87,7 @@ namespace Flowframes
                 inputIsFrames = false;
             }
 
-            _inputResolution = new Size(0, 0);
+            _inputResolution = Size.Empty;
 
             RefreshExtensions();
         }
@@ -105,7 +105,7 @@ namespace Flowframes
             model = null;
             alpha = false;
             stepByStep = false;
-            _inputResolution = new Size(0, 0);
+            _inputResolution = Size.Empty;
             framesExt = "";
             interpExt = "";
 

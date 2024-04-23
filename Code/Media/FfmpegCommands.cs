@@ -41,14 +41,15 @@ namespace Flowframes
             return Interpolate.currentSettings.outSettings.Encoder.GetInfo().Modulo;
         }
 
-        public static string GetPadFilter()
+        // Pad input with black bars up to multiple required by output encoder or AI
+        public static string GetPadFilter(Size inputSize)
         {
             int mod = GetModulo();
 
-            if (mod < 2)
-                return "";
+            if (mod < 2 || !inputSize.IsEmpty && inputSize.Width % mod == 0 && inputSize.Height % mod == 0)
+                return string.Empty;
 
-            return "";//$"pad=width=ceil(iw/{mod})*{mod}:height=ceil(ih/{mod})*{mod}:color=black@0";
+            return $"pad=width=ceil(iw/{mod})*{mod}:height=ceil(ih/{mod})*{mod}:color=black@0";
         }
 
         public static async Task ConcatVideos(string concatFile, string outPath, int looptimes = -1, bool showLog = true)
@@ -171,7 +172,7 @@ namespace Flowframes
                 return new Size(numbers[0].GetInt(), numbers[1].GetInt());
             }
 
-            return new Size(0, 0);
+            return Size.Empty;
         }
 
         public static async Task<int> GetFrameCountAsync(string inputFile)

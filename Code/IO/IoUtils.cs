@@ -339,11 +339,11 @@ namespace Flowframes.IO
 
         public static async Task<Size> GetVideoOrFramesRes(string path)
         {
-            Size res = new Size();
+            Size res = Size.Empty;
 
             try
             {
-                if (!IsPathDirectory(path))     // If path is video
+                if (!IsPathDirectory(path))     // If path is video file
                 {
                     res = GetVideoRes(path);
                 }
@@ -363,7 +363,7 @@ namespace Flowframes.IO
 
         public static Size GetVideoRes(string path)
         {
-            Size size = new Size(0, 0);
+            Size size = Size.Empty;
 
             try
             {

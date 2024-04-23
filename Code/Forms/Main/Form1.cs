@@ -152,7 +152,7 @@ namespace Flowframes.Forms.Main
         {
             try
             {
-                //_ = Task.Run(() => Updater.UpdateModelList());
+                _ = Task.Run(() => Updater.UpdateModelList());
                 //_ = Task.Run(() => Updater.UpdateCheck());
                 //_ = Task.Run(() => GetWebInfo.LoadNews(newsLabel));
                 //_ = Task.Run(() => GetWebInfo.LoadPatronListCsv(patronsLabel));
