@@ -49,13 +49,13 @@ namespace Flowframes.Ui
 
             while (Program.busy)
             {
-                if (AiProcess.processTime.IsRunning && Directory.Exists(outdir))
+                if (Directory.Exists(outdir))
                 {
                     if (firstProgUpd && Program.mainForm.IsInFocus())
                         Program.mainForm.SetTab(Program.mainForm.previewTab.Name);
 
                     firstProgUpd = false;
-                    int lastFrameNo =  I.currentSettings.is3D ? Math.Min(lastFrame, lastOtherFrame) : lastFrame;
+                    int lastFrameNo = I.currentSettings.is3D ? Math.Min(lastFrame, lastOtherFrame) : lastFrame;
 
                     if (lastFrameNo > 1)
                         UpdateInterpProgress(lastFrameNo, targetFrames, outdir);
@@ -108,23 +108,16 @@ namespace Flowframes.Ui
 
             while (Program.busy)
             {
-                if (AiProcess.processTime.IsRunning)
-                {
-                    string lastLogLine = Logger.GetLogLastLine(logFile);
-                    int num = lastLogLine == null ? 0 : lastLogLine.Split("frame=")[1].Split("fps=")[0].GetInt();
+                string lastLogLine = Logger.GetLogLastLine(logFile);
+                int num = lastLogLine == null ? 0 : lastLogLine.Split("frame=")[1].Split("fps=")[0].GetInt();
 
-                    if (num > 0)
-                        UpdateInterpProgress(num, targetFrames);
+                if (num > 0)
+                    UpdateInterpProgress(num, targetFrames);
 
-                    await Task.Delay(500);
+                await Task.Delay(500);
 
-                    if (num >= targetFrames)
-                        break;
-                }
-                else
-                {
-                    await Task.Delay(100);
-                }
+                if (num >= targetFrames)
+                    break;
             }
 
             progCheckRunning = false;
@@ -133,7 +126,6 @@ namespace Flowframes.Ui
                 Program.mainForm.SetProgress(0);
         }
 
-        //public static int interpolatedInputFramesCount;
         public static float peakFpsOut;
 
         private const int previewUpdateRateMs = 200;
@@ -141,8 +133,6 @@ namespace Flowframes.Ui
         public static void UpdateInterpProgress(int frames, int target, string currentOutdir = "")
         {
             if (I.canceled) return;
-            //interpolatedInputFramesCount = ((frames / I.currentSettings.interpFactor).RoundToInt() - 1);
-            //ResumeUtils.Save();
             target = (target / I.InterpProgressMultiplier).RoundToInt();
             frames = frames.Clamp(0, target);
             int percent = FormatUtils.RatioInt(frames, target);
@@ -183,23 +173,6 @@ namespace Flowframes.Ui
                 //Logger.Log("Error updating preview: " + e.Message, true);
             }
         }
-
-        //public static async Task DeleteInterpolatedInputFrames()
-        //{
-        //    interpolatedInputFramesCount = 0;
-        //    string[] inputFrames = IoUtils.GetFilesSorted(I.currentSettings.framesFolder);
-
-        //    for (int i = 0; i < inputFrames.Length; i++)
-        //    {
-        //        while (Program.busy && (i + 10) > interpolatedInputFramesCount) await Task.Delay(1000);
-        //        if (!Program.busy) break;
-
-        //        if (i != 0 && i != inputFrames.Length - 1)
-        //            IoUtils.OverwriteFileWithText(inputFrames[i]);
-
-        //        if (i % 10 == 0) await Task.Delay(10);
-        //    }
-        //}
 
         public static Stopwatch timeSinceLastPreviewUpdate = new Stopwatch();
 

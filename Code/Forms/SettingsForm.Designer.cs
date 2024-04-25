@@ -581,6 +581,7 @@
             // 
             // tabListPage2
             // 
+            this.tabListPage2.AutoScroll = true;
             this.tabListPage2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(48)))), ((int)(((byte)(48)))));
             this.tabListPage2.Controls.Add(this.autoEncBlockPanel);
             this.tabListPage2.Controls.Add(this.label70);
