@@ -29,22 +29,12 @@ namespace Flowframes.MiscUtils
                 originalFrameSkipped = indexLast + (Interpolate.currentSettings.is3D ? 2 : 1);
                 importFilenames = importFilenames.Skip(originalFrameSkipped).ToArray();
 
-                // Shift scene change file names in synch with the input frames
-                string sceneDir = Path.Combine(Interpolate.currentSettings.tempFolder, Paths.scenesDir);
-                string[] scenes = IoUtils.GetFilesSorted(sceneDir);
-                int skippedOffset = Interpolate.currentSettings.is3D ? originalFrameSkipped / 2 : originalFrameSkipped;
-                foreach (string sceneFullFileName in scenes)
-                {
-                    string sceneFilename = Path.GetFileNameWithoutExtension(sceneFullFileName);
-                    int fileNo = int.Parse(sceneFilename);
-                    string newFilename = fileNo >= skippedOffset ? (fileNo - skippedOffset).ToString().PadLeft(Padding.inputFrames, '0') : "!" + sceneFilename;
-                    string targetPath = Path.Combine(Path.GetDirectoryName(sceneFullFileName), newFilename + Path.GetExtension(sceneFullFileName));
-                    File.Move(sceneFullFileName, targetPath);
-                }
+                await Task.Run(() => RenameScenes());
             }
             else
                 originalFrameSkipped = 0;
 
+            // Parallel rename is slower
             //int chunkSize = 2* (int)Math.Ceiling((double)importFilenames.Length / 4);// 2 * (int)Math.Ceiling((double)importFilenames.Length / 2 / Environment.ProcessorCount); // Make sure is even for 3D double frames
             int chunkSize = importFilenames.Length;
             List<Task> tasks = new List<Task>();
@@ -61,7 +51,7 @@ namespace Flowframes.MiscUtils
             framesAreRenamed = true;
         }
 
-        public static void RenameCounterDirWorker(string[] files, int from, int count)
+        private static void RenameCounterDirWorker(string[] files, int from, int count)
         {
             int counter = Interpolate.currentSettings.is3D ? from / 2 : from;
             string dirA = Path.Combine(Interpolate.currentSettings.tempFolder, Paths.framesWorkDir);
@@ -88,6 +78,24 @@ namespace Flowframes.MiscUtils
             }
         }
 
+        // Shift scene change file names in synch with the input frames
+        private static void RenameScenes()
+        {
+            if (originalFrameSkipped == 0) return;
+
+            string sceneDir = Path.Combine(Interpolate.currentSettings.tempFolder, Paths.scenesDir);
+            string[] scenes = IoUtils.GetFilesSorted(sceneDir);
+            int skippedOffset = Interpolate.currentSettings.is3D ? originalFrameSkipped / 2 : originalFrameSkipped;
+            foreach (string sceneFullFileName in scenes)
+            {
+                string sceneFilename = Path.GetFileNameWithoutExtension(sceneFullFileName);
+                int fileNo = int.Parse(sceneFilename);
+                string newFilename = fileNo >= skippedOffset ? (fileNo - skippedOffset).ToString().PadLeft(Padding.inputFrames, '0') : "!" + sceneFilename;
+                string targetPath = Path.Combine(Path.GetDirectoryName(sceneFullFileName), newFilename + Path.GetExtension(sceneFullFileName));
+                File.Move(sceneFullFileName, targetPath);
+            }
+        }
+
         public static async Task UnRename()
         {
             if (!framesAreRenamed) return;
@@ -95,31 +103,20 @@ namespace Flowframes.MiscUtils
             Logger.Log($"Unrenaming {importFilenames.Length} frames ...");
             Stopwatch benchmark = Stopwatch.StartNew();
 
-            if (originalFrameSkipped != 0)
-            {
-                // Shift back scene change file names in synch with the input frames
-                string sceneDir = Path.Combine(Interpolate.currentSettings.tempFolder, Paths.scenesDir);
-                string[] scenes = IoUtils.GetFilesSorted(sceneDir);
-                int skippedOffset = Interpolate.currentSettings.is3D ? originalFrameSkipped / 2 : originalFrameSkipped;
-                foreach (string sceneFullFileName in scenes.Reverse())
-                {
-                    string sceneFilename = Path.GetFileNameWithoutExtension(sceneFullFileName);
-                    string newFilename = sceneFilename[0] != '!' ? (int.Parse(sceneFilename) + skippedOffset).ToString().PadLeft(Padding.inputFrames, '0') : sceneFilename.Substring(1);
-                    string targetPath = Path.Combine(Path.GetDirectoryName(sceneFullFileName), newFilename + Path.GetExtension(sceneFullFileName));
-                    File.Move(sceneFullFileName, targetPath);
-                }
-            }
+            if (originalFrameSkipped != 0) 
+                await Task.Run(() => UnRenameScenes());
 
             string dirA = Path.Combine(Interpolate.currentSettings.tempFolder, Paths.framesWorkDir);
             string[] files = IoUtils.GetFilesSorted(dirA);
-            int chunkSize = files.Length;// (int)Math.Ceiling((double)files.Length / Environment.ProcessorCount * (Interpolate.currentSettings.is3D ? 2 : 1));
+            // Parallel rename is slower
+            //int chunkSize = (int)Math.Ceiling((double)files.Length / Environment.ProcessorCount * (Interpolate.currentSettings.is3D ? 2 : 1));
+            int chunkSize = files.Length;
             List<Task> tasks = new List<Task>();
 
             for (int i = 0; i < files.Length; i += chunkSize)
             {
                 int from = i; // capture variable
-                //tasks.Add(Task.Run(() => UnRenameWorker(files, from, chunkSize, false)));
-                UnRenameWorker(files, from, chunkSize, false);
+                tasks.Add(Task.Run(() => UnRenameWorker(files, from, chunkSize, false)));
             }
 
             if (Interpolate.currentSettings.is3D)
@@ -129,8 +126,7 @@ namespace Flowframes.MiscUtils
                 for (int i = 0; i < filesB.Length; i += chunkSize)
                 {
                     int from = i; // capture variable
-                    //tasks.Add(Task.Run(() => UnRenameWorker(filesB, from, chunkSize, true)));
-                    UnRenameWorker(filesB, from, chunkSize, true);
+                    tasks.Add(Task.Run(() => UnRenameWorker(filesB, from, chunkSize, true)));
                 }
             }
             await Task.WhenAll(tasks);
@@ -139,13 +135,30 @@ namespace Flowframes.MiscUtils
             framesAreRenamed = false;
         }
 
-        public static void UnRenameWorker(string[] files, int from, int count, bool isOther)
+        private static void UnRenameWorker(string[] files, int from, int count, bool isOther)
         {
             int multiplier = Interpolate.currentSettings.is3D ? 2 : 1;
             int offset = isOther ? 1 : 0;
             for (int i = from; i < from + count && i < files.Length; i++)
             {
                 File.Move(files[i], importFilenames[i * multiplier + offset]);
+            }
+        }
+
+        // Shift back scene change file names in synch with the input frames
+        private static void UnRenameScenes()
+        {
+            if (originalFrameSkipped == 0) return;
+
+            string sceneDir = Path.Combine(Interpolate.currentSettings.tempFolder, Paths.scenesDir);
+            string[] scenes = IoUtils.GetFilesSorted(sceneDir);
+            int skippedOffset = Interpolate.currentSettings.is3D ? originalFrameSkipped / 2 : originalFrameSkipped;
+            foreach (string sceneFullFileName in scenes.Reverse())
+            {
+                string sceneFilename = Path.GetFileNameWithoutExtension(sceneFullFileName);
+                string newFilename = sceneFilename[0] != '!' ? (int.Parse(sceneFilename) + skippedOffset).ToString().PadLeft(Padding.inputFrames, '0') : sceneFilename.Substring(1);
+                string targetPath = Path.Combine(Path.GetDirectoryName(sceneFullFileName), newFilename + Path.GetExtension(sceneFullFileName));
+                File.Move(sceneFullFileName, targetPath);
             }
         }
 

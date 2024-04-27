@@ -44,7 +44,7 @@ namespace Flowframes.Magick
             imageCache.Clear();
         }
 
-        static async Task ProcessFrame(FileInfo frame, FileInfo lastFrame, string outFolder)
+        static void ProcessFrame(FileInfo frame, FileInfo lastFrame, string outFolder)
         {
             MagickImage prevFrame = GetImage(lastFrame.FullName, false);
             MagickImage currFrame = GetImage(frame.FullName, false);
@@ -81,8 +81,6 @@ namespace Flowframes.Magick
 
             prevFrame.Dispose();
             currFrame.Dispose();
-
-            await Task.CompletedTask;
         }
     }
 }

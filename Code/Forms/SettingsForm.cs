@@ -31,7 +31,7 @@ namespace Flowframes.Forms
             InitServers();
             LoadSettings();
             initialized = true;
-            Task.Run(() => CheckModelCacheSize());
+            _ = Task.Run(() => CheckModelCacheSize());
         }
 
         void InitServers()
@@ -45,10 +45,8 @@ namespace Flowframes.Forms
             serverCombox.SelectedIndex = 0;
         }
 
-        public async Task CheckModelCacheSize()
+        public void CheckModelCacheSize()
         {
-            await Task.CompletedTask;
-
             long modelFoldersBytes = 0;
 
             foreach (string modelFolder in ModelDownloader.GetAllModelFolders())
@@ -222,13 +220,13 @@ namespace Flowframes.Forms
         {
             ModelDownloader.DeleteAllModels();
             clearModelCacheBtn.Text = "Clear Model Cache";
-            _ = CheckModelCacheSize();
+            CheckModelCacheSize();
         }
 
         private void modelDownloaderBtn_Click(object sender, EventArgs e)
         {
             new ModelDownloadForm().ShowDialog();
-            _ = CheckModelCacheSize();
+            CheckModelCacheSize();
         }
 
         private void autoEncMode_SelectedIndexChanged(object sender, EventArgs e)

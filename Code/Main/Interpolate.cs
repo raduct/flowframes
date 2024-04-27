@@ -85,7 +85,7 @@ namespace Flowframes
             }
 
             if (Config.GetBool(Config.Key.keepTempFolder))
-                await Task.Run(() => FrameRename.UnRename());
+                await FrameRename.UnRename();
 
             IoUtils.DeleteIfSmallerThanKb(currentSettings.FullOutPath);
             await Done();
@@ -216,7 +216,7 @@ namespace Flowframes
             if (!ai.Piped || (ai.Piped && currentSettings.inputIsFrames))
             {
                 await Task.Run(() => Dedupe.CreateDupesFile(currentSettings.framesFolder, currentSettings.framesExt));
-                await Task.Run(() => FrameRename.Rename(AutoEncodeResume.lastEncodedOriginalInputFrame));
+                await FrameRename.Rename(AutoEncodeResume.lastEncodedOriginalInputFrame);
                 AutoEncodeResume.SaveGlobal(false);
             }
             else if (ai.Piped && dedupe)
