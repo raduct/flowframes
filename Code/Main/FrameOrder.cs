@@ -139,7 +139,7 @@ namespace Flowframes.Main
 
             frameFileContents.Clear();
 
-            frameFiles = new DirectoryInfo(Path.Combine(tempFolder, Paths.framesWorkDir)).GetFiles("*" + Interpolate.currentSettings.framesExt);
+            frameFiles = IoUtils.GetFileInfosSorted(Path.Combine(tempFolder, Paths.framesWorkDir), false, "*" + Interpolate.currentSettings.framesExt);
             string framesFile = Path.Combine(tempFolder, Paths.GetFrameOrderFilename(interpFactor));
             dupesDict = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(File.ReadAllText(Path.Combine(tempFolder, Dedupe.dupesFileName)));
 
@@ -182,7 +182,11 @@ namespace Flowframes.Main
             {
                 string[] lines = fileContent.ToString().SplitIntoLines();
                 IEnumerable<string> fileLines = lines.Where(x => x.StartsWith("file ")).Reverse();
-                int neededFrames = (frameFiles.Length * interpFactor).RoundToInt() - fileLines.Count() / (Interpolate.currentSettings.is3D ? 2 : 1);
+                int countOrigFrames = 0;
+                foreach (string key in dupesDict.Keys)
+                    if (key.GetInt() >= FrameRename.originalFrameSkipped)
+                        countOrigFrames += dupesDict[key].Count + 1;
+                int neededFrames = (countOrigFrames * interpFactor).RoundToInt() - fileLines.Count() / (Interpolate.currentSettings.is3D ? 2 : 1);
 
                 for (int i = 0; i < neededFrames; i++)
                 {
