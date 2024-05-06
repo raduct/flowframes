@@ -1320,7 +1320,7 @@
             this.dedupThresh.DecimalPlaces = 1;
             this.dedupThresh.ForeColor = System.Drawing.Color.White;
             this.dedupThresh.Increment = new decimal(new int[] {
-            5,
+            1,
             0,
             0,
             65536});
@@ -1331,7 +1331,7 @@
             0,
             0});
             this.dedupThresh.Minimum = new decimal(new int[] {
-            5,
+            1,
             0,
             0,
             65536});
