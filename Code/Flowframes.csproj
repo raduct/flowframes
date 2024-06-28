@@ -252,7 +252,6 @@
     <Compile Include="Main\InterpolateSteps.cs" />
     <Compile Include="Main\InterpolateUtils.cs" />
     <Compile Include="Main\FrameOrder.cs" />
-    <Compile Include="Main\ResumeUtils.cs" />
     <Compile Include="Media\AvOutputHandler.cs" />
     <Compile Include="Media\AvProcess.cs" />
     <Compile Include="Media\FfmpegAlpha.cs" />
@@ -350,6 +349,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include=".editorconfig" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
