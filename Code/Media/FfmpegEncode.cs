@@ -93,6 +93,7 @@ namespace Flowframes.Media
             }
             else if (settings.Encoder == Enums.Encoding.Encoder.Exr)
             {
+                if(Interpolate.currentMediaFile.Format.Upper() != "EXR")
                 filters.Add($"zscale=transfer=linear,format={settings.PixelFormat.ToString().Lower()}".Wrap());
             }
 
