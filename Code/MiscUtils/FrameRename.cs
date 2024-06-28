@@ -118,6 +118,8 @@ namespace Flowframes.MiscUtils
                 int from = i; // capture variable
                 tasks.Add(Task.Run(() => UnRenameWorker(files, from, chunkSize, false)));
             }
+            await Task.WhenAll(tasks);
+            tasks.Clear();
 
             if (Interpolate.currentSettings.is3D)
             {
